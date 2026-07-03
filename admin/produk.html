@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product List - Banditrock Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="index.html" class="sidebar-logo">
+        <div style="background: var(--primary); color: white; padding: 4px; border-radius: 6px;"><i data-lucide="layers" style="color: white; width:20px; height:20px;"></i></div> 
+        Banditrock
+      </a>
+    </div>
+    
+    <div class="sidebar-menu">
+      <div class="menu-group">
+        <div class="menu-label">Main Menu</div>
+        <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dashboard</a>
+        <a href="penjualan.html" class="menu-item"><i data-lucide="shopping-cart"></i> Penjualan Produk</a>
+        <a href="laporan.html" class="menu-item"><i data-lucide="star"></i> Laporan</a>
+      </div>
+      
+      <div class="menu-group">
+        <div class="menu-label">Products</div>
+        <a href="tambah-produk.html" class="menu-item"><i data-lucide="plus-circle"></i> Add Products</a>
+        <a href="produk.html" class="menu-item active"><i data-lucide="box"></i> Product List</a>
+      </div>
+      
+      <div class="menu-group">
+        <div class="menu-label">Admin</div>
+        <a href="#" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> LogOut</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="topbar">
+      <h1 class="page-title">Produk</h1>
+      <div class="topbar-right">
+        <button class="notif-btn">
+          <i data-lucide="bell"></i>
+          <span class="notif-badge">4</span>
+        </button>
+        <div class="avatar">A</div>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="font-size: 16px;">Inventory Summary</h2>
+        <a href="tambah-produk.html" class="btn-primary"><i data-lucide="plus"></i> Add a New Product</a>
+      </div>
+
+      <div class="card" style="background: var(--primary); color: white; margin-bottom: 24px;">
+        <i data-lucide="folder" style="margin-bottom: 16px; opacity: 0.8;"></i>
+        <p style="font-size: 12px; margin-bottom: 4px; opacity: 0.9;">All Products</p>
+        <h2 id="total-products" style="font-size: 28px;">0</h2>
+      </div>
+
+      <div class="card" style="padding: 0;">
+        <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-size: 14px;">Inventory Items</h3>
+          <div style="position: relative;">
+            <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-muted);"></i>
+            <input type="text" class="form-control" placeholder="Search" style="padding-left: 32px; width: 200px;">
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox"></th>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="product-table-body">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/products.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('total-products').textContent = window.products.length;
+      
+      let html = '';
+      window.products.forEach(p => {
+        html += `
+          <tr>
+            <td><input type="checkbox"></td>
+            <td style="display: flex; align-items: center; gap: 12px;">
+              <img src="${p.image}" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/32'">
+              <strong>${p.name}</strong>
+            </td>
+            <td>${p.category}</td>
+            <td>${formatRpAdmin(p.priceNum)}</td>
+            <td>
+              <label style="display:inline-flex; align-items:center; cursor:pointer;">
+                <input type="checkbox" checked style="margin-right: 8px;"> Aktif
+              </label>
+            </td>
+            <td>
+              <button style="border:none; background:none; cursor:pointer; color:var(--text-muted);"><i data-lucide="edit" style="width:16px;"></i></button>
+              <button style="border:none; background:none; cursor:pointer; color:var(--danger); margin-left:8px;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      document.getElementById('product-table-body').innerHTML = html;
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

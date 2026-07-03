@@ -9,14 +9,14 @@
 }
 
 :root {
-  --green-dark: #48A111;
-  --green-primary: #5ac01b;
+  --green-dark: #10B981;
+  --green-primary: #10B981;
   --green-medium: #83db4d;
   --yellow-primary: #FFBF00;
   --yellow-light: #FFF78D;
 
---grad-primary: linear-gradient(135deg, #83db4d, #5ac01b);
---grad-yellow: radial-gradient(circle, #FFBF00, #FFF78D);
+--grad-primary: linear-gradient(135deg, #10B981, #6fc43a);
+--grad-yellow: radial-gradient(circle, #f5c63b, #f3e738);
 --grad-purple: radial-gradient(circle, #a021da, #c15af8);
 --grad-blue: radial-gradient(circle, #5a86f8, #2139da);
 

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Banditrock Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="index.html" class="sidebar-logo">
+        <div style="background: var(--primary); color: white; padding: 4px; border-radius: 6px;"><i data-lucide="layers" style="color: white; width:20px; height:20px;"></i></div> 
+        Banditrock
+      </a>
+    </div>
+    
+    <div class="sidebar-menu">
+      <div class="menu-group">
+        <div class="menu-label">Main Menu</div>
+        <a href="index.html" class="menu-item active"><i data-lucide="home"></i> Dashboard</a>
+        <a href="penjualan.html" class="menu-item"><i data-lucide="shopping-cart"></i> Penjualan Produk</a>
+        <a href="laporan.html" class="menu-item"><i data-lucide="star"></i> Laporan</a>
+      </div>
+      
+      <div class="menu-group">
+        <div class="menu-label">Products</div>
+        <a href="tambah-produk.html" class="menu-item"><i data-lucide="plus-circle"></i> Add Products</a>
+        <a href="produk.html" class="menu-item"><i data-lucide="box"></i> Product List</a>
+      </div>
+      
+      <div class="menu-group">
+        <div class="menu-label">Admin</div>
+        <a href="#" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> LogOut</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="topbar">
+      <h1 class="page-title">Dashboard</h1>
+      <div class="topbar-right">
+        <button class="notif-btn">
+          <i data-lucide="bell"></i>
+          <span class="notif-badge">4</span>
+        </button>
+        <div class="avatar">A</div>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <!-- Status Cards -->
+      <div class="dash-cards">
+        <div class="dash-card c-orange">
+          <h3 id="c-konf">0</h3>
+          <p>Konfirmasi</p>
+        </div>
+        <div class="dash-card c-green">
+          <h3 id="c-setuju">0</h3>
+          <p>Disetujui</p>
+        </div>
+        <div class="dash-card c-blue">
+          <h3 id="c-proses">0</h3>
+          <p>Diproses</p>
+        </div>
+        <div class="dash-card c-red">
+          <h3 id="c-batal">0</h3>
+          <p>Dibatalkan</p>
+        </div>
+        <div class="dash-card c-purple">
+          <h3 id="c-kirim">0</h3>
+          <p>Dikirim</p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 32px;">
+        <!-- Mock Pie Chart -->
+        <div class="card" style="display: flex; align-items: center; justify-content: center; min-height: 300px;">
+          <div style="width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(#A78BFA 0% 35%, #FBBF24 35% 55%, #38BDF8 55% 75%, #E2E8F0 75% 100%); position: relative; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 100px; height: 100px; background: white; border-radius: 50%;"></div>
+          </div>
+        </div>
+
+        <!-- Province Table -->
+        <div class="card" style="padding:0;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">NO</th>
+                <th>PROVINSI</th>
+                <th>JUMLAH</th>
+              </tr>
+            </thead>
+            <tbody id="prov-table">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load sales to calculate dashboard stats
+      const sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
+      
+      let stat = {
+        'Konfirmasi': 0,
+        'Disetujui': 0,
+        'Diproses': 0,
+        'Dibatalkan': 0,
+        'Dikirim': 0
+      };
+
+      let provStat = {};
+
+      sales.forEach(s => {
+        if(stat[s.status] !== undefined) stat[s.status]++;
+        
+        let p = s.provinsi || 'Lainnya';
+        provStat[p] = (provStat[p] || 0) + 1;
+      });
+
+      document.getElementById('c-konf').textContent = stat['Konfirmasi'];
+      document.getElementById('c-setuju').textContent = stat['Disetujui'];
+      document.getElementById('c-proses').textContent = stat['Diproses'];
+      document.getElementById('c-batal').textContent = stat['Dibatalkan'];
+      document.getElementById('c-kirim').textContent = stat['Dikirim'];
+
+      // Render province table
+      const provArr = Object.keys(provStat).map(k => ({ name: k, count: provStat[k] })).sort((a,b) => b.count - a.count);
+      const provColors = ['#A78BFA', '#FBBF24', '#38BDF8', '#E2E8F0', '#F87171'];
+      let provHtml = '';
+      if(provArr.length === 0) {
+        provHtml = `<tr><td colspan="3" style="text-align:center;">Belum ada data penjualan</td></tr>`;
+      } else {
+        provArr.forEach((p, i) => {
+          provHtml += `
+            <tr>
+              <td>${i+1}</td>
+              <td style="display:flex; align-items:center; gap:8px;">
+                <div style="width:12px; height:12px; border-radius:50%; background:${provColors[i % provColors.length]};"></div>
+                ${p.name}
+              </td>
+              <td>${p.count}</td>
+            </tr>
+          `;
+        });
+      }
+      document.getElementById('prov-table').innerHTML = provHtml;
+    });
+  </script>
+</body>
+</html>

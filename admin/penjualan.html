@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penjualan - Banditrock Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="index.html" class="sidebar-logo">
+        <div style="background: var(--primary); color: white; padding: 4px; border-radius: 6px;"><i data-lucide="layers" style="color: white; width:20px; height:20px;"></i></div> 
+        Banditrock
+      </a>
+    </div>
+    
+    <div class="sidebar-menu">
+      <div class="menu-group">
+        <div class="menu-label">Main Menu</div>
+        <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dashboard</a>
+        <a href="penjualan.html" class="menu-item active"><i data-lucide="shopping-cart"></i> Penjualan Produk</a>
+        <a href="laporan.html" class="menu-item"><i data-lucide="star"></i> Laporan</a>
+      </div>
+      
+      <div class="menu-group">
+        <div class="menu-label">Products</div>
+        <a href="tambah-produk.html" class="menu-item"><i data-lucide="plus-circle"></i> Add Products</a>
+        <a href="produk.html" class="menu-item"><i data-lucide="box"></i> Product List</a>
+      </div>
+      
+      <div class="menu-group">
+        <div class="menu-label">Admin</div>
+        <a href="#" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> LogOut</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="topbar">
+      <h1 class="page-title">Penjualan Produk</h1>
+      <div class="topbar-right">
+        <button class="notif-btn">
+          <i data-lucide="bell"></i>
+          <span class="notif-badge">4</span>
+        </button>
+        <div class="avatar">A</div>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div class="card" style="padding: 0;">
+        <div class="tabs" style="margin-bottom: 0; padding: 8px 16px 0;">
+          <div class="tab-item active">Semua</div>
+          <div class="tab-item">Konfirmasi</div>
+          <div class="tab-item">Disetujui</div>
+          <div class="tab-item">Diproses</div>
+          <div class="tab-item">Dibatalkan</div>
+          <div class="tab-item">Dikirim</div>
+        </div>
+
+        <div class="table-wrapper" style="border: none; border-radius: 0;">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>PELANGGAN</th>
+                <th>TGL</th>
+                <th>TOTAL</th>
+                <th>METODE</th>
+                <th>STATUS</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="sales-table-body">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="padding: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 13px;">
+          <div>Showing <select class="form-control" style="width:auto; display:inline-block; padding:4px 8px;"><option>10</option></select> of <span id="total-rows">0</span></div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-primary" style="padding:4px 10px;">1</button>
+            <button style="padding:4px 10px; border:1px solid var(--border-color); background:white; border-radius:8px; cursor:pointer;">2</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+    <!-- Transaction Detail Modal -->
+    <div id="receipt-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+      
+      <div style="background: white; width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+        
+        <!-- Header -->
+        <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">Bukti Pembayaran</h2>
+          <button onclick="closeReceipt()" style="background: none; border: none; cursor: pointer; color: var(--text-muted);">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+
+        <!-- Receipt Content -->
+        <div style="padding: 24px; text-align: center; background: #F8FAFC;">
+          <img id="rec-img" src="" alt="Bukti Pembayaran" style="max-width: 100%; max-height: 60vh; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none;">
+          <p id="rec-no-img" style="color: var(--text-muted); font-size: 14px; display: none; padding: 40px 0;">Pengguna belum mengupload bukti pembayaran untuk pesanan ini.</p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSales();
+    });
+
+    function changeStatus(index, newStatus) {
+      let sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
+      if(sales[index]) {
+        sales[index].status = newStatus;
+        localStorage.setItem('banditrock_sales', JSON.stringify(sales));
+        renderSales();
+      }
+    }
+
+    function renderSales() {
+      const sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
+      document.getElementById('total-rows').textContent = sales.length;
+
+      let html = '';
+      if(sales.length === 0) {
+        html = `<tr><td colspan="7" style="text-align:center; padding:32px;">Belum ada pesanan</td></tr>`;
+      } else {
+        sales.forEach((s, i) => {
+          let badgeClass = s.status.toLowerCase().replace(' ', '');
+          html += `
+            <tr>
+              <td><strong>${s.id}</strong></td>
+              <td>${s.pelanggan}</td>
+              <td>${s.tgl}</td>
+              <td><strong>${formatRpAdmin(s.total)}</strong></td>
+              <td>${s.metode}</td>
+              <td>
+                <select class="badge ${badgeClass}" onchange="changeStatus(${i}, this.value)" style="border:none; cursor:pointer; outline:none; font-family:inherit;">
+                  <option value="Konfirmasi" ${s.status === 'Konfirmasi' ? 'selected':''}>Konfirmasi</option>
+                  <option value="Disetujui" ${s.status === 'Disetujui' ? 'selected':''}>Disetujui</option>
+                  <option value="Diproses" ${s.status === 'Diproses' ? 'selected':''}>Diproses</option>
+                  <option value="Dibatalkan" ${s.status === 'Dibatalkan' ? 'selected':''}>Dibatalkan</option>
+                  <option value="Dikirim" ${s.status === 'Dikirim' ? 'selected':''}>Dikirim</option>
+                </select>
+              </td>
+              <td>
+                <button onclick="viewDetails(${i})" style="border:none; background:none; cursor:pointer; color:var(--info); font-weight:600;">View Details</button>
+              </td>
+            </tr>
+          `;
+        });
+      }
+      document.getElementById('sales-table-body').innerHTML = html;
+      if(window.lucide) lucide.createIcons();
+    }
+
+    function viewDetails(index) {
+      const sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
+      const s = sales[index];
+      if(!s) return;
+      
+      const imgEl = document.getElementById('rec-img');
+      const noImgEl = document.getElementById('rec-no-img');
+
+      if (s.bukti) {
+        imgEl.src = s.bukti;
+        imgEl.style.display = 'inline-block';
+        noImgEl.style.display = 'none';
+      } else {
+        imgEl.style.display = 'none';
+        noImgEl.style.display = 'block';
+      }
+      
+      document.getElementById('receipt-modal').style.display = 'flex';
+      if(window.lucide) lucide.createIcons();
+    }
+
+    function closeReceipt() {
+      document.getElementById('receipt-modal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

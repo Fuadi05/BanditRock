@@ -140,14 +140,16 @@
                 <label
                   style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Nama
                   Lengkap *</label>
-                <input type="text" required placeholder="Contoh: Budi Santoso"
+                <input id="form-name" type="text" required placeholder="Contoh: Budi Santoso"
                   style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none;">
               </div>
               <div>
                 <label
                   style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Nomor
                   Telepon *</label>
-                <input id="form-phone" type="tel" required placeholder="Contoh: 081234567890"
+                <input id="form-phone" type="tel" required placeholder="Contoh: 081234567890" pattern="[0-9]+" title="Harus diisi dengan angka"
+                  oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Nomor telepon tidak boleh kosong' : 'Harus diisi dengan angka')"
+                  oninput="this.setCustomValidity('')"
                   style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none;">
               </div>
             </div>
@@ -157,7 +159,7 @@
                 <label
                   style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Provinsi
                   *</label>
-                <input type="text" required placeholder="Contoh: Jawa Tengah"
+                <input id="form-prov" type="text" required placeholder="Contoh: Jawa Tengah"
                   style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none; ">
               </div>
               <div>
@@ -423,6 +425,29 @@
     }
 
     window.finishCheckout = function () {
+      const cart = getCart();
+      const customerName = document.getElementById('form-name') ? document.getElementById('form-name').value : 'Guest';
+      const prov = document.getElementById('form-prov') ? document.getElementById('form-prov').value : '';
+      let subtotal = 0;
+      cart.forEach(item => subtotal += item.price * item.qty);
+      
+      const newOrder = {
+        id: '#' + Math.floor(Math.random() * 9000 + 1000),
+        pelanggan: customerName,
+        provinsi: prov,
+        tgl: new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}),
+        total: subtotal,
+        metode: 'Transfer Bank', // default
+        status: 'Konfirmasi',
+        items: cart
+      };
+
+      const existingSalesStr = localStorage.getItem('banditrock_sales');
+      let sales = [];
+      if (existingSalesStr) sales = JSON.parse(existingSalesStr);
+      sales.unshift(newOrder);
+      localStorage.setItem('banditrock_sales', JSON.stringify(sales));
+
       clearCart();
       renderCart();
       closeCheckout();

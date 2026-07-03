@@ -238,6 +238,17 @@ window.products = [
   },
 ]
 
+// Ambil produk tambahan dari localStorage (dari fitur Admin)
+const adminProductsStr = localStorage.getItem('banditrock_admin_products');
+if (adminProductsStr) {
+  try {
+    const adminProducts = JSON.parse(adminProductsStr);
+    window.products = [...adminProducts, ...window.products]; // Produk baru di awal
+  } catch (e) {
+    console.error("Gagal load admin products", e);
+  }
+}
+
 window.categories = [
   { id: 'alat-dapur', name: 'Alat Dapur', image: '../images/media__1780324962198.jpg' },
   { id: 'interior', name: 'Interior', image: '../images/media__1780324641278.jpg' },

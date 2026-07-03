@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
@@ -143,7 +143,7 @@
               <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">
                 <i data-lucide="hash" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Nomor Order *
               </label>
-              <input required placeholder="Contoh: BM-2025-001"
+              <input id="input-no-order" required placeholder="Contoh: BM-2025-001"
                 style="width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'">
             </div>
 
@@ -321,6 +321,8 @@
   <script>
     if (window.lucide) lucide.createIcons();
 
+    let uploadedImageBase64 = null;
+
     function handleFile(input) {
       const filePlaceholder = document.getElementById('file-placeholder');
       const fileSelected = document.getElementById('file-selected');
@@ -330,9 +332,16 @@
         fileName.textContent = input.files[0].name;
         filePlaceholder.style.display = 'none';
         fileSelected.style.display = 'block';
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          uploadedImageBase64 = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
       } else {
         filePlaceholder.style.display = 'block';
         fileSelected.style.display = 'none';
+        uploadedImageBase64 = null;
       }
     }
 
@@ -359,6 +368,23 @@
     function handleFormSubmit(e) {
       e.preventDefault();
       const nama = document.getElementById('input-nama').value;
+      const noOrder = document.getElementById('input-no-order').value;
+
+      if (uploadedImageBase64) {
+        let sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
+        let found = false;
+        for (let i=0; i<sales.length; i++) {
+          if (sales[i].id === noOrder) {
+            sales[i].bukti = uploadedImageBase64;
+            found = true;
+            break;
+          }
+        }
+        if(!found && sales.length > 0) {
+           sales[0].bukti = uploadedImageBase64; 
+        }
+        localStorage.setItem('banditrock_sales', JSON.stringify(sales));
+      }
 
       setStepActive(3);
       document.getElementById('konfirmasi-form').style.display = 'none';
@@ -371,6 +397,7 @@
       document.getElementById('konfirmasi-form').reset();
       document.getElementById('file-placeholder').style.display = 'block';
       document.getElementById('file-selected').style.display = 'none';
+      uploadedImageBase64 = null;
 
       setStepActive(1);
       document.getElementById('konfirmasi-form').style.display = 'block';
