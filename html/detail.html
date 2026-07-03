@@ -1,0 +1,323 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Produk - Batu Merapi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- TopBar -->
+  <div class="topbar" id="topbar">
+    Selamat datang di Batu Merapi! Dapatkan kerajinan batu alam berkualitas terbaik untuk hunian Anda.
+    <button class="topbar-close" onclick="document.getElementById('topbar').style.display='none'" aria-label="Tutup"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar" onclick="document.getElementById('nav-katalog-dropdown').style.display='none'">
+    <div class="navbar-inner" onclick="event.stopPropagation()">
+      <a href="index.html" class="navbar-logo">BATU<br />MERAPI</a>
+      
+      <div class="navbar-nav">
+        <a href="index.html">Beranda</a>
+        <div style="position: relative;">
+          <button id="nav-katalog-btn">
+            Katalog
+            <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+          </button>
+          <div id="nav-katalog-dropdown" style="background: var(--white); display:none; position: absolute; top: 110%; left: 0; border: 1px solid var(--gray-mid); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.1); min-width: 170px; z-index: 100; padding: 6px 0;">
+            <a href="katalog.html" style="display: block; padding: 9px 18px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--gray-light);">Semua Produk</a>
+            <a href="katalog.html?kategori=Alat Dapur" style="display: block; padding: 9px 18px; font-size: 13px;">Alat Dapur</a>
+            <a href="katalog.html?kategori=Interior" style="display: block; padding: 9px 18px; font-size: 13px;">Interior</a>
+            <a href="katalog.html?kategori=Eksterior" style="display: block; padding: 9px 18px; font-size: 13px;">Eksterior</a>
+            <a href="katalog.html?kategori=Ornamen Dinding" style="display: block; padding: 9px 18px; font-size: 13px;">Ornamen Dinding</a>
+            <a href="custom-produk.html" style="display: block; padding: 9px 18px; font-size: 13px;">Custom Produk</a>
+            <a href="katalog.html?kategori=Dinding %26 Lantai" style="display: block; padding: 9px 18px; font-size: 13px;">Dinding & Lantai</a>
+          </div>
+        </div>
+        <a href="cara-pesan.html">Cara Pesan</a>
+        <a href="konfirmasi.html">Konfirmasi Pembayaran</a>
+        <a href="tentang.html">Tentang Kami</a>
+      </div>
+
+      <div class="navbar-right">
+        <form id="navbar-search-form" style="display: contents;">
+          <div class="search-bar">
+            <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+              <i data-lucide="search" style="width:16px; height:16px; color:var(--gray-text);"></i>
+            </button>
+            <input type="text" id="navbar-search-input" placeholder="Cari Produk">
+          </div>
+        </form>
+        <a href="keranjang.html" class="cart-btn">
+          <i data-lucide="shopping-cart" style="width:20px; height:20px;"></i>
+          <span class="cart-badge" id="navbar-cart-badge" style="display:none;">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Global Toast will be injected here by main.js -->
+
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">Beranda</a>
+    <span class="breadcrumb-sep"><i data-lucide="chevron-right" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></span>
+    <a href="katalog.html">Katalog</a>
+    <span class="breadcrumb-sep"><i data-lucide="chevron-right" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></span>
+    <a href="#" id="bc-cat">Kategori</a>
+    <span class="breadcrumb-sep"><i data-lucide="chevron-right" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></span>
+    <span class="breadcrumb-cur" id="bc-name">Nama Produk</span>
+  </div>
+
+  <div class="container" id="product-container" style="display:none;">
+    <div class="detail-layout">
+      <!-- Gallery -->
+      <div class="gallery-wrap">
+        <div class="gallery-thumbs" id="gallery-thumbs"></div>
+        <div class="gallery-main" id="gallery-main"></div>
+      </div>
+
+      <!-- Info -->
+      <div>
+        <h1 class="detail-name" id="prod-name" style="font-family: 'Poppins', sans-serif; font-weight: 900; color: var(--text-primary);"></h1>
+        <div class="detail-price" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <span id="prod-price" style="color: var(--green-primary); font-weight: 900; font-size: 24px;"></span>
+        </div>
+        <p class="detail-desc" id="prod-desc" style="color: var(--gray-dark); line-height: 1.7; font-size: 14px; margin-bottom: 20px;"></p>
+
+        <!-- Size Selector -->
+        <div class="detail-label" style="font-weight: 700; font-size: 13px; color: var(--text-primary); margin-bottom: 8px;">Pilih Ukuran</div>
+        <div class="size-options" id="size-options" style="display: flex; gap: 10px; margin-bottom: 24px;"></div>
+
+        <!-- Qty & ATC -->
+        <div class="qty-atc" style="display: flex; gap: 16px; align-items: center;">
+          <div class="qty-ctrl" style="display: flex; align-items: center; border: 1.5px solid var(--gray-mid); border-radius: 8px; overflow: hidden;">
+            <button class="qty-btn" onclick="changeQty(-1)" style="width: 40px; height: 42px; font-size: 18px; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;"><i data-lucide="minus" style="width: 1em; height: 1em;"></i></button>
+            <span class="qty-val" id="qty-val" style="width: 44px; text-align: center; font-weight: 700; font-size: 14px;">1</span>
+            <button class="qty-btn" onclick="changeQty(1)" style="width: 40px; height: 42px; font-size: 18px; border: none; cursor: pointer;">+</button>
+          </div>
+          <button class="btn-atc" onclick="handleAddToCart()" style="flex: 1; background: var(--grad-primary); color: var(--white); padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; border: none; cursor: pointer; transition: background 0.2s; text-align: center;" onmouseenter="this.style.background='var(--green-primary)'" onmouseleave="this.style.background='var(--green-primary)'">
+            Masukkan Keranjang
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL INFO & DESKRIPSI -->
+    <div style="margin-top: 48px; border-top: 1px solid var(--gray-mid); padding-top: 36px;">
+      <div class="tab-features" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 32px;">
+        <div style="padding: 20px; border-radius: 8px; border: 1px solid var(--gray-mid);">
+          <div class="tab-feat-title" style="font-weight: 700; font-size: 14px; margin-bottom: 10px; color: var(--green-primary); display: flex; align-items: center; gap: 6px;"><i data-lucide="layers" style="width: 1.2em; height: 1.2em;"></i> BAHAN & SPESIFIKASI</div>
+          <ul class="tab-feat-list" style="list-style-type: disc; padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+            <li>100% Batu Alam Vulkanik (Andesit) Asli</li>
+            <li>Dibuat oleh Pengrajin Tradisional Wonosobo</li>
+            <li>Estu. Berat: 5 - 45 Kg (tergantung ukuran)</li>
+          </ul>
+        </div>
+        <div style="padding: 20px; border-radius: 8px; border: 1px solid var(--gray-mid);">
+          <div class="tab-feat-title" style="font-weight: 700; font-size: 14px; margin-bottom: 10px; color: var(--green-primary); display: flex; align-items: center; gap: 6px;"><i data-lucide="settings" style="width: 1.2em; height: 1.2em;"></i> FITUR & KEUNGGULAN</div>
+          <ul class="tab-feat-list" style="list-style-type: disc; padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+            <li>Tahan cuaca ekstrem luar ruangan</li>
+            <li>Detail pahatan sangat halus dan berkarakter</li>
+            <li>Warna batu abu-abu alami candi eksklusif</li>
+          </ul>
+        </div>
+        <div style="padding: 20px; border-radius: 8px; border: 1px solid var(--gray-mid);">
+          <div class="tab-feat-title" style="font-weight: 700; font-size: 14px; margin-bottom: 10px; color: var(--green-primary); display: flex; align-items: center; gap: 6px;"><i data-lucide="shield" style="width: 1.2em; height: 1.2em;"></i> INSTRUKSI PERAWATAN</div>
+          <ul class="tab-feat-list" style="list-style-type: disc; padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+            <li>Bersihkan debu berkala dengan kuas kering</li>
+            <li>Bilas air bersih saja bila terkena kotoran</li>
+            <li>Bisa dilapisi coating batu alam setahun sekali</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="desc-block" style="margin-bottom: 32px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">DESKRIPSI LENGKAP</h3>
+        <p id="prod-desc-full" style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="error-container" style="display:none; text-align:center; padding: 60px 0;">
+    <h2>Produk tidak ditemukan</h2>
+    <a href="katalog.html" class="btn-primary" style="display:inline-block; margin-top:16px;">Kembali ke Katalog</a>
+  </div>
+
+  <!-- MUNGKIN KAMU SUKA -->
+  <section class="maybe-section" style="border-top: 1px solid var(--gray-mid); margin-top: 48px; display:none;" id="related-section">
+    <div class="container">
+      <h2 class="maybe-title" style="font-size: 22px; font-weight: 800; color: var(--text-primary); text-align: center; margin-bottom: 32px;">
+        MUNGKIN KAMU SUKA
+      </h2>
+      <div class="product-grid" id="related-grid"></div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-inner" style="display: flex; justify-content: center; align-items: center; text-align: center;">
+      <h2 class="cta-title" style="margin: 0; font-size: 30px; letter-spacing: -1px; text-transform: none;">
+        Pesan Produk Favoritmu Sekarang
+      </h2>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto; max-width: 520px;">
+        <div class="footer-logo" style="letter-spacing: 1px;">BATU<br />MERAPI</div>
+        <p class="footer-desc">
+          Pusat kerajinan batu alam premium dan ornamen tradisional berkualitas tinggi langsung dari kaki Gunung Merapi, Wonosobo.
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">Batu Merapi Â© 2015â€“2026, All Rights Reserved</span>
+      
+    </div>
+  </footer>
+
+  <script src="../js/products.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    let currentProduct = null;
+    let activeSize = 'Besar';
+    let qty = 1;
+    // Toast state is now handled globally
+    const sizes = ['Kecil', 'Sedang', 'Besar', 'Ekstra Besar'];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      
+      currentProduct = (window.products || []).find(p => p.id === id);
+
+      if (!currentProduct && window.products && window.products.length > 0) {
+         currentProduct = window.products[6] || window.products[0];
+      }
+
+      if (currentProduct) {
+        document.getElementById('product-container').style.display = 'block';
+        document.getElementById('related-section').style.display = 'block';
+        renderProduct();
+      } else {
+        document.getElementById('error-container').style.display = 'block';
+      }
+      
+      if (window.lucide) lucide.createIcons();
+    });
+
+    function renderProduct() {
+      // Breadcrumb
+      const bcCat = document.getElementById('bc-cat');
+      bcCat.href = `katalog.html?kategori=${encodeURIComponent(currentProduct.category)}`;
+      bcCat.textContent = currentProduct.category;
+      document.getElementById('bc-name').textContent = currentProduct.name;
+
+      // Title, Price, Desc
+      document.getElementById('prod-name').textContent = currentProduct.name;
+      document.getElementById('prod-price').textContent = currentProduct.price;
+      document.getElementById('prod-desc').textContent = currentProduct.desc;
+      document.getElementById('prod-desc-full').innerHTML = `Kerajinan batu alam <strong>"${currentProduct.name}"</strong> merupakan hasil karya tangan dari pengrajin lokal Wonosobo yang berpengalaman luas. Diukir secara manual dari bongkahan batu candi vulkanik andesit utuh, menjadikannya sangat kuat dan tahan terhadap cuaca panas maupun hujan. Sangat bernilai estetika tinggi, cocok diletakkan sebagai ornamen interior ruangan modern minimalis maupun dekorasi eksterior taman tropis Anda.`;
+
+      // Sizes
+      renderSizes();
+
+      // Gallery
+      let thumbHtml = '';
+      for(let i=0; i<4; i++) {
+        thumbHtml += `
+          <div class="gallery-thumb ${i===0 ? 'active' : ''}" onclick="changeThumb(this)" style="border: 2px solid ${i===0 ? 'var(--green-primary)' : 'transparent'};">
+            <img src="${currentProduct.image}" alt="Thumb ${i+1}" onerror="this.style.display='none'">
+          </div>
+        `;
+      }
+      document.getElementById('gallery-thumbs').innerHTML = thumbHtml;
+      document.getElementById('gallery-main').innerHTML = `
+        <img src="${currentProduct.image}" alt="${currentProduct.name}" onerror="this.style.display='none'">
+      `;
+
+      // Related
+      const related = window.products.filter(p => p.category === currentProduct.category && p.id !== currentProduct.id).slice(0, 4);
+      if (related.length > 0) {
+        const sizeLabels = ['S', 'M', 'L', 'XL'];
+        const createProductCard = (p) => {
+          const sizesHtml = sizeLabels.map(s =>
+            `<span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--gray-light); color:var(--gray-dark); border:1px solid var(--gray-mid);">${s}</span>`
+          ).join('');
+          return `
+            <a href="detail.html?id=${p.id}" class="product-card">
+              <div class="product-card-img" style="position:relative; aspect-ratio:1/1; overflow:hidden; background:var(--gray-light);">
+                <img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;transition:transform .35s;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                <div class="product-img-ph" style="display:none;"><i data-lucide="image" style="width:32px;height:32px;color:var(--gray-mid);"></i></div>
+              </div>
+              <div class="product-card-body">
+                <div class="product-category">${p.category}</div>
+                <h3 class="product-card-name" style="font-size:clamp(12px,1.2vw,15px);">${p.name}</h3>
+                <div class="price-row">
+                  <span class="product-price" style="color:var(--green-primary);">${p.price}</span>
+                  ${p.originalPrice ? `<span class="price-old">${p.originalPrice}</span>` : ''}
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;">${sizesHtml}</div>
+              </div>
+            </a>
+          `;
+        };
+        document.getElementById('related-grid').innerHTML = related.map(createProductCard).join('');
+
+      } else {
+        document.getElementById('related-section').style.display = 'none';
+      }
+    }
+
+    window.changeThumb = function(el) {
+      document.querySelectorAll('.gallery-thumb').forEach(t => {
+        t.style.borderColor = 'transparent';
+        t.classList.remove('active');
+      });
+      el.style.borderColor = 'var(--green-primary)';
+      el.classList.add('active');
+    }
+
+    function renderSizes() {
+      const container = document.getElementById('size-options');
+      container.innerHTML = sizes.map(s => `
+        <button onclick="setActiveSize('${s}')" class="size-btn ${activeSize === s ? 'active' : ''}" style="padding: 8px 16px; border-radius: 6px; border: 1.5px solid ${activeSize === s ? 'var(--green-primary)' : 'var(--gray-mid)'}; font-size: 13px; font-weight: 600; cursor: pointer; background: ${activeSize === s ? 'var(--grad-primary)' : 'var(--white)'}; color: ${activeSize === s ? 'var(--white)' : 'var(--text-secondary)'}; transition: all 0.2s;">
+          ${s}
+        </button>
+      `).join('');
+    }
+
+    window.setActiveSize = function(s) {
+      activeSize = s;
+      renderSizes();
+    }
+
+    window.changeQty = function(delta) {
+      qty = Math.max(1, qty + delta);
+      document.getElementById('qty-val').textContent = qty;
+    }
+
+    window.handleAddToCart = function() {
+      addToCart(currentProduct, activeSize, qty);
+      
+      // Call global toast
+      if (window.showGlobalToast) {
+        window.showGlobalToast(
+          'BERHASIL DITAMBAHKAN!', 
+          `${currentProduct.name} (${activeSize}) telah dimasukkan ke keranjang.`, 
+          'success', 
+          true
+        );
+      }
+    };
+  </script>
+</body>
+
+
+

@@ -1,0 +1,436 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keranjang - Batu Merapi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+  <!-- TopBar -->
+  <div class="topbar" id="topbar">
+    Selamat datang di Batu Merapi! Dapatkan kerajinan batu alam berkualitas terbaik untuk hunian Anda.
+    <button class="topbar-close" onclick="document.getElementById('topbar').style.display='none'" aria-label="Tutup"><i
+        data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar" onclick="document.getElementById('nav-katalog-dropdown').style.display='none'">
+    <div class="navbar-inner" onclick="event.stopPropagation()">
+      <a href="index.html" class="navbar-logo">BATU<br />MERAPI</a>
+
+      <div class="navbar-nav">
+        <a href="index.html">Beranda</a>
+        <div style="position: relative;">
+          <button id="nav-katalog-btn">
+            Katalog
+            <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+          </button>
+          <div id="nav-katalog-dropdown" style="background: var(--white); display:none; position: absolute; top: 110%; left: 0; border: 1px solid var(--gray-mid); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.1); min-width: 170px; z-index: 100; padding: 6px 0;">
+            <a href="katalog.html"
+              style="display: block; padding: 9px 18px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--gray-light);">Semua
+              Produk</a>
+            <a href="katalog.html?kategori=Alat Dapur" style="display: block; padding: 9px 18px; font-size: 13px;">Alat
+              Dapur</a>
+            <a href="katalog.html?kategori=Interior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Interior</a>
+            <a href="katalog.html?kategori=Eksterior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Eksterior</a>
+            <a href="katalog.html?kategori=Ornamen Dinding"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Ornamen Dinding</a>
+            <a href="custom-produk.html" style="display: block; padding: 9px 18px; font-size: 13px;">Custom Produk</a>
+            <a href="katalog.html?kategori=Dinding %26 Lantai"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Dinding & Lantai</a>
+          </div>
+        </div>
+        <a href="cara-pesan.html">Cara Pesan</a>
+        <a href="konfirmasi.html">Konfirmasi Pembayaran</a>
+        <a href="tentang.html">Tentang Kami</a>
+      </div>
+
+      <div class="navbar-right">
+        <form id="navbar-search-form" style="display: contents;">
+          <div class="search-bar">
+            <button type="submit"
+              style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+              <i data-lucide="search" style="width:16px; height:16px; color:var(--gray-text);"></i>
+            </button>
+            <input type="text" id="navbar-search-input" placeholder="Cari Produk">
+          </div>
+        </form>
+        <a href="keranjang.html" class="cart-btn active">
+          <i data-lucide="shopping-cart" style="width:20px; height:20px;"></i>
+          <span class="cart-badge" id="navbar-cart-badge" style="display:none;">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">Beranda</a>
+    <span class="breadcrumb-sep"><i data-lucide="chevron-right"
+        style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></span>
+    <span class="breadcrumb-cur">Keranjang</span>
+  </div>
+
+  <div class="container">
+    <h1 class="cart-page-title" style="font-family: 'Poppins', sans-serif; font-weight: 900;">Keranjang</h1>
+
+    <div class="cart-layout">
+      <!-- CART ITEMS -->
+      <div>
+        <div class="cart-card" style="border: 1px solid var(--gray-mid); border-radius: 12px;">
+          <div id="cart-items-container"></div>
+        </div>
+
+        <div id="cart-actions-bottom"
+          style="display:none; margin-top: 16px; justify-content: space-between; align-items: center;">
+          <a href="katalog.html"
+            style="font-size: 13px; color: var(--green-primary); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="arrow-left"
+              style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i> Lanjut Belanja
+          </a>
+          <span id="cart-total-items" style="font-size: 13px; color: var(--gray-text);"></span>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div>
+        <div class="order-card" style="border: 1px solid var(--gray-mid); border-radius: 12px; padding: 24px;">
+          <div class="order-title"
+            style="font-weight: 800; font-size: 18px; border-bottom: 1px solid var(--gray-mid); padding-bottom: 12px; margin-bottom: 16px;">
+            Ringkasan Order
+          </div>
+          <div id="order-summary-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKOUT MODALS -->
+  <div id="checkout-modal"
+    style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); padding: 20px;">
+
+    <div id="checkout-box"
+      style="border-radius: 16px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); position: relative; border: 1px solid var(--gray-mid); transition: all 0.3s ease-in-out;">
+
+      <!-- Step 1: Form -->
+      <div id="checkout-step-1">
+        <div
+          style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--gray-mid); position: sticky; top: 0; z-index: 10;">
+          <h2
+            style="font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 800; text-transform: none; margin: 0;">
+            Lengkapi Data Pengiriman</h2>
+          <button onclick="closeCheckout()"
+            style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--gray-light); cursor: pointer; border: none; color: var(--text-secondary); font-weight: bold;"><i
+              data-lucide="x" style="width: 1em; height: 1em;"></i></button>
+        </div>
+
+        <form id="shipping-form" style="padding: 24px;">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div>
+                <label
+                  style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Nama
+                  Lengkap *</label>
+                <input type="text" required placeholder="Contoh: Budi Santoso"
+                  style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none;">
+              </div>
+              <div>
+                <label
+                  style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Nomor
+                  Telepon *</label>
+                <input id="form-phone" type="tel" required placeholder="Contoh: 081234567890"
+                  style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div>
+                <label
+                  style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Provinsi
+                  *</label>
+                <input type="text" required value="Jawa Tengah" readonly
+                  style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none; ">
+              </div>
+              <div>
+                <label
+                  style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Kabupaten/Kota
+                  *</label>
+                <input type="text" required value="Wonosobo" readonly
+                  style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none; ">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div>
+                <label
+                  style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Kecamatan
+                  *</label>
+                <input id="form-kec" type="text" required placeholder="Contoh: Kejajar"
+                  style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none;">
+              </div>
+              <div>
+                <label
+                  style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Desa/Kelurahan
+                  *</label>
+                <input id="form-kel" type="text" required placeholder="Contoh: Dieng"
+                  style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none;">
+              </div>
+            </div>
+
+            <div>
+              <label
+                style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Alamat
+                Lengkap Pengiriman *</label>
+              <textarea required rows="2" placeholder="Nama Jalan, Blok, No. Rumah, RT/RW"
+                style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none; resize: vertical;"></textarea>
+            </div>
+
+
+          </div>
+          <button type="submit"
+            style="width: 100%; background: var(--grad-primary); color: var(--white); padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; margin-top: 24px; border: none; cursor: pointer; transition: background 0.2s;">
+            Lanjutkan ke Pembayaran <i data-lucide="arrow-right"
+              style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- Step 2: WA Notif -->
+      <div id="checkout-step-2" style="display:none; padding: 36px 24px; text-align: center;">
+        <div
+          style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+          <span style="font-size: 42px; color: var(--green-primary); display: inline-flex; align-items: center;"><i
+              data-lucide="message-circle" style="width: 1em; height: 1em;"></i></span>
+        </div>
+        <h2
+          style="font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 900; color: var(--text-primary); margin-bottom: 12px; text-transform: none;">
+          Selesaikan Pemesanan di WhatsApp</h2>
+        <p
+          style="font-size: 13px; color: var(--text-secondary); line-height: 1.8; max-width: 340px; margin: 0 auto 24px;">
+          Rincian pesanan Anda telah berhasil dibuat. Silakan periksa WhatsApp Anda untuk melihat pesan rincian pesanan
+          yang dikirimkan oleh sistem kami.
+        </p>
+        <div style="display: flex; justify-content: center; max-width: 320px; margin: 0 auto;">
+          <button onclick="finishCheckout()"
+            style="width: 100%; background: var(--grad-primary); color: var(--white); border: none; padding: 12px 32px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer;">
+            Selesai & Tutup
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <section class="cta-section">
+    <div class="cta-inner" style="display: flex; justify-content: center; align-items: center; text-align: center;">
+      <h2 class="cta-title" style="margin: 0; font-size: 30px; letter-spacing: -1px; text-transform: none;">
+        Pesan Produk Favoritmu Sekarang
+      </h2>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div
+        style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto; max-width: 520px;">
+        <div class="footer-logo" style="letter-spacing: 1px;">BATU<br />MERAPI</div>
+        <p class="footer-desc">
+          Pusat kerajinan batu alam premium dan ornamen tradisional berkualitas tinggi langsung dari kaki Gunung Merapi,
+          Wonosobo.
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">Batu Merapi © 2015–2026, All Rights Reserved</span>
+
+    </div>
+  </footer>
+
+  <!-- Confirm WA Modal -->
+  <div id="confirm-wa-modal"
+    style="display:none; position:fixed; inset:0; z-index:1200; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:20px;">
+    <div
+      style="background:var(--white); border-radius: 12px; width:100%; max-width:440px; padding:24px 20px 24px 20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); border-left: 5px solid var(--green-primary); position:relative; animation: slideUp 0.3s ease;">
+      <div style="display:flex; gap:16px; align-items:flex-start;">
+        <div
+          style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i data-lucide="check" style="width: 24px; height: 24px; color: var(--green-primary);"></i>
+        </div>
+        <div style="flex: 1;">
+          <h3
+            style="font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 6px; color: var(--text-primary); margin-top:2px;">
+            Konfirmasi Nomor WhatsApp</h3>
+          <p id="confirm-wa-msg"
+            style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px;">
+            Pastikan nomormu benar karena invoice akan dikirim ke WhatsApp.
+          </p>
+          <div style="display:flex; gap:12px; justify-content:flex-start;">
+            <button onclick="cancelWhatsApp()"
+              style="padding:10px 20px; border-radius:8px; border:1px solid var(--gray-mid); background:var(--white); color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; transition:background 0.2s;"
+              onmouseover="this.style.background='var(--off-white)'"
+              onmouseout="this.style.background='var(--white)'">Tidak (Cek
+              Lagi)</button>
+            <button onclick="proceedToWhatsApp()"
+              style="padding:10px 24px; border-radius:8px; border:none; background:var(--off-white); color: var(--green-primary); font-weight:700; font-size:13px; cursor:pointer; transition:background 0.2s;"
+              onmouseover="this.style.background='var(--off-white)'"
+              onmouseout="this.style.background='var(--off-white)'">Ya,
+              Lanjut</button>
+          </div>
+        </div>
+        <button onclick="cancelWhatsApp()"
+          style="background:transparent; border:none; color:var(--gray-text); cursor:pointer; padding:4px;"
+          onmouseover="this.style.color='var(--text-secondary)'" onmouseout="this.style.color='var(--gray-text)'">
+          <i data-lucide="x" style="width:20px; height:20px;"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/products.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCart();
+
+      document.getElementById('shipping-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const phone = document.getElementById('form-phone').value;
+        document.getElementById('confirm-wa-msg').innerHTML = `Pastikan nomor WhatsApp <strong>${phone}</strong> benar, karena rincian tagihan (invoice) akan dikirimkan ke nomor tersebut.`;
+        document.getElementById('confirm-wa-modal').style.display = 'flex';
+        if (window.lucide) lucide.createIcons();
+      });
+
+      window.proceedToWhatsApp = function () {
+        document.getElementById('confirm-wa-modal').style.display = 'none';
+        document.getElementById('checkout-step-1').style.display = 'none';
+        document.getElementById('checkout-box').style.maxWidth = '450px';
+        document.getElementById('checkout-step-2').style.display = 'block';
+      };
+
+      window.cancelWhatsApp = function () {
+        document.getElementById('confirm-wa-modal').style.display = 'none';
+      };
+    });
+
+    function renderCart() {
+      const cart = getCart();
+      const itemsContainer = document.getElementById('cart-items-container');
+      const summaryContainer = document.getElementById('order-summary-container');
+      const actionsBottom = document.getElementById('cart-actions-bottom');
+
+      if (cart.length === 0) {
+        itemsContainer.innerHTML = `
+          <div style="padding: 48px; text-align: center; color: var(--gray-text);">
+            <i data-lucide="shopping-cart" style="width:52px; height:52px; color:var(--gray-mid); margin: 0 auto 14px; display:block;"></i>
+            <p style="font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary);">Keranjang Anda Kosong</p>
+            <p style="font-size: 13px; margin-bottom: 20px;">Yuk mulai belanja kerajinan batu pilihan Anda!</p>
+            <a href="katalog.html" class="btn-primary" style="display: inline-flex; background: var(--grad-primary);">Belanja Sekarang <i data-lucide="arrow-right" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></a>
+          </div>
+        `;
+        summaryContainer.innerHTML = `<p style="font-size: 13px; color: var(--gray-text); text-align: center; padding: 20px 0;">Belum ada produk di keranjang</p>`;
+        actionsBottom.style.display = 'none';
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      let itemsHtml = '';
+      let subtotal = 0;
+      let totalQty = 0;
+
+      cart.forEach(item => {
+        subtotal += item.price * item.qty;
+        totalQty += item.qty;
+        itemsHtml += `
+          <div class="cart-item" style="border-bottom: 1px solid var(--gray-mid);">
+            <div class="cart-item-img">
+              <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
+            </div>
+            <div class="cart-item-info">
+              <div class="cart-item-name" style="color: var(--text-primary);">${item.name}</div>
+              <div class="cart-item-meta">Ukuran: <strong>${item.size}</strong></div>
+              <div class="cart-item-meta">Warna/Tipe: <strong>${item.color}</strong></div>
+              <div class="cart-item-price" style="color: var(--green-primary);">${formatRp(item.price)}</div>
+            </div>
+            <div class="cart-item-right">
+              <button onclick="handleRemove(${item.id})" title="Hapus dari keranjang" style="color: var(--red); cursor: pointer; background:none; border:none; padding:4px;">
+                <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
+              </button>
+              
+              <div class="cart-qty-ctrl" style="border: 1.5px solid var(--gray-mid); border-radius: 8px; display:flex; align-items:center;">
+                <button onclick="handleUpdateQty(${item.id}, -1)" style="background: none; border: none; cursor: pointer; padding:4px 8px; display: inline-flex; align-items: center;"><i data-lucide="minus" style="width: 1em; height: 1em;"></i></button>
+                <span style="font-weight: 700; width:24px; text-align:center;">${item.qty}</span>
+                <button onclick="handleUpdateQty(${item.id}, 1)" style="background: none; border: none; cursor: pointer; padding:4px 8px;">+</button>
+              </div>
+              
+              <div style="font-size: 13px; font-weight: 700; color: var(--green-primary);">
+                ${formatRp(item.price * item.qty)}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      itemsContainer.innerHTML = itemsHtml;
+      actionsBottom.style.display = 'flex';
+      document.getElementById('cart-total-items').textContent = `${totalQty} item dalam keranjang`;
+
+      summaryContainer.innerHTML = `
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px;">
+          <span>Subtotal</span>
+          <span style="font-weight: 600;">${formatRp(subtotal)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--gray-mid); padding: 16px 0 8px; font-size: 18px; font-weight: 800; color: var(--green-primary);">
+          <span>Total Tagihan</span>
+          <span>${formatRp(subtotal)}</span>
+        </div>
+        <button onclick="openCheckout()" style="width: 100%; background: var(--grad-primary); color: var(--white); padding: 14px; border-radius: 8px; font-weight: 800; font-size: 14px; border: none; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top:16px;">
+          Checkout Baru
+          <i data-lucide="arrow-right" style="width:16px; height:16px;"></i>
+        </button>
+      `;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    window.handleUpdateQty = function (id, delta) {
+      updateCartQty(id, delta);
+      renderCart();
+    }
+
+    window.handleRemove = function (id) {
+      removeCartItem(id);
+      renderCart();
+    }
+
+    // Checkout functions
+    window.openCheckout = function () {
+      document.getElementById('checkout-modal').style.display = 'flex';
+      document.getElementById('checkout-step-1').style.display = 'block';
+      document.getElementById('checkout-step-2').style.display = 'none';
+      document.getElementById('checkout-box').style.maxWidth = '540px';
+    }
+
+    window.closeCheckout = function () {
+      document.getElementById('checkout-modal').style.display = 'none';
+    }
+
+    window.finishCheckout = function () {
+      clearCart();
+      renderCart();
+      closeCheckout();
+      document.getElementById('shipping-form').reset();
+    }
+
+
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,646 @@
+/* ============================================
+   CARA PESAN PAGE — Tokopedia-style Layout
+   ============================================ */
+
+/* ─── CARA KERJA SECTION ─── */
+.cp-cara-kerja-section {
+  padding: 72px 0 80px;
+  background: linear-gradient(180deg, #f8fdf6 0%, #ffffff 40%, #f0f7ff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.cp-cara-kerja-section::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: -200px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(90, 192, 27, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.cp-cara-kerja-section::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  right: -150px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(66, 133, 244, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.cp-main-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: -1px;
+}
+
+.cp-main-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 52px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* ─── STEPS GRID ─── */
+.cp-steps-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 28px;
+  position: relative;
+}
+
+/* ─── STEP CARD ─── */
+.cp-step-card {
+  width: calc(33.333% - 19px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.cp-step-number-wrap {
+  margin-bottom: -18px;
+  z-index: 2;
+  position: relative;
+}
+
+.cp-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6dd62b, #43a047);
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  box-shadow:
+    0 4px 14px rgba(90, 192, 27, 0.35),
+    0 0 0 5px #fff,
+    0 0 0 7px rgba(90, 192, 27, 0.12);
+  position: relative;
+}
+
+.cp-step-content {
+  background: #ffffff;
+  border: 1px solid #e8eef3;
+  border-radius: 16px;
+  padding: 40px 26px 28px;
+  text-align: center;
+  width: 100%;
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.cp-step-content:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+}
+
+.cp-step-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  line-height: 1.35;
+}
+
+.cp-step-desc {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+/* ─── STEP ILLUSTRATIONS ─── */
+.cp-step-illustration {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* Illustration Card (Step 1) */
+.cp-illus-card {
+  background: #fafbfc;
+  border: 1px solid #eef1f5;
+  border-radius: 12px;
+  padding: 14px 18px;
+  width: 100%;
+  max-width: 220px;
+  text-align: left;
+}
+
+.cp-illus-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.cp-illus-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.cp-illus-icon {
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef5e9;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.cp-illus-product {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.cp-illus-price {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green-primary);
+}
+
+.cp-illus-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6dd62b, #43a047);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.cp-illus-btn:hover {
+  opacity: 0.9;
+}
+
+/* Phone Illustration (Step 2) */
+.cp-illus-phone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+}
+
+.cp-illus-phone svg {
+  filter: drop-shadow(0 4px 12px rgba(67, 160, 71, 0.2));
+}
+
+/* Shipping Illustration (Step 3) */
+.cp-illus-shipping {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cp-illus-box svg {
+  filter: drop-shadow(0 4px 12px rgba(67, 160, 71, 0.2));
+}
+
+
+/* ─── PAYMENT GRID (Tokopedia Cashback Style) ─── */
+.cp-dokumen-section {
+  padding: 72px 0 80px;
+  background: transparent;
+}
+
+.cp-dokumen-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+}
+
+.cp-dokumen-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.cp-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ─── PAYMENT CARD BASE ─── */
+.cp-pay-card {
+  border-radius: 16px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 160px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: default;
+}
+
+.cp-pay-card::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.cp-pay-card::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: -20px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+.cp-pay-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+/* ─── GRADIENT VARIANTS ─── */
+.cp-pay-green {
+  background: var(--grad-primary);
+  box-shadow: 0 4px 16px rgba(90, 192, 27, 0.25);
+}
+
+.cp-pay-blue {
+  background: var(--grad-blue);
+  box-shadow: 0 4px 16px rgba(33, 57, 218, 0.25);
+}
+
+.cp-pay-purple {
+  background: var(--grad-purple);
+  box-shadow: 0 4px 16px rgba(160, 33, 218, 0.25);
+}
+
+.cp-pay-yellow {
+  background: var(--grad-yellow);
+  box-shadow: 0 4px 16px rgba(255, 191, 0, 0.3);
+}
+
+/* ─── CARD TEXT ELEMENTS ─── */
+.cp-pay-category {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
+}
+
+.cp-pay-cat-dark {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.cp-pay-main {
+  margin-bottom: 2px;
+}
+
+.cp-pay-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.cp-pay-name-dark {
+  color: var(--text-primary);
+}
+
+.cp-pay-detail {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+}
+
+.cp-pay-detail strong {
+  font-weight: 800;
+  color: #fff;
+}
+
+.cp-pay-detail-dark {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.cp-pay-detail-dark strong {
+  color: var(--text-primary);
+}
+
+.cp-pay-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.cp-pay-bottom-dark {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.cp-pay-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .cp-payment-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cp-payment-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .cp-pay-card {
+    min-height: 140px;
+  }
+}
+
+
+
+/* ─── FAQ SECTION ─── */
+.cp-faq-section {
+  padding: 72px 0 80px;
+  background: transparent;
+}
+
+.cp-faq-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+}
+
+.cp-faq-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.cp-faq-list {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cp-faq-item {
+  background: #ffffff;
+  border: 1px solid #e8eef3;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.cp-faq-item:hover {
+  border-color: #d1e8c1;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.cp-faq-item.open {
+  border-color: #b4d99a;
+  box-shadow: 0 4px 16px rgba(90, 192, 27, 0.08);
+}
+
+.cp-faq-question {
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cp-faq-q-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.cp-faq-arrow {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.cp-faq-item.open .cp-faq-arrow {
+  transform: rotate(180deg);
+}
+
+.cp-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, padding 0.35s ease;
+}
+
+.cp-faq-item.open .cp-faq-answer {
+  max-height: 200px;
+  padding: 0 24px 18px;
+}
+
+.cp-faq-answer p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  border-top: 1px solid #f0f2f5;
+  padding-top: 14px;
+}
+
+
+/* ─── CTA HUBUNGI ─── */
+.cp-cta-hubungi {
+  padding: 56px 0;
+  background: transparent;
+}
+
+.cp-cta-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  letter-spacing: -1px;
+}
+
+.cp-cta-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.cp-step-detail-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.cp-step-detail-list li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.cp-step-detail-list li::before {
+  content: '•';
+  color: var(--green-primary);
+  font-size: 18px;
+  font-weight: 800;
+  position: absolute;
+  left: 0;
+  top: -2px;
+}
+
+.cp-cta-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: #fff;
+  padding: 14px 36px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(67, 160, 71, 0.3);
+}
+
+.cp-cta-wa-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(67, 160, 71, 0.4);
+}
+
+
+@media (max-width: 900px) {
+  .cp-steps-grid {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .cp-step-card {
+    width: 100%;
+  }
+
+  .cp-step-content {
+    min-height: auto;
+  }
+
+  .cp-main-title {
+    font-size: 26px;
+  }
+
+  .cp-th-check {
+    width: 100px;
+  }
+}
+
+@media (max-width: 600px) {
+  .cp-cara-kerja-section {
+    padding: 48px 0;
+  }
+
+  .cp-dokumen-section {
+    padding: 48px 0;
+  }
+
+  .cp-faq-section {
+    padding: 48px 0;
+  }
+
+  .cp-main-title {
+    font-size: 22px;
+  }
+
+  .cp-dokumen-title,
+  .cp-faq-title {
+    font-size: 22px;
+  }
+
+  .cp-dokumen-table th,
+  .cp-dokumen-table td {
+    padding: 12px 14px;
+  }
+
+  .cp-th-check {
+    width: 80px;
+    font-size: 10px !important;
+  }
+}

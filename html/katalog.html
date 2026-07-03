@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Katalog - Batu Merapi</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+  <!-- TopBar -->
+  <div class="topbar" id="topbar">
+    Selamat datang di Batu Merapi! Dapatkan kerajinan batu alam berkualitas terbaik untuk hunian Anda.
+    <button class="topbar-close" onclick="document.getElementById('topbar').style.display='none'"
+      aria-label="Tutup"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar" onclick="document.getElementById('nav-katalog-dropdown').style.display='none'">
+    <div class="navbar-inner" onclick="event.stopPropagation()">
+      <a href="index.html" class="navbar-logo">BATU<br />MERAPI</a>
+
+      <div class="navbar-nav">
+        <a href="index.html">Beranda</a>
+        <div style="position: relative;">
+          <button id="nav-katalog-btn" class="active">
+            Katalog
+            <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+          </button>
+          <div id="nav-katalog-dropdown" style="background: var(--white); display:none; position: absolute; top: 110%; left: 0; border: 1px solid var(--gray-mid); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.1); min-width: 170px; z-index: 100; padding: 6px 0;">
+            <a href="katalog.html"
+              style="display: block; padding: 9px 18px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--gray-light);">Semua
+              Produk</a>
+            <a href="katalog.html?kategori=Alat Dapur" style="display: block; padding: 9px 18px; font-size: 13px;">Alat
+              Dapur</a>
+            <a href="katalog.html?kategori=Interior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Interior</a>
+            <a href="katalog.html?kategori=Eksterior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Eksterior</a>
+            <a href="katalog.html?kategori=Ornamen Dinding"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Ornamen Dinding</a>
+            <a href="custom-produk.html" style="display: block; padding: 9px 18px; font-size: 13px;">Custom Produk</a>
+            <a href="katalog.html?kategori=Dinding %26 Lantai"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Dinding & Lantai</a>
+          </div>
+        </div>
+        <a href="cara-pesan.html">Cara Pesan</a>
+        <a href="konfirmasi.html">Konfirmasi Pembayaran</a>
+        <a href="tentang.html">Tentang Kami</a>
+      </div>
+
+      <div class="navbar-right">
+        <form id="navbar-search-form" style="display: contents;">
+          <div class="search-bar">
+            <button type="submit"
+              style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+              <i data-lucide="search" style="width:16px; height:16px; color:var(--gray-text);"></i>
+            </button>
+            <input type="text" id="navbar-search-input" placeholder="Cari Produk">
+          </div>
+        </form>
+        <a href="keranjang.html" class="cart-btn">
+          <i data-lucide="shopping-cart" style="width:20px; height:20px;"></i>
+          <span class="cart-badge" id="navbar-cart-badge" style="display:none;">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">Beranda</a>
+    <span class="breadcrumb-sep"><i data-lucide="chevron-right" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></span>
+    <span id="breadcrumb-current" class="breadcrumb-cur">Katalog</span>
+  </div>
+
+  <div class="container">
+    <div class="catalog-layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <span>Filters</span>
+          <i data-lucide="sliders-horizontal" style="width:16px; height:16px;"></i>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <div
+            style="display: flex; align-items: center; gap: 8px; background: var(--gray-light); border-radius: 8px; padding: 8px 12px; border: 1.5px solid transparent;"
+            id="sidebar-search-wrap">
+            <i data-lucide="search" style="width:14px; height:14px; color:var(--gray-text);"></i>
+            <input type="text" id="sidebar-search" placeholder="Cari produk..."
+              style="background: none; border: none; font-size: 13px; width: 100%; outline: none;">
+            <button id="sidebar-search-clear"
+              style="display:none; align-items: center; justify-content: center; background:none; border:none; cursor:pointer;">
+              <i data-lucide="x" style="width:14px; height:14px; color:var(--gray-text);"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="sidebar-section-title" style="margin-top: 4px; margin-bottom: 8px;">Kategori</div>
+        <div id="sidebar-categories" style="margin-bottom: 4px;"></div>
+
+        <!-- Range Harga -->
+        <div class="sidebar-section-title" style="margin-top: 16px;">Harga</div>
+        <div style="padding: 4px 0 8px;">
+          <div
+            style="display: flex; justify-content: space-between; font-size: 12px; color: var(--green-primary); font-weight: 700; margin-bottom: 12px;">
+            <span id="price-min-display">Rp 100.000</span>
+            <span id="price-max-display">Rp 3.000.000</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px;">
+            <input type="range" id="range-price-min" min="100000" max="3000000" step="50000" value="100000"
+              class="price-slider">
+            <input type="range" id="range-price-max" min="100000" max="3000000" step="50000" value="3000000"
+              class="price-slider">
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <div
+              style="flex: 1; border: 1px solid var(--gray-mid); border-radius: 6px; padding: 6px 8px; font-size: 12px;">
+              <div style="color: var(--gray-text); margin-bottom: 2px;">Min</div>
+              <input type="number" id="input-price-min" value="100000" min="100000" max="3000000"
+                style="width: 100%; border: none; outline: none; font-size: 13px; font-weight: 600;">
+            </div>
+            <div style="display: flex; align-items: flex-end; padding-bottom: 6px; color: var(--gray-text);"><i data-lucide="minus" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></div>
+            <div
+              style="flex: 1; border: 1px solid var(--gray-mid); border-radius: 6px; padding: 6px 8px; font-size: 12px;">
+              <div style="color: var(--gray-text); margin-bottom: 2px;">Maks</div>
+              <input type="number" id="input-price-max" value="3000000" min="100000" max="3000000"
+                style="width: 100%; border: none; outline: none; font-size: 13px; font-weight: 600;">
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-apply" id="btn-apply-filter">Terapkan Filter</button>
+        <button id="btn-reset-filter"
+          style="display:none; width: 100%; padding: 9px; border-radius: 8px; font-weight: 600; font-size: 13px; margin-top: 8px; border: 1.5px solid var(--gray-mid); cursor: pointer; color: var(--gray-dark);">
+          Reset Filter
+        </button>
+      </aside>
+
+      <!-- MAIN -->
+      <div class="catalog-main">
+        <div class="catalog-head">
+          <h1 class="catalog-title-main" id="catalog-title">Semua Produk</h1>
+          <div class="catalog-meta">
+            <span id="catalog-meta-info"></span>
+            <span style="display: flex; align-items: center; gap: 6px;">
+              Urutkan:
+              <select class="sort-select" id="sort-select">
+                <option value="Terpopuler">Terpopuler</option>
+                <option value="Harga Terendah">Harga Terendah</option>
+                <option value="Harga Tertinggi">Harga Tertinggi</option>
+                <option value="Terbaru">Terbaru</option>
+              </select>
+            </span>
+          </div>
+        </div>
+
+        <!-- Active tags -->
+        <div id="active-filters-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;"></div>
+
+        <!-- Grid -->
+        <div class="product-grid cols-3" id="catalog-grid"></div>
+
+        <div id="no-products-msg" style="display: none; text-align: center; padding: 64px 0; color: var(--gray-text);">
+          <i data-lucide="search" style="width:56px; height:56px; color:var(--gray-mid); margin:0 auto 16px; display:block;"></i>
+          <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Produk tidak ditemukan</p>
+          <p style="font-size: 13px; margin-bottom: 20px;">Coba ubah filter atau kata kunci pencarian Anda</p>
+          <button class="btn-primary" onclick="resetAllFilters()" style="display: inline-flex;">Reset Semua
+            Filter</button>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination-container" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="cta-section">
+    <div class="cta-inner" style="display: flex; justify-content: center; align-items: center; text-align: center;">
+      <h2 class="cta-title" style="margin: 0; font-size: 30px; letter-spacing: -1px; text-transform: none;">
+        Pesan Produk Favoritmu Sekarang
+      </h2>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div
+        style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto; max-width: 520px;">
+        <div class="footer-logo" style="letter-spacing: 1px;">BATU<br />MERAPI</div>
+        <p class="footer-desc">
+          Pusat kerajinan batu alam premium dan ornamen tradisional berkualitas tinggi langsung dari kaki Gunung Merapi,
+          Wonosobo.
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">Batu Merapi © 2015–2026, All Rights Reserved</span>
+
+    </div>
+  </footer>
+
+  <script src="../js/products.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    const PER_PAGE = 9;
+    const MIN_PRICE = 100000;
+    const MAX_PRICE = 3000000;
+
+    let allProds = window.products || [];
+    let state = {
+      q: '',
+      kategori: '',
+      priceMin: MIN_PRICE,
+      priceMax: MAX_PRICE,
+      sortBy: 'Terpopuler',
+      page: 1
+    };
+
+    function parseURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      state.q = urlParams.get('q') || '';
+      state.kategori = urlParams.get('kategori') || '';
+      state.page = parseInt(urlParams.get('page')) || 1;
+
+      const pMin = urlParams.get('pmin');
+      const pMax = urlParams.get('pmax');
+      if (pMin) state.priceMin = parseInt(pMin);
+      if (pMax) state.priceMax = parseInt(pMax);
+
+      state.sortBy = urlParams.get('sort') || 'Terpopuler';
+    }
+
+    function updateURL() {
+      const params = new URLSearchParams();
+      if (state.q) params.set('q', state.q);
+      if (state.kategori) params.set('kategori', state.kategori);
+      if (state.priceMin > MIN_PRICE) params.set('pmin', state.priceMin);
+      if (state.priceMax < MAX_PRICE) params.set('pmax', state.priceMax);
+      if (state.sortBy !== 'Terpopuler') params.set('sort', state.sortBy);
+      if (state.page > 1) params.set('page', state.page);
+
+      const newUrl = window.location.pathname + '?' + params.toString();
+      window.history.pushState({}, '', newUrl);
+      renderAll();
+    }
+
+    function formatRpShort(n) {
+      if (n >= 1000000) return `Rp ${(n / 1000000).toFixed(1).replace('.0', '')} Jt`;
+      return `Rp ${(n / 1000).toFixed(0)}.000`;
+    }
+
+    function createProductCard(p) {
+      const sizeLabels = ['S', 'M', 'L', 'XL'];
+      const sizesHtml = sizeLabels.map(s => 
+        `<span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--gray-light); color:var(--gray-dark); border:1px solid var(--gray-mid);">${s}</span>`
+      ).join('');
+      return `
+        <a href="detail.html?id=${p.id}" class="product-card">
+          <div class="product-card-img" style="position:relative; aspect-ratio:1/1; overflow:hidden; background:var(--gray-light);">
+            <img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;transition:transform .35s;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            <div class="product-img-ph" style="display:none;"><i data-lucide="image" style="width:32px;height:32px;color:var(--gray-mid);"></i></div>
+          </div>
+          <div class="product-card-body">
+            <div class="product-category">${p.category}</div>
+            <h3 class="product-card-name" style="font-size:clamp(12px,1.2vw,15px);">${p.name}</h3>
+            <div class="price-row">
+              <span class="product-price" style="color:var(--green-primary);">${p.price}</span>
+              ${p.originalPrice ? `<span class="price-old">${p.originalPrice}</span>` : ''}
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;">${sizesHtml}</div>
+          </div>
+        </a>
+      `;
+    }
+
+
+
+    function renderAll() {
+      // Inputs binding
+      document.getElementById('sidebar-search').value = state.q;
+      document.getElementById('sidebar-search-clear').style.display = state.q ? 'flex' : 'none';
+      document.getElementById('sort-select').value = state.sortBy;
+      // Bind Range Sliders (visual updates & sync)
+      const rMin = document.getElementById('range-price-min');
+      const rMax = document.getElementById('range-price-max');
+      const iMin = document.getElementById('input-price-min');
+      const iMax = document.getElementById('input-price-max');
+      const lMin = document.getElementById('price-min-display');
+      const lMax = document.getElementById('price-max-display');
+
+      function updateRangeVisuals() {
+        // Simple coloring based on percentage
+        const minPct = ((rMin.value - rMin.min) / (rMin.max - rMin.min)) * 100;
+        const maxPct = ((rMax.value - rMax.min) / (rMax.max - rMax.min)) * 100;
+        rMin.style.background = `linear-gradient(to right, var(--green-primary) ${minPct}%, var(--gray-mid) ${minPct}%)`;
+        rMax.style.background = `linear-gradient(to right, var(--green-primary) ${maxPct}%, var(--gray-mid) ${maxPct}%)`;
+        iMin.value = rMin.value;
+        iMax.value = rMax.value;
+        lMin.textContent = formatRpShort(rMin.value);
+        lMax.textContent = formatRpShort(rMax.value);
+      }
+
+      rMin.addEventListener('input', (e) => {
+        if (Number(rMin.value) > Number(rMax.value) - 50000) rMin.value = Number(rMax.value) - 50000;
+        updateRangeVisuals();
+      });
+      rMax.addEventListener('input', (e) => {
+        if (Number(rMax.value) < Number(rMin.value) + 50000) rMax.value = Number(rMin.value) + 50000;
+        updateRangeVisuals();
+      });
+
+      // Bind text inputs back to range sliders
+      iMin.addEventListener('change', (e) => {
+        let v = Number(e.target.value);
+        if (v < 100000) v = 100000;
+        if (v > Number(rMax.value) - 50000) v = Number(rMax.value) - 50000;
+        rMin.value = v;
+        updateRangeVisuals();
+      });
+      iMax.addEventListener('change', (e) => {
+        let v = Number(e.target.value);
+        if (v > 3000000) v = 3000000;
+        if (v < Number(rMin.value) + 50000) v = Number(rMin.value) + 50000;
+        rMax.value = v;
+        updateRangeVisuals();
+      });
+
+      // Set initial values from state
+      rMin.value = state.priceMin;
+      rMax.value = state.priceMax;
+      updateRangeVisuals();
+
+      // Title & Breadcrumb
+      document.getElementById('catalog-title').textContent = state.kategori || (state.q ? `Hasil: "${state.q}"` : 'Semua Produk');
+      document.getElementById('breadcrumb-current').textContent = state.kategori || 'Katalog';
+
+      // Sidebar Categories
+      const catsHtml = window.categories.map(c => c.name).map(cat => {
+        const isActive = state.kategori === cat;
+        const count = allProds.filter(p => p.category === cat).length;
+        return `
+          <div class="sidebar-filter-item" onclick="setCategory('${cat}')" style="cursor:pointer; color:${isActive ? 'var(--green-primary)' : 'inherit'}; font-weight:${isActive ? 700 : 400}; background:${isActive ? 'rgba(31,77,56,.06)' : 'transparent'}; border-radius:${isActive ? '6px' : '0'}; padding:9px 4px; transition:all .15s;">
+            <span>${cat}</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:11px; color:var(--gray-text); background:var(--gray-light); border-radius:10px; padding:1px 7px;">${count}</span>
+              <i data-lucide="${isActive ? 'check' : 'chevron-right'}" style="width:12px; height:12px;"></i>
+            </div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('sidebar-categories').innerHTML = catsHtml;
+
+      // Filtering
+      let filtered = [...allProds];
+      if (state.kategori) filtered = filtered.filter(p => p.category === state.kategori);
+      filtered = filtered.filter(p => p.priceNum >= state.priceMin && p.priceNum <= state.priceMax);
+      if (state.q) {
+        const terms = state.q.toLowerCase().split(/\s+/).filter(t => t.trim() !== '');
+        filtered = filtered.filter(p => {
+          const text = p.name.toLowerCase();
+          return terms.every(t => text.includes(t));
+        });
+      }
+
+      // Sorting
+      if (state.sortBy === 'Harga Terendah') filtered.sort((a, b) => a.priceNum - b.priceNum);
+      else if (state.sortBy === 'Harga Tertinggi') filtered.sort((a, b) => b.priceNum - a.priceNum);
+      else if (state.sortBy === 'Terbaru') filtered.reverse();
+
+      // Pagination setup
+      const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+      if (state.page > totalPages) state.page = 1;
+      const paginated = filtered.slice((state.page - 1) * PER_PAGE, state.page * PER_PAGE);
+
+      // DOM Rendering
+      document.getElementById('catalog-meta-info').textContent = filtered.length === 0
+        ? 'Tidak ada produk'
+        : `Menampilkan ${(state.page - 1) * PER_PAGE + 1}–${Math.min(state.page * PER_PAGE, filtered.length)} dari ${filtered.length} Produk`;
+
+      const grid = document.getElementById('catalog-grid');
+      const noProd = document.getElementById('no-products-msg');
+      if (paginated.length > 0) {
+        grid.style.display = 'grid';
+        noProd.style.display = 'none';
+        grid.innerHTML = paginated.map(createProductCard).join('');
+      } else {
+        grid.style.display = 'none';
+        noProd.style.display = 'block';
+      }
+
+      // Active filters tags
+      const hasActive = state.kategori || state.q || state.priceMin > MIN_PRICE || state.priceMax < MAX_PRICE;
+      document.getElementById('btn-reset-filter').style.display = hasActive ? 'block' : 'none';
+      let tagsHtml = '';
+      if (state.kategori) {
+        tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background:var(--green-primary); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;">${state.kategori} <button onclick="setCategory('')" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
+      }
+      if (state.q) {
+        tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background: var(--grad-primary); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;"><i data-lucide="search" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i> ${state.q} <button onclick="setSearch('')" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
+      }
+      if (state.priceMin > MIN_PRICE || state.priceMax < MAX_PRICE) {
+        tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background:var(--gray-dark); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;">${formatRpShort(state.priceMin)} – ${formatRpShort(state.priceMax)} <button onclick="resetPrice()" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
+      }
+      document.getElementById('active-filters-container').innerHTML = tagsHtml;
+
+      // Pagination rendering
+      const pagCont = document.getElementById('pagination-container');
+      if (totalPages > 1) {
+        pagCont.style.display = 'flex';
+        let pagHtml = `<button class="page-btn nav-btn" ${state.page === 1 ? 'disabled' : ''} onclick="setPage(${state.page - 1})"><i data-lucide="chevron-left" style="width:16px;"></i> Sebelumnya</button>`;
+        for (let i = 1; i <= totalPages; i++) {
+          pagHtml += `<button class="page-btn ${state.page === i ? 'active' : ''}" onclick="setPage(${i})">${i}</button>`;
+        }
+        pagHtml += `<button class="page-btn nav-btn" ${state.page === totalPages ? 'disabled' : ''} onclick="setPage(${state.page + 1})">Berikutnya <i data-lucide="chevron-right" style="width:16px;"></i></button>`;
+        pagCont.innerHTML = pagHtml;
+      } else {
+        pagCont.style.display = 'none';
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // Handlers
+    window.setCategory = (cat) => { state.kategori = state.kategori === cat ? '' : cat; state.page = 1; updateURL(); };
+    window.setSearch = (q) => { state.q = q; state.page = 1; updateURL(); };
+    window.resetPrice = () => { state.priceMin = MIN_PRICE; state.priceMax = MAX_PRICE; state.page = 1; updateURL(); };
+    window.setPage = (p) => { state.page = p; updateURL(); window.scrollTo(0, 0); };
+    window.resetAllFilters = () => {
+      state = { q: '', kategori: '', priceMin: MIN_PRICE, priceMax: MAX_PRICE, sortBy: 'Terpopuler', page: 1 };
+      updateURL();
+    };
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      parseURL();
+      renderAll();
+
+      document.getElementById('sidebar-search').addEventListener('change', e => setSearch(e.target.value));
+      document.getElementById('sidebar-search-clear').addEventListener('click', () => setSearch(''));
+
+      document.getElementById('sort-select').addEventListener('change', e => {
+        state.sortBy = e.target.value;
+        state.page = 1;
+        updateURL();
+      });
+
+      document.getElementById('btn-apply-filter').addEventListener('click', () => {
+        state.priceMin = parseInt(document.getElementById('input-price-min').value) || MIN_PRICE;
+        state.priceMax = parseInt(document.getElementById('input-price-max').value) || MAX_PRICE;
+        state.page = 1;
+        updateURL();
+      });
+
+      document.getElementById('btn-reset-filter').addEventListener('click', resetAllFilters);
+    });
+  </script>
+</body>
+
+</html>
+
+
+
+

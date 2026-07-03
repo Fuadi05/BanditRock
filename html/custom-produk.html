@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Produk - Batu Merapi</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+  <!-- TopBar -->
+  <div class="topbar" id="topbar">
+    Selamat datang di Batu Merapi! Dapatkan kerajinan batu alam berkualitas terbaik untuk hunian Anda.
+    <button class="topbar-close" onclick="document.getElementById('topbar').style.display='none'"
+      aria-label="Tutup"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar" onclick="document.getElementById('nav-katalog-dropdown').style.display='none'">
+    <div class="navbar-inner" onclick="event.stopPropagation()">
+      <a href="index.html" class="navbar-logo">BATU<br />MERAPI</a>
+
+      <div class="navbar-nav">
+        <a href="index.html">Beranda</a>
+        <div style="position: relative;">
+          <button id="nav-katalog-btn">
+            Katalog
+            <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+          </button>
+          <div id="nav-katalog-dropdown" style="background: var(--white); display:none; position: absolute; top: 110%; left: 0; border: 1px solid var(--gray-mid); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.1); min-width: 170px; z-index: 100; padding: 6px 0;">
+            <a href="katalog.html"
+              style="display: block; padding: 9px 18px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--gray-light);">Semua
+              Produk</a>
+            <a href="katalog.html?kategori=Alat Dapur" style="display: block; padding: 9px 18px; font-size: 13px;">Alat
+              Dapur</a>
+            <a href="katalog.html?kategori=Interior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Interior</a>
+            <a href="katalog.html?kategori=Eksterior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Eksterior</a>
+            <a href="katalog.html?kategori=Ornamen Dinding"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Ornamen Dinding</a>
+            <a href="custom-produk.html" style="display: block; padding: 9px 18px; font-size: 13px;">Custom Produk</a>
+            <a href="katalog.html?kategori=Dinding %26 Lantai"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Dinding & Lantai</a>
+          </div>
+        </div>
+        <a href="cara-pesan.html">Cara Pesan</a>
+        <a href="konfirmasi.html">Konfirmasi Pembayaran</a>
+        <a href="tentang.html">Tentang Kami</a>
+      </div>
+
+      <div class="navbar-right">
+        <form id="navbar-search-form" style="display: contents;">
+          <div class="search-bar">
+            <button type="submit"
+              style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+              <i data-lucide="search" style="width:16px; height:16px; color:var(--gray-text);"></i>
+            </button>
+            <input type="text" id="navbar-search-input" placeholder="Cari Produk">
+          </div>
+        </form>
+        <a href="keranjang.html" class="cart-btn">
+          <i data-lucide="shopping-cart" style="width:20px; height:20px;"></i>
+          <span class="cart-badge" id="navbar-cart-badge" style="display:none;">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section style="padding: 80px 24px; position:relative; overflow:hidden;">
+    <!-- Gradient blur blob for the background right side -->
+    <div
+      style="position:absolute; top:0; right:0; width:50%; height:100%; background:radial-gradient(circle at top right, rgba(31,77,56,0.06) 0%, transparent 60%); z-index:-1;">
+    </div>
+
+    <div class="container" style="max-width: 1000px; display:flex; flex-direction:column; gap:64px;">
+
+      <div style="max-width: 600px;">
+        <div
+          style="font-size: 11px; font-weight: 700; color: var(--gray-text); text-transform: none; letter-spacing: 1.5px; margin-bottom: 12px;">
+          LAYANAN EKSKLUSIF</div>
+        <h1
+          style="font-family: 'Poppins', sans-serif; font-size: 40px; font-weight: 900; color: var(--text-primary); margin-bottom: 24px; margin-top:0;">
+          Produk Kustom</h1>
+        <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.8; margin: 0;">
+          Wujudkan visi arsitektur Anda dengan keahlian pahat batu kami. Batu Merapi menerima pesanan kustom untuk
+          memenuhi kebutuhan desain spesifik, mulai dari elemen interior yang elegan hingga aksen eksterior yang
+          monumental.
+        </p>
+      </div>
+
+      <!-- IMAGE GRID (3x2) -->
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
+        <img src="../images/media__1780324962433.jpg"
+          style="width:100%; aspect-ratio:1/1; object-fit:cover; background:var(--gray-mid);">
+        <img src="../images/media__1780324962198.jpg"
+          style="width:100%; aspect-ratio:1/1; object-fit:cover; background:var(--gray-mid);">
+        <img src="../images/media__1780324641278.jpg"
+          style="width:100%; aspect-ratio:1/1; object-fit:cover; background:var(--gray-mid);">
+        <img src="../images/stone_product2_1780322918796.png"
+          style="width:100%; aspect-ratio:1/1; object-fit:cover; background:var(--gray-mid);">
+        <img src="../images/media__1780324962433.jpg"
+          style="width:100%; aspect-ratio:1/1; object-fit:cover; background:var(--gray-mid);">
+        <img src="../images/media__1780324641278.jpg"
+          style="width:100%; aspect-ratio:1/1; object-fit:cover; background:var(--gray-mid);">
+      </div>
+    </div>
+  </section>
+
+  <!-- PROSES PEMESANAN -->
+  <section style="padding: 80px 24px;">
+    <div class="container" style="max-width: 1000px; text-align:center;">
+      <h2
+        style="font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
+        Proses Pemesanan</h2>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 48px;">Langkah sederhana untuk mewujudkan produk impian
+        Anda.</p>
+
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; text-align:center;">
+
+        <!-- Step 1 -->
+        <div
+          style="background:var(--white); border:1px solid var(--gray-mid); padding:32px 24px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+          <div
+            style="width:48px; height:48px; border-radius:8px; background: var(--grad-primary); color:var(--white); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+            <i data-lucide="message-square" style="width:20px; height:20px;"></i>
+          </div>
+          <h3 style="font-size:14px; font-weight:800; color:var(--text-primary); margin-bottom:12px;">1. Konsultasi Desain</h3>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.6; margin:0;">Diskusikan ide, sketsa, atau kebutuhan
+            dimensi Anda bersama tim desain profesional kami.</p>
+        </div>
+
+        <!-- Step 2 -->
+        <div
+          style="background:var(--white); border:1px solid var(--gray-mid); padding:32px 24px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+          <div
+            style="width:48px; height:48px; border-radius:8px; background: var(--grad-primary); color:var(--white); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+            <i data-lucide="layers" style="width:20px; height:20px;"></i>
+          </div>
+          <h3 style="font-size:14px; font-weight:800; color:var(--text-primary); margin-bottom:12px;">2. Pemilihan Material</h3>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.6; margin:0;">Pilih dari berbagai jenis batu alam
+            terbaik sesuai dengan tekstur dan warna yang Anda inginkan.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div
+          style="background:var(--white); border:1px solid var(--gray-mid); padding:32px 24px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+          <div
+            style="width:48px; height:48px; border-radius:8px; background: var(--grad-primary); color:var(--white); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+            <i data-lucide="pen-tool" style="width:20px; height:20px;"></i>
+          </div>
+          <h3 style="font-size:14px; font-weight:800; color:var(--text-primary); margin-bottom:12px;">3. Proses Pengerjaan</h3>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.6; margin:0;">Pengrajin ahli kami mulai memahat karya
+            Anda dengan presisi tinggi dan perhatian pada detail.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BOX -->
+  <section style="padding: 80px 24px; ">
+    <div class="container" style="max-width: 1000px;">
+      <div
+        style="background: var(--green-dark); border-radius:12px; padding:64px 24px; text-align:center; position:relative; overflow:hidden; box-shadow:0 20px 25px -5px var(--shadow-md);">
+
+        <!-- Abstract decorations (blocks in corners) -->
+        <div
+          style="position:absolute; top:20px; right:40px; width:80px; height:120px; background:rgba(255,255,255,0.05);">
+        </div>
+        <div
+          style="position:absolute; bottom:20px; left:40px; width:60px; height:100px; background:rgba(255,255,255,0.05);">
+        </div>
+
+        <div style="position:relative; z-index:2;">
+          <h2
+            style="font-family: 'Poppins', sans-serif; font-size:24px; font-weight:800; color:var(--white); margin-bottom:16px;">
+            Siap Memulai Proyek Anda?</h2>
+          <p style="color:rgba(255,255,255,0.8); font-size:13px; max-width:480px; margin:0 auto 32px; line-height:1.6;">
+            Kami siap membantu merealisasikan detail terkecil hingga proyek berskala besar. Konsultasikan sekarang tanpa
+            biaya tambahan.
+          </p>
+          <a href="https://wa.me/6281234567890" target="_blank"
+            style="display:inline-flex; align-items:center; gap:8px; background:var(--white); color: var(--green-dark); padding:14px 28px; border-radius:6px; font-weight:700; font-size:14px; text-decoration:none;">
+            Konsultasi Produk Kustom <i data-lucide="arrow-right" style="width:16px; height:16px;"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-inner" style="display: flex; justify-content: center; align-items: center; text-align: center;">
+      <h2 class="cta-title" style="margin: 0; font-size: 30px; letter-spacing: -1px; text-transform: none;">
+        Pesan Produk Favoritmu Sekarang
+      </h2>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div
+        style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto; max-width: 520px;">
+        <div class="footer-logo" style="letter-spacing: 1px;">BATU<br />MERAPI</div>
+        <p class="footer-desc">
+          Pusat kerajinan batu alam premium dan ornamen tradisional berkualitas tinggi langsung dari kaki Gunung Merapi,
+          Wonosobo.
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">Batu Merapi © 2015–2026, All Rights Reserved</span>
+
+    </div>
+  </footer>
+
+  <script src="../js/products.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    if (window.lucide) lucide.createIcons();
+  </script>
+</body>
+
+</html>
+
+
+
+
+

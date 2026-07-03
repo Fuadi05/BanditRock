@@ -1,0 +1,375 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cara Pesan - Batu Merapi</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/cara-pesan.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+  <!-- TopBar -->
+  <div class="topbar" id="topbar">
+    Selamat datang di Batu Merapi! Dapatkan kerajinan batu alam berkualitas terbaik untuk hunian Anda.
+    <button class="topbar-close" onclick="document.getElementById('topbar').style.display='none'"
+      aria-label="Tutup"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar" onclick="document.getElementById('nav-katalog-dropdown').style.display='none'">
+    <div class="navbar-inner" onclick="event.stopPropagation()">
+      <a href="index.html" class="navbar-logo">BATU<br />MERAPI</a>
+
+      <div class="navbar-nav">
+        <a href="index.html">Beranda</a>
+        <div style="position: relative;">
+          <button id="nav-katalog-btn">
+            Katalog
+            <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+          </button>
+          <div id="nav-katalog-dropdown" style="background: var(--white); display:none; position: absolute; top: 110%; left: 0; border: 1px solid var(--gray-mid); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.1); min-width: 170px; z-index: 100; padding: 6px 0;">
+            <a href="katalog.html"
+              style="display: block; padding: 9px 18px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--gray-light);">Semua
+              Produk</a>
+            <a href="katalog.html?kategori=Alat Dapur" style="display: block; padding: 9px 18px; font-size: 13px;">Alat
+              Dapur</a>
+            <a href="katalog.html?kategori=Interior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Interior</a>
+            <a href="katalog.html?kategori=Eksterior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Eksterior</a>
+            <a href="katalog.html?kategori=Ornamen Dinding"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Ornamen Dinding</a>
+            <a href="custom-produk.html" style="display: block; padding: 9px 18px; font-size: 13px;">Custom Produk</a>
+            <a href="katalog.html?kategori=Dinding %26 Lantai"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Dinding & Lantai</a>
+          </div>
+        </div>
+        <a href="cara-pesan.html" class="active">Cara Pesan</a>
+        <a href="konfirmasi.html">Konfirmasi Pembayaran</a>
+        <a href="tentang.html">Tentang Kami</a>
+      </div>
+
+      <div class="navbar-right">
+        <form id="navbar-search-form" style="display: contents;">
+          <div class="search-bar">
+            <button type="submit"
+              style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+              <i data-lucide="search" style="width:16px; height:16px; color:var(--gray-text);"></i>
+            </button>
+            <input type="text" id="navbar-search-input" placeholder="Cari Produk">
+          </div>
+        </form>
+        <a href="keranjang.html" class="cart-btn">
+          <i data-lucide="shopping-cart" style="width:20px; height:20px;"></i>
+          <span class="cart-badge" id="navbar-cart-badge" style="display:none;">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CARA KERJA SECTION -->
+  <section class="cp-cara-kerja-section">
+    <div class="container">
+      <h1 class="cp-main-title">Cara Kerja Pemesanan Batu Merapi</h1>
+      <p class="cp-main-subtitle">Proses mudah dan aman untuk mendapatkan kerajinan batu alam premium dari kaki Gunung Merapi</p>
+
+      <div class="cp-steps-grid">
+        <!-- Step 1 -->
+        <div class="cp-step-card">
+          <div class="cp-step-number-wrap">
+            <span class="cp-step-number">1</span>
+          </div>
+          <div class="cp-step-content">
+            <h2 class="cp-step-title">Pilih Produk</h2>
+            <p class="cp-step-desc">Jelajahi katalog produk kerajinan batu kami. Gunakan filter kategori dan rentang harga untuk menemukan produk yang sesuai kebutuhan Anda.</p>
+            <ul class="cp-step-detail-list">
+              <li>Buka halaman Katalog</li>
+              <li>Pilih kategori (Alat Dapur, Interior, Eksterior, dll)</li>
+              <li>Klik produk untuk melihat detail lengkap</li>
+              <li>Pilih ukuran yang diinginkan</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="cp-step-card">
+          <div class="cp-step-number-wrap">
+            <span class="cp-step-number">2</span>
+          </div>
+          <div class="cp-step-content">
+            <h2 class="cp-step-title">Masukkan Keranjang</h2>
+            <p class="cp-step-desc">Setelah menemukan produk yang Anda inginkan, pilih ukuran dan jumlah, lalu klik tombol "Masukkan Keranjang".</p>
+            <ul class="cp-step-detail-list">
+              <li>Pilih ukuran produk (Kecil/Sedang/Besar/Extra Besar)</li>
+              <li>Tentukan jumlah yang diinginkan</li>
+              <li>Klik tombol hijau "Masukkan Keranjang"</li>
+              <li>Lanjutkan belanja atau langsung checkout</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="cp-step-card">
+          <div class="cp-step-number-wrap">
+            <span class="cp-step-number">3</span>
+          </div>
+          <div class="cp-step-content">
+            <h2 class="cp-step-title">Checkout & Pembayaran</h2>
+            <p class="cp-step-desc">Di halaman keranjang, periksa kembali pesanan Anda lalu klik Checkout. Anda akan diarahkan untuk mengisi data pengiriman dan memilih metode pembayaran.</p>
+            <ul class="cp-step-detail-list">
+              <li>Cek kembali item di keranjang</li>
+              <li>Klik tombol Checkout</li>
+              <li>Isi alamat pengiriman lengkap</li>
+              <li>Pilih metode pembayaran (Transfer Bank / COD / E-wallet)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="cp-step-card">
+          <div class="cp-step-number-wrap">
+            <span class="cp-step-number">4</span>
+          </div>
+          <div class="cp-step-content">
+            <h2 class="cp-step-title">Konfirmasi Pembayaran</h2>
+            <p class="cp-step-desc">Setelah melakukan pembayaran, segera lakukan konfirmasi melalui halaman Konfirmasi Pembayaran agar pesanan Anda diproses lebih cepat.</p>
+            <ul class="cp-step-detail-list">
+              <li>Lakukan transfer sesuai nominal</li>
+              <li>Screenshot bukti transfer</li>
+              <li>Upload bukti di halaman Konfirmasi Pembayaran</li>
+              <li>Tunggu konfirmasi dari kami (max 1x24 jam)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="cp-step-card">
+          <div class="cp-step-number-wrap">
+            <span class="cp-step-number">5</span>
+          </div>
+          <div class="cp-step-content">
+            <h2 class="cp-step-title">Pengiriman</h2>
+            <p class="cp-step-desc">Pesanan Anda akan dikemas dengan aman dan dikirim menggunakan jasa ekspedisi terpercaya. Kami akan mengirimkan nomor resi setelah barang dikirim.</p>
+            <ul class="cp-step-detail-list">
+              <li>Pengemasan aman menggunakan bubble wrap & kayu</li>
+              <li>Pengiriman via JNE / TIKI / SiCepat / J&T</li>
+              <li>Nomor resi dikirim via WhatsApp/Email</li>
+              <li>Estimasi tiba 2â€“5 hari kerja</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METODE PEMBAYARAN - GRADIENT CARDS -->
+  <section class="cp-dokumen-section">
+    <div class="container">
+      <h2 class="cp-dokumen-title">Metode pembayaran</h2>
+      <p class="cp-dokumen-subtitle">Pilih metode pembayaran yang paling nyaman untuk Anda</p>
+
+      <div class="cp-payment-grid">
+        <!-- BCA -->
+        <div class="cp-pay-card cp-pay-green">
+          <span class="cp-pay-category">TRANSFER BANK</span>
+          <div class="cp-pay-main">
+            <span class="cp-pay-name">BCA</span>
+          </div>
+          <div class="cp-pay-detail">
+            No. Rek <strong>1234567890</strong>
+          </div>
+          <div class="cp-pay-bottom">
+            <span>a/n BATU MERAPI</span>
+            <span class="cp-pay-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="rgba(255,255,255,0.25)"/><path d="M7 12h10M12 7v10" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- BRI -->
+        <div class="cp-pay-card cp-pay-blue">
+          <span class="cp-pay-category">TRANSFER BANK</span>
+          <div class="cp-pay-main">
+            <span class="cp-pay-name">BRI</span>
+          </div>
+          <div class="cp-pay-detail">
+            No. Rek <strong>0987654321</strong>
+          </div>
+          <div class="cp-pay-bottom">
+            <span>a/n BATU MERAPI</span>
+            <span class="cp-pay-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="rgba(255,255,255,0.25)"/><path d="M7 12h10M12 7v10" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- Mandiri -->
+        <div class="cp-pay-card cp-pay-purple">
+          <span class="cp-pay-category">TRANSFER BANK</span>
+          <div class="cp-pay-main">
+            <span class="cp-pay-name">Mandiri</span>
+          </div>
+          <div class="cp-pay-detail">
+            No. Rek <strong>1122334455</strong>
+          </div>
+          <div class="cp-pay-bottom">
+            <span>a/n BATU MERAPI</span>
+            <span class="cp-pay-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="rgba(255,255,255,0.25)"/><path d="M7 12h10M12 7v10" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- GoPay / OVO -->
+        <div class="cp-pay-card cp-pay-blue">
+          <span class="cp-pay-category">E-WALLET</span>
+          <div class="cp-pay-main">
+            <span class="cp-pay-name">GoPay / OVO</span>
+          </div>
+          <div class="cp-pay-detail">
+            No. HP <strong>082112345678</strong>
+          </div>
+          <div class="cp-pay-bottom">
+            <span>a/n BATU MERAPI</span>
+            <span class="cp-pay-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="rgba(255,255,255,0.25)"/><path d="M8 6h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2z" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="14" r="1" fill="#fff"/><path d="M10 6v2h4V6" stroke="#fff" stroke-width="1.5"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- COD -->
+        <div class="cp-pay-card cp-pay-yellow">
+          <span class="cp-pay-category cp-pay-cat-dark">BAYAR DI TEMPAT</span>
+          <div class="cp-pay-main">
+            <span class="cp-pay-name cp-pay-name-dark">COD</span>
+          </div>
+          <div class="cp-pay-detail cp-pay-detail-dark">
+            Cash on Delivery
+          </div>
+          <div class="cp-pay-bottom cp-pay-bottom-dark">
+            <span>Area Wonosobo & sekitarnya</span>
+            <span class="cp-pay-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="rgba(0,0,0,0.1)"/><path d="M8 12l3 3 5-6" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- QRIS -->
+        <div class="cp-pay-card cp-pay-green">
+          <span class="cp-pay-category">SCAN & BAYAR</span>
+          <div class="cp-pay-main">
+            <span class="cp-pay-name">QRIS</span>
+          </div>
+          <div class="cp-pay-detail">
+            Semua E-Wallet & M-Banking
+          </div>
+          <div class="cp-pay-bottom">
+            <span>Scan QR untuk bayar</span>
+            <span class="cp-pay-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="rgba(255,255,255,0.25)"/><rect x="7" y="7" width="4" height="4" rx="1" stroke="#fff" stroke-width="1.5"/><rect x="13" y="7" width="4" height="4" rx="1" stroke="#fff" stroke-width="1.5"/><rect x="7" y="13" width="4" height="4" rx="1" stroke="#fff" stroke-width="1.5"/><rect x="14" y="14" width="2" height="2" rx="0.5" fill="#fff"/></svg>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="cp-faq-section">
+    <div class="container">
+      <h2 class="cp-faq-title">Pertanyaan umum</h2>
+      <p class="cp-faq-subtitle">Temukan jawaban atas pertanyaan yang sering diajukan</p>
+      <div class="cp-faq-list" id="faq-container"></div>
+    </div>
+  </section>
+
+  <!-- CTA Hubungi -->
+  <section class="cp-cta-hubungi">
+    <div class="container" style="text-align: center;">
+      <h2 class="cp-cta-title">Masih Ada Pertanyaan?</h2>
+      <p class="cp-cta-desc">Tim kami siap membantu Anda melalui WhatsApp setiap hari pukul 08.00â€“21.00 WIB</p>
+      <a href="https://wa.me/6281234567890" target="_blank" rel="noreferrer" class="cp-cta-wa-btn">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 1.667c-4.595 0-8.333 3.738-8.333 8.333 0 1.47.384 2.847 1.054 4.047L1.667 18.333l4.39-1.023A8.28 8.28 0 0010 18.333c4.595 0 8.333-3.738 8.333-8.333S14.595 1.667 10 1.667z" fill="white"/>
+          <path d="M13.867 12.4c-.208-.104-1.23-.607-1.42-.676-.19-.07-.327-.104-.465.104-.138.208-.534.676-.655.815-.12.138-.242.156-.45.052-.208-.104-.88-.324-1.677-1.034-.62-.552-1.04-1.234-1.162-1.442-.12-.208-.013-.32.091-.424.094-.094.208-.242.312-.363.104-.12.138-.208.208-.347.07-.138.035-.26-.017-.363-.053-.104-.465-1.12-.638-1.534-.168-.403-.34-.348-.465-.355h-.403c-.138 0-.363.052-.553.26-.19.208-.723.707-.723 1.726s.74 2.003.844 2.143c.104.138 1.457 2.224 3.53 3.118.494.213.88.34 1.18.436.496.16.947.138 1.304.084.397-.062 1.23-.503 1.404-.988.173-.486.173-.903.12-.988-.052-.087-.19-.138-.398-.242z" fill="#43A047"/>
+        </svg>
+        Chat via WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-inner" style="display: flex; justify-content: center; align-items: center; text-align: center;">
+      <h2 class="cta-title" style="margin: 0; font-size: 30px; letter-spacing: -1px; text-transform: none;">
+        Pesan Produk Favoritmu Sekarang
+      </h2>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div
+        style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto; max-width: 520px;">
+        <div class="footer-logo" style="letter-spacing: 1px;">BATU<br />MERAPI</div>
+        <p class="footer-desc">
+          Pusat kerajinan batu alam premium dan ornamen tradisional berkualitas tinggi langsung dari kaki Gunung Merapi,
+          Wonosobo.
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">Batu Merapi Â© 2015â€“2026, All Rights Reserved</span>
+    </div>
+  </footer>
+
+  <script src="../js/products.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // FAQ
+      const faqs = [
+        { q: 'Apakah produk bisa custom ukuran?', a: 'Ya, kami melayani custom ukuran dengan waktu produksi 7â€“14 hari kerja. Hubungi kami via WhatsApp untuk informasi lebih lanjut.' },
+        { q: 'Bagaimana jika produk rusak saat pengiriman?', a: 'Semua produk dikemas dengan sangat aman. Jika terjadi kerusakan, dokumentasikan dan hubungi kami dalam 2Ã—24 jam. Kami akan segera menangani klaim Anda.' },
+        { q: 'Apakah ada garansi produk?', a: 'Produk kami terbuat dari batu alam asli yang sangat tahan lama. Kami memberikan garansi kepuasan produk selama 7 hari setelah penerimaan.' },
+        { q: 'Berapa lama waktu pengiriman?', a: 'Estimasi pengiriman 2â€“5 hari kerja untuk Pulau Jawa, 5â€“10 hari kerja untuk luar Jawa, setelah pembayaran dikonfirmasi.' }
+      ];
+
+      document.getElementById('faq-container').innerHTML = faqs.map((f, i) => `
+        <div class="cp-faq-item" onclick="this.classList.toggle('open')">
+          <div class="cp-faq-question">
+            <span class="cp-faq-q-text">${f.q}</span>
+            <span class="cp-faq-arrow">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+          <div class="cp-faq-answer">
+            <p>${f.a}</p>
+          </div>
+        </div>
+      `).join('');
+
+      // Katalog dropdown
+      const katalogBtn = document.getElementById('nav-katalog-btn');
+      const katalogDropdown = document.getElementById('nav-katalog-dropdown');
+      if (katalogBtn && katalogDropdown) {
+        katalogBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          katalogDropdown.style.display = katalogDropdown.style.display === 'none' ? 'block' : 'none';
+        });
+      }
+
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+
+</html>

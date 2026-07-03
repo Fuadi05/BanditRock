@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batu Merapi - Pusat Kerajinan Batu Alam Premium</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+  <!-- TopBar -->
+  <div class="topbar" id="topbar">
+    Selamat datang di Batu Merapi! Dapatkan kerajinan batu alam berkualitas terbaik untuk hunian Anda.
+    <button class="topbar-close" onclick="document.getElementById('topbar').style.display='none'" aria-label="Tutup"><i
+        data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar" onclick="document.getElementById('nav-katalog-dropdown').style.display='none'">
+    <div class="navbar-inner" onclick="event.stopPropagation()">
+      <a href="index.html" class="navbar-logo">BATU<br />MERAPI</a>
+
+      <div class="navbar-nav">
+        <a href="index.html" class="active">Beranda</a>
+        <div style="position: relative;">
+          <button id="nav-katalog-btn">
+            Katalog
+            <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+          </button>
+          <div id="nav-katalog-dropdown" style="background: var(--white); display:none; position: absolute; top: 110%; left: 0; border: 1px solid var(--gray-mid); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.1); min-width: 170px; z-index: 100; padding: 6px 0;">
+            <a href="katalog.html"
+              style="display: block; padding: 9px 18px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--gray-light);">Semua
+              Produk</a>
+            <a href="katalog.html?kategori=Alat Dapur" style="display: block; padding: 9px 18px; font-size: 13px;">Alat
+              Dapur</a>
+            <a href="katalog.html?kategori=Interior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Interior</a>
+            <a href="katalog.html?kategori=Eksterior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Eksterior</a>
+            <a href="katalog.html?kategori=Ornamen Dinding"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Ornamen Dinding</a>
+            <a href="custom-produk.html" style="display: block; padding: 9px 18px; font-size: 13px;">Custom Produk</a>
+            <a href="katalog.html?kategori=Dinding %26 Lantai"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Dinding & Lantai</a>
+          </div>
+        </div>
+        <a href="cara-pesan.html">Cara Pesan</a>
+        <a href="konfirmasi.html">Konfirmasi Pembayaran</a>
+        <a href="tentang.html">Tentang Kami</a>
+      </div>
+
+      <div class="navbar-right">
+        <form id="navbar-search-form" style="display: contents;">
+          <div class="search-bar">
+            <button type="submit"
+              style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+              <i data-lucide="search" style="width:16px; height:16px; color:var(--gray-text);"></i>
+            </button>
+            <input type="text" id="navbar-search-input" placeholder="Cari Produk">
+          </div>
+        </form>
+        <a href="keranjang.html" class="cart-btn">
+          <i data-lucide="shopping-cart" style="width:20px; height:20px;"></i>
+          <span class="cart-badge" id="navbar-cart-badge" style="display:none;">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero-section">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <h1 class="hero-title" style="text-transform: none; letter-spacing: 0.5px;">
+          TEMUKAN<br />KERAJINAN BATU<br />FAVORITMU
+        </h1>
+        <p class="hero-desc" style="max-width: 500px;">
+          Koleksi wastafel, cobek estetik, hingga dekorasi taman berkualitas tinggi yang dikerjakan langsung oleh
+          pengrajin ahli untuk hunian premium Anda.
+        </p>
+        <div class="hero-buttons">
+          <a href="katalog.html" class="btn-primary"
+            style="background: var(--grad-primary); border-radius: 9999px; padding: 12px 28px;">Belanja Sekarang</a>
+          <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" class="btn-primary"
+            style="background: var(--grad-primary); border-radius: 9999px; padding: 12px 28px; display: inline-flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 2px;">
+              <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.703 1.458h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+            </svg>
+            Hubungi
+          </a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="../images/hero_stone_1780322879376.png" alt="Hero Stone Craft"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
+        <div class="hero-img-ph" style="display:none">
+          <i data-lucide="image" style="width:36px; height:36px; color:var(--gray-mid);"></i>
+          <span style="font-size: 12px; color: var(--gray-text);">Hero Stone Craft</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Partner Strip -->
+  <div class="partner-strip" style="background: var(--grad-primary);">
+    <div class="partner-track" id="partner-track"></div>
+  </div>
+
+  <!-- Cek Pesanan -->
+  <section style="padding: 56px 0; border-bottom: 1px solid var(--gray-mid);">
+    <div class="container" style="text-align: center; max-width: 640px;">
+      <h2
+        style="font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 800; color: var(--green-dark); margin-bottom: 8px; text-transform: none;">
+        Cek Status Pesanan Anda
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 24px;">
+        Masukkan nomor order Anda untuk memantau status pembuatan dan pengiriman produk batu alam Anda secara real-time.
+      </p>
+      <form onsubmit="event.preventDefault(); openTrackModal(document.getElementById('lacak-input-home').value.trim())"
+        style="display: flex; gap: 8px; padding: 6px; border-radius: 10px; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-mid);">
+        <div style="display: flex; align-items: center; gap: 8px; flex: 1; padding-left: 10px;">
+          <span style="color: var(--gray-text); font-size: 16px; display: inline-flex; align-items: center;"><i
+              data-lucide="search" style="width: 1em; height: 1em;"></i></span>
+          <input id="lacak-input-home" required placeholder="Masukkan nomor order Anda... (Contoh: BM-2025-001)"
+            style="border: none; outline: none; width: 100%; font-size: 14px; color: var(--text-primary);">
+        </div>
+        <button type="submit" class="btn-primary"
+          style="background: var(--grad-primary); padding: 10px 24px; border-radius: 8px; font-size: 13px; font-weight: 700;">
+          Cek Pesanan
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Produk Baru -->
+  <section class="home-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Produk baru</h2>
+        <a href="katalog.html" class="section-link" style="color: var(--green-primary);">Lihat Semua <i data-lucide="arrow-right"
+            style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></a>
+      </div>
+      <div class="product-grid" id="new-products-grid"></div>
+    </div>
+  </section>
+
+  <!-- Terlaris -->
+  <section class="home-section gray-bg" style="">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Terlaris</h2>
+        <a href="katalog.html?sort=Rating+Tertinggi" class="section-link" style="color: var(--green-primary);">Lihat Semua <i
+            data-lucide="arrow-right"
+            style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></a>
+      </div>
+      <div class="product-grid" id="bestseller-grid"></div>
+    </div>
+  </section>
+
+  <!-- Kategori -->
+  <section class="home-section">
+    <div class="container">
+      <div class="section-header" style="margin-bottom: 32px;">
+        <h2 class="section-title" style="text-align: center; flex: 1;">Kategori</h2>
+      </div>
+      <div class="category-grid" id="category-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;"></div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-inner" style="display: flex; justify-content: center; align-items: center; text-align: center;">
+      <h2 class="cta-title" style="margin: 0; font-size: 30px; letter-spacing: -1px; text-transform: none;">
+        Pesan Produk Favoritmu Sekarang
+      </h2>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div
+        style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto; max-width: 520px;">
+        <div class="footer-logo" style="letter-spacing: 1px;">BATU<br />MERAPI</div>
+        <p class="footer-desc">
+          Pusat kerajinan batu alam premium dan ornamen tradisional berkualitas tinggi langsung dari kaki Gunung Merapi,
+          Wonosobo. Kami memadukan nilai seni tradisional dengan desain modern.
+        </p>
+        <div class="footer-socials" style="justify-content: center; margin-bottom: 16px;">
+          <!-- Icons omitted for brevity, keeping structure -->
+          <a href="#" class="social-btn">X</a>
+          <a href="#" class="social-btn">FB</a>
+          <a href="#" class="social-btn">IG</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">Batu Merapi © 2015–2026, All Rights Reserved</span>
+
+    </div>
+  </footer>
+
+  <script src="../js/products.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Setup Partner Strip
+      const track = document.getElementById('partner-track');
+      let trackHtml = '';
+      for (let i = 0; i < 20; i++) {
+        trackHtml += `
+          <span style="display: flex; gap: 32px;">
+            <div class="partner-badge" style="display: flex; align-items: center; justify-content: center;">
+              <img src="../images/logo-pemkab.png" alt="Logo Pemkab Wonosobo" style="height: 32px; width: auto; max-width: none; object-fit: contain;">
+            </div>
+            <div class="partner-badge" style="display: flex; align-items: center; justify-content: center;">
+              <img src="../images/logo-geopark.png" alt="Logo Geopark Dieng" style="height: 32px; width: auto; max-width: none; object-fit: contain;">
+            </div>
+          </span>
+        `;
+      }
+      track.innerHTML = trackHtml;
+
+      // Product Card HTML Generator
+      function createProductCard(p) {
+        const sizeLabels = ['S', 'M', 'L', 'XL'];
+        const sizesHtml = sizeLabels.map(s =>
+          `<span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--gray-light); color:var(--gray-dark); border:1px solid var(--gray-mid);">${s}</span>`
+        ).join('');
+        return `
+          <a href="detail.html?id=${p.id}" class="product-card">
+            <div class="product-card-img" style="position:relative; aspect-ratio:1/1; overflow:hidden; background:var(--gray-light);">
+              <img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;transition:transform .35s;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+              <div class="product-img-ph" style="display:none;">
+                <i data-lucide="image" style="width:32px;height:32px;color:var(--gray-mid);"></i>
+              </div>
+            </div>
+            <div class="product-card-body">
+              <div class="product-category">${p.category}</div>
+              <h3 class="product-card-name" style="font-size:clamp(12px,1.2vw,15px);">${p.name}</h3>
+              <div class="price-row">
+                <span class="product-price" style="color:var(--green-primary);">${p.price}</span>
+                ${p.originalPrice ? `<span class="price-old">${p.originalPrice}</span>` : ''}
+              </div>
+              <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;">${sizesHtml}</div>
+            </div>
+          </a>
+        `;
+      }
+
+
+      // Render Produk Baru (First 4)
+      if (window.products) {
+        const newProductsGrid = document.getElementById('new-products-grid');
+        newProductsGrid.innerHTML = window.products.slice(0, 4).map(createProductCard).join('');
+
+        // Render Terlaris (Next 4)
+        const bestSellerGrid = document.getElementById('bestseller-grid');
+        bestSellerGrid.innerHTML = window.products.slice(4, 8).map(createProductCard).join('');
+      }
+
+      // Render Kategori
+      if (window.categories) {
+        const catGrid = document.getElementById('category-grid');
+        catGrid.innerHTML = window.categories.map(cat => `
+          <a href="katalog.html?kategori=${encodeURIComponent(cat.name)}" class="cat-card">
+            ${cat.image
+            ? `<img src="${cat.image}" alt="${cat.name}" style="width:100%; height:100%; object-fit:cover;">`
+            : `<div class="cat-card-ph">
+                   <i data-lucide="image" style="width:28px; height:28px; color:var(--gray-mid);"></i>
+                 </div>`
+          }
+            <div class="cat-label" style="background: linear-gradient(to top, var(--green-dark) 10%, transparent 100%);">
+              <span style="font-size: 16px; font-weight: 800;">${cat.name}</span>
+            </div>
+          </a>
+        `).join('');
+      }
+
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+
+</html>
+
+
