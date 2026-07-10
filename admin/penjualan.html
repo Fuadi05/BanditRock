@@ -122,71 +122,72 @@
       renderSales();
     });
 
-    function changeStatus(index, newStatus) {
-      let sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
-      if(sales[index]) {
-        sales[index].status = newStatus;
-        localStorage.setItem('banditrock_sales', JSON.stringify(sales));
-        renderSales();
-      }
-    }
+    async function renderSales() {
+      const tbody = document.getElementById('sales-table-body');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px;">Memuat data...</td></tr>';
 
-    function renderSales() {
-      const sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
-      document.getElementById('total-rows').textContent = sales.length;
+      try {
+        const res = await fetch(`${API_BASE}/admin/orders`, {
+          headers: authHeaders()
+        });
+        const json = await res.json();
 
-      let html = '';
-      if(sales.length === 0) {
-        html = `<tr><td colspan="7" style="text-align:center; padding:32px;">Belum ada pesanan</td></tr>`;
-      } else {
-        sales.forEach((s, i) => {
-          let badgeClass = s.status.toLowerCase().replace(' ', '');
+        if (!json.success || !json.data) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px;">Gagal memuat data</td></tr>';
+          return;
+        }
+
+        const orders = json.data;
+        document.getElementById('total-rows').textContent = orders.length;
+
+        if (orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px;">Belum ada pesanan</td></tr>';
+          return;
+        }
+
+        const statusLabels = {
+          'pending_payment': 'Menunggu Bayar',
+          'waiting_verification': 'Verifikasi',
+          'paid': 'Lunas',
+          'cancelled': 'Dibatalkan'
+        };
+
+        let html = '';
+        orders.forEach(o => {
+          const tgl = new Date(o.created_at).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'});
+          const statusLabel = statusLabels[o.status] || o.status;
+
           html += `
             <tr>
-              <td><strong>${s.id}</strong></td>
-              <td>${s.pelanggan}</td>
-              <td>${s.tgl}</td>
-              <td><strong>${formatRpAdmin(s.total)}</strong></td>
-              <td>${s.metode}</td>
+              <td><strong>${o.id}</strong></td>
+              <td>${o.nama_pembeli}</td>
+              <td>${tgl}</td>
+              <td><strong>${formatRpAdmin(o.total_tagihan)}</strong></td>
+              <td>${o.telepon}</td>
+              <td><span class="badge">${statusLabel}</span></td>
               <td>
-                <select class="badge ${badgeClass}" onchange="changeStatus(${i}, this.value)" style="border:none; cursor:pointer; outline:none; font-family:inherit;">
-                  <option value="Konfirmasi" ${s.status === 'Konfirmasi' ? 'selected':''}>Konfirmasi</option>
-                  <option value="Disetujui" ${s.status === 'Disetujui' ? 'selected':''}>Disetujui</option>
-                  <option value="Diproses" ${s.status === 'Diproses' ? 'selected':''}>Diproses</option>
-                  <option value="Dibatalkan" ${s.status === 'Dibatalkan' ? 'selected':''}>Dibatalkan</option>
-                  <option value="Dikirim" ${s.status === 'Dikirim' ? 'selected':''}>Dikirim</option>
-                </select>
-              </td>
-              <td>
-                <button onclick="viewDetails(${i})" style="border:none; background:none; cursor:pointer; color:var(--info); font-weight:600;">Lihat Detail</button>
+                <button onclick="viewDetails('${o.id}')" style="border:none; background:none; cursor:pointer; color:var(--info); font-weight:600;">Lihat Detail</button>
               </td>
             </tr>
           `;
         });
+        tbody.innerHTML = html;
+        if (window.lucide) lucide.createIcons();
+      } catch (err) {
+        console.error('Gagal memuat pesanan:', err);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--danger);">Gagal terhubung ke server</td></tr>';
       }
-      document.getElementById('sales-table-body').innerHTML = html;
-      if(window.lucide) lucide.createIcons();
     }
 
-    function viewDetails(index) {
-      const sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
-      const s = sales[index];
-      if(!s) return;
-      
+    async function viewDetails(orderId) {
+      // Tampilkan modal bukti pembayaran (jika ada)
       const imgEl = document.getElementById('rec-img');
       const noImgEl = document.getElementById('rec-no-img');
-
-      if (s.bukti) {
-        imgEl.src = s.bukti;
-        imgEl.style.display = 'inline-block';
-        noImgEl.style.display = 'none';
-      } else {
-        imgEl.style.display = 'none';
-        noImgEl.style.display = 'block';
-      }
-      
+      imgEl.style.display = 'none';
+      noImgEl.style.display = 'block';
+      noImgEl.textContent = 'Fitur lihat bukti pembayaran akan tersedia setelah ada transaksi masuk.';
       document.getElementById('receipt-modal').style.display = 'flex';
-      if(window.lucide) lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function closeReceipt() {

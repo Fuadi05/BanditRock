@@ -90,6 +90,92 @@ router.use(verifyToken)
 
 
 // ─────────────────────────────────────────────
+// POST /api/admin/produk
+// Menambahkan produk baru ke katalog
+// ─────────────────────────────────────────────
+router.post('/produk', async (req, res) => {
+  try {
+    const { nama, kategori, harga_min, harga_max, tipe_harga, deskripsi, image_url, status_stok } = req.body
+
+    if (!nama || !kategori || harga_min === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Data tidak lengkap. Diperlukan: nama, kategori, harga_min.'
+      })
+    }
+
+    const { data, error } = await supabase
+      .from('products')
+      .insert({
+        nama,
+        kategori,
+        harga_min: harga_min || 0,
+        harga_max: harga_max || harga_min || 0,
+        tipe_harga: tipe_harga || 'fixed',
+        deskripsi: deskripsi || '',
+        image_url: image_url || '',
+        status_stok: status_stok || 'ready'
+      })
+      .select()
+
+    if (error) throw error
+
+    res.status(201).json({
+      success: true,
+      message: '✅ Produk berhasil ditambahkan!',
+      data: data[0]
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal menambahkan produk.',
+      error: err.message
+    })
+  }
+})
+
+
+// ─────────────────────────────────────────────
+// GET /api/admin/orders
+// Mengambil seluruh pesanan (semua status)
+// ─────────────────────────────────────────────
+router.get('/orders', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        id,
+        nama_pembeli,
+        telepon,
+        total_tagihan,
+        status,
+        created_at,
+        order_items (
+          qty,
+          harga_disepakati,
+          products ( nama )
+        )
+      `)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    res.json({
+      success: true,
+      count: data.length,
+      data
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengambil data pesanan.',
+      error: err.message
+    })
+  }
+})
+
+
+// ─────────────────────────────────────────────
 // POST /api/admin/order
 // Input pesanan manual dari admin (Sesi 2 & 3)
 // ─────────────────────────────────────────────

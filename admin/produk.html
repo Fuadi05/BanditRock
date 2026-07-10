@@ -91,37 +91,54 @@
     </div>
   </main>
 
-  <script src="../js/products.js"></script>
   <script src="js/admin.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('total-products').textContent = window.products.length;
-      
-      let html = '';
-      window.products.forEach(p => {
-        html += `
-          <tr>
-            <td><input type="checkbox"></td>
-            <td style="display: flex; align-items: center; gap: 12px;">
-              <img src="${p.image}" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/32'">
-              <strong>${p.name}</strong>
-            </td>
-            <td>${p.category}</td>
-            <td>${formatRpAdmin(p.priceNum)}</td>
-            <td>
-              <label style="display:inline-flex; align-items:center; cursor:pointer;">
-                <input type="checkbox" checked style="margin-right: 8px;"> Aktif
-              </label>
-            </td>
-            <td>
-              <button style="border:none; background:none; cursor:pointer; color:var(--text-muted);"><i data-lucide="edit" style="width:16px;"></i></button>
-              <button style="border:none; background:none; cursor:pointer; color:var(--danger); margin-left:8px;"><i data-lucide="trash-2" style="width:16px;"></i></button>
-            </td>
-          </tr>
-        `;
-      });
-      document.getElementById('product-table-body').innerHTML = html;
-      lucide.createIcons();
+    document.addEventListener('DOMContentLoaded', async () => {
+      const tbody = document.getElementById('product-table-body');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px;">Memuat produk...</td></tr>';
+
+      try {
+        const res = await fetch(`${API_BASE}/produk`);
+        const json = await res.json();
+
+        if (!json.success || !json.data || json.data.length === 0) {
+          document.getElementById('total-products').textContent = '0';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px;">Belum ada produk. Silakan tambah produk baru.</td></tr>';
+          return;
+        }
+
+        const products = json.data;
+        document.getElementById('total-products').textContent = products.length;
+
+        let html = '';
+        products.forEach(p => {
+          html += `
+            <tr>
+              <td><input type="checkbox"></td>
+              <td style="display: flex; align-items: center; gap: 12px;">
+                <img src="${p.image_url || 'https://via.placeholder.com/32'}" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/32'">
+                <strong>${p.nama}</strong>
+              </td>
+              <td>${p.kategori}</td>
+              <td>${formatRpAdmin(p.harga_min)}</td>
+              <td>
+                <label style="display:inline-flex; align-items:center; cursor:pointer;">
+                  <input type="checkbox" checked style="margin-right: 8px;"> Aktif
+                </label>
+              </td>
+              <td>
+                <button style="border:none; background:none; cursor:pointer; color:var(--text-muted);"><i data-lucide="edit" style="width:16px;"></i></button>
+                <button style="border:none; background:none; cursor:pointer; color:var(--danger); margin-left:8px;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = html;
+        if (window.lucide) lucide.createIcons();
+      } catch (err) {
+        console.error('Gagal memuat produk:', err);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--danger);">Gagal terhubung ke server</td></tr>';
+      }
     });
   </script>
 </body>

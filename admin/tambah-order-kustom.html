@@ -74,7 +74,7 @@
 
             <div class="form-group" style="margin-bottom:0;">
               <label>Nomor Telepon <span style="color:var(--danger)">*</span></label>
-              <input type="text" class="form-control" placeholder="0812xxxxxxxx" required>
+              <input type="text" id="cust-phone" class="form-control" placeholder="0812xxxxxxxx" required>
             </div>
 
             <div class="form-group" style="margin-bottom:0;">
@@ -143,26 +143,49 @@
 
   <script src="js/admin.js"></script>
   <script>
-    document.getElementById('add-custom-order-form').addEventListener('submit', (e) => {
+    document.getElementById('add-custom-order-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
-      
-      const newOrder = {
-        id: 'CST-' + Math.floor(Math.random() * 10000),
-        pelanggan: document.getElementById('cust-name').value,
-        tgl: new Date().toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}),
-        total: 0,
-        metode: 'Order Kustom',
-        status: 'Konfirmasi',
-        provinsi: document.getElementById('cust-prov').value
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.textContent = 'Menyimpan...';
+      submitBtn.disabled = true;
+
+      // Note: Karena UI form order kustom belum memiliki daftar item secara spesifik, 
+      // kita kirimkan data dummy product_id untuk memenuhi schema database.
+      // Nantinya Anda bisa mengembangkan UI untuk memilih produk secara spesifik.
+      const payload = {
+        nama_pembeli: document.getElementById('cust-name').value,
+        telepon: document.getElementById('cust-phone').value,
+        items: [
+          {
+            product_id: "00000000-0000-0000-0000-000000000000", // Ganti dengan ID produk "Order Kustom" di DB jika ada
+            qty: 1,
+            harga_disepakati: 0 // Harga 0, bisa diedit nanti, atau tambahkan input harga di form
+          }
+        ]
       };
       
-      sales.unshift(newOrder);
-      localStorage.setItem('banditrock_sales', JSON.stringify(sales));
-      
-      alert('Order Kustom berhasil disimpan!');
-      window.location.href = 'penjualan.html';
+      try {
+        const res = await fetch(`${API_BASE}/admin/order`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(payload)
+        });
+        
+        const json = await res.json();
+        if (json.success) {
+          alert('Order Kustom berhasil disimpan ke database!');
+          window.location.href = 'penjualan.html';
+        } else {
+          alert('Gagal: ' + (json.message || 'Terjadi kesalahan'));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Tidak dapat terhubung ke server.');
+      } finally {
+        submitBtn.textContent = 'Save & Publish';
+        submitBtn.disabled = false;
+      }
     });
   </script>
 </body>

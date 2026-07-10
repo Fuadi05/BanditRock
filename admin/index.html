@@ -107,54 +107,53 @@
 
   <script src="js/admin.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Load sales to calculate dashboard stats
-      const sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
-      
-      let stat = {
-        'Konfirmasi': 0,
-        'Disetujui': 0,
-        'Diproses': 0,
-        'Dibatalkan': 0,
-        'Dikirim': 0
-      };
-
-      let provStat = {};
-
-      sales.forEach(s => {
-        if(stat[s.status] !== undefined) stat[s.status]++;
-        
-        let p = s.provinsi || 'Lainnya';
-        provStat[p] = (provStat[p] || 0) + 1;
-      });
-
-      document.getElementById('c-konf').textContent = stat['Konfirmasi'];
-      document.getElementById('c-setuju').textContent = stat['Disetujui'];
-      document.getElementById('c-proses').textContent = stat['Diproses'];
-      document.getElementById('c-batal').textContent = stat['Dibatalkan'];
-      document.getElementById('c-kirim').textContent = stat['Dikirim'];
-
-      // Render province table
-      const provArr = Object.keys(provStat).map(k => ({ name: k, count: provStat[k] })).sort((a,b) => b.count - a.count);
-      const provColors = ['#A78BFA', '#FBBF24', '#38BDF8', '#E2E8F0', '#F87171'];
-      let provHtml = '';
-      if(provArr.length === 0) {
-        provHtml = `<tr><td colspan="3" style="text-align:center;">Belum ada data penjualan</td></tr>`;
-      } else {
-        provArr.forEach((p, i) => {
-          provHtml += `
-            <tr>
-              <td>${i+1}</td>
-              <td style="display:flex; align-items:center; gap:8px;">
-                <div style="width:12px; height:12px; border-radius:50%; background:${provColors[i % provColors.length]};"></div>
-                ${p.name}
-              </td>
-              <td>${p.count}</td>
-            </tr>
-          `;
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Ambil data pesanan dari API untuk statistik dasbor
+      try {
+        const res = await fetch(`${API_BASE}/admin/orders`, {
+          headers: authHeaders()
         });
+        const json = await res.json();
+
+        if (json.success && json.data) {
+          const orders = json.data;
+          
+          // Mapping status database ke label UI
+          let stat = {
+            'Konfirmasi': 0,   // pending_payment
+            'Disetujui': 0,    // waiting_verification
+            'Diproses': 0,     // paid
+            'Dibatalkan': 0,   // cancelled
+            'Dikirim': 0       // (belum ada di DB, reserved)
+          };
+
+          const statusMap = {
+            'pending_payment': 'Konfirmasi',
+            'waiting_verification': 'Disetujui',
+            'paid': 'Diproses',
+            'cancelled': 'Dibatalkan'
+          };
+
+          orders.forEach(o => {
+            const label = statusMap[o.status] || 'Konfirmasi';
+            if (stat[label] !== undefined) stat[label]++;
+          });
+
+          document.getElementById('c-konf').textContent = stat['Konfirmasi'];
+          document.getElementById('c-setuju').textContent = stat['Disetujui'];
+          document.getElementById('c-proses').textContent = stat['Diproses'];
+          document.getElementById('c-batal').textContent = stat['Dibatalkan'];
+          document.getElementById('c-kirim').textContent = stat['Dikirim'];
+
+          // Tabel provinsi — belum ada data provinsi di tabel orders, tampilkan kosong
+          document.getElementById('prov-table').innerHTML = orders.length === 0
+            ? '<tr><td colspan="3" style="text-align:center;">Belum ada data penjualan</td></tr>'
+            : '<tr><td colspan="3" style="text-align:center;">Belum ada data penjualan</td></tr>';
+        }
+      } catch (err) {
+        console.error('Gagal memuat data dasbor:', err);
+        document.getElementById('prov-table').innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--danger);">Gagal memuat data</td></tr>';
       }
-      document.getElementById('prov-table').innerHTML = provHtml;
     });
   </script>
 </body>

@@ -130,30 +130,41 @@
 
   <script src="js/admin.js"></script>
   <script>
-    document.getElementById('add-product-form').addEventListener('submit', (e) => {
+    document.getElementById('add-product-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
-      const newProd = {
-        id: 'prod-' + Date.now(),
-        name: document.getElementById('p-name').value,
-        category: document.getElementById('p-cat').value,
-        image: document.getElementById('p-img').value,
-        priceNum: parseInt(document.getElementById('p-price').value),
-        price: 'Rp ' + parseInt(document.getElementById('p-price').value).toLocaleString('id-ID'),
-        rating: 5.0,
-        ratingCount: 0,
-        desc: document.getElementById('p-desc').value,
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.textContent = 'Menyimpan...';
+      submitBtn.disabled = true;
+
+      const produk = {
+        nama: document.getElementById('p-name').value,
+        kategori: document.getElementById('p-cat').value,
+        harga_min: parseInt(document.getElementById('p-price').value) || 0,
+        harga_max: parseInt(document.getElementById('p-price').value) || 0,
+        deskripsi: document.getElementById('p-desc').value,
+        image_url: document.getElementById('p-img').value,
       };
 
-      const existingStr = localStorage.getItem('banditrock_admin_products');
-      let arr = [];
-      if(existingStr) arr = JSON.parse(existingStr);
-      
-      arr.unshift(newProd);
-      localStorage.setItem('banditrock_admin_products', JSON.stringify(arr));
+      try {
+        const res = await fetch(`${API_BASE}/admin/produk`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(produk)
+        });
+        const json = await res.json();
 
-      alert('Produk berhasil ditambahkan!');
-      window.location.href = 'produk.html';
+        if (json.success) {
+          alert('Produk berhasil ditambahkan ke database!');
+          window.location.href = 'produk.html';
+        } else {
+          alert('Gagal: ' + (json.message || 'Terjadi kesalahan'));
+        }
+      } catch (err) {
+        alert('Tidak dapat terhubung ke server.');
+      } finally {
+        submitBtn.textContent = 'Save & Publish';
+        submitBtn.disabled = false;
+      }
     });
   </script>
 </body>

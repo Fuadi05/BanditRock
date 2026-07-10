@@ -63,16 +63,38 @@
 
   <script src="js/admin.js"></script>
   <script>
-    document.getElementById('login-form').addEventListener('submit', (e) => {
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const user = document.getElementById('username').value;
       const pass = document.getElementById('password').value;
+      const errorEl = document.getElementById('error-msg');
+      const submitBtn = e.target.querySelector('button[type="submit"]');
       
-      if(user === 'admin' && pass === 'admin123') {
-        localStorage.setItem('banditrock_admin_auth', 'true');
-        window.location.href = 'index.html';
-      } else {
-        document.getElementById('error-msg').style.display = 'block';
+      errorEl.style.display = 'none';
+      submitBtn.textContent = 'Memproses...';
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user, password: pass })
+        });
+        const data = await res.json();
+
+        if (data.success && data.data && data.data.token) {
+          localStorage.setItem('banditrock_token', data.data.token);
+          window.location.href = 'index.html';
+        } else {
+          errorEl.textContent = data.message || 'Login gagal!';
+          errorEl.style.display = 'block';
+        }
+      } catch (err) {
+        errorEl.textContent = 'Tidak dapat terhubung ke server.';
+        errorEl.style.display = 'block';
+      } finally {
+        submitBtn.textContent = 'Masuk ke Panel';
+        submitBtn.disabled = false;
       }
     });
   </script>

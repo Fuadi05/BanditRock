@@ -86,54 +86,13 @@
           </div>
         </div>
 
-        <!-- Chart Container -->
-        <div style="position: relative; height: 300px; display: flex; align-items: flex-end; justify-content: space-between; border-left: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 0 24px;">
-          
-          <!-- Y-Axis Labels -->
-          <div style="position: absolute; left: -32px; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: space-between; color: var(--text-muted); font-size: 12px;">
-            <span>50k</span>
-            <span>40k</span>
-            <span>30k</span>
-            <span>20k</span>
-            <span>10k</span>
-            <span>0k</span>
-          </div>
-
-          <!-- Mock Bars -->
-          <div style="height: 35%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 65%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 85%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 70%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 25%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 82%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 60%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 30%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 55%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 85%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 70%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 25%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 82%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 60%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
-          <div style="height: 30%; width: 24px; background: #A78BFA; border-radius: 4px 4px 0 0;"></div>
+        <!-- Chart Container (Dinamis) -->
+        <div id="chart-container" style="position: relative; height: 300px; display: flex; align-items: flex-end; justify-content: center; border-left: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 0 24px;">
+          <p style="color: var(--text-muted); font-size: 14px;">Belum ada data laporan penjualan.</p>
         </div>
 
         <!-- X-Axis Labels -->
-        <div style="display: flex; justify-content: space-between; padding: 12px 24px 0 24px; margin-left: 1px; color: var(--text-muted); font-size: 12px;">
-          <span>Mon</span>
-          <span>Tue</span>
-          <span>Wed</span>
-          <span style="font-weight:bold; color:var(--text-main);">Thu</span>
-          <span>Fri</span>
-          <span>Sat</span>
-          <span>Sun</span>
-          <span>Mon</span>
-          <span>Tue</span>
-          <span>Wed</span>
-          <span style="font-weight:bold; color:var(--text-main);">Thu</span>
-          <span>Fri</span>
-          <span>Sat</span>
-          <span>Sun</span>
-          <span>Mon</span>
+        <div id="chart-labels" style="display: flex; justify-content: center; padding: 12px 24px 0 24px; color: var(--text-muted); font-size: 12px;">
         </div>
         
       </div>
@@ -145,60 +104,52 @@
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
       
-      // Ambil data pertama kali (Bulan 1 / Januari)
-      fetchLaporanData(1);
+      // Set default bulan ke bulan saat ini
+      const currentMonth = new Date().getMonth() + 1;
+      document.getElementById('filter-bulan').value = currentMonth;
+      
+      // Ambil data pertama kali
+      fetchLaporanData();
 
       // Event listener ketika filter bulan diubah
       document.getElementById('filter-bulan').addEventListener('change', function() {
-        const bulan = this.value;
         document.getElementById('rata-rata').textContent = 'Loading...';
-        fetchLaporanData(bulan);
+        fetchLaporanData();
       });
-
-      // Event listener ketika tanggal diubah
-      const dateFrom = document.getElementById('date-from');
-      const dateTo = document.getElementById('date-to');
-      
-      const handleDateChange = () => {
-        if(dateFrom.value || dateTo.value) {
-          const bulan = document.getElementById('filter-bulan').value;
-          document.getElementById('rata-rata').textContent = 'Loading...';
-          fetchLaporanData(bulan, true);
-        }
-      };
-
-      dateFrom.addEventListener('change', handleDateChange);
-      dateTo.addEventListener('change', handleDateChange);
     });
 
-    function fetchLaporanData(bulan, isDateFilter = false) {
-      // Front-end (Vanilla JS): Menjalankan fetch ke API
-      fetch(`https://batumerapi.biz.id/api/laporan?bulan=${bulan}`)
-        .then(response => response.json())
-        .then(data => {
-          // Menerima data JSON dari Back-end dan memperbarui teks di HTML
-          if (data && data.mean !== undefined) {
-            document.getElementById('rata-rata').textContent = formatRpAdmin(data.mean);
-          }
-        })
-        .catch(error => {
-          // Fallback simulasi jika API/Back-end belum benar-benar ada
-          console.log("Simulasi fallback: Menghitung rata-rata harian bulan " + bulan + " di dalam memori...");
-          setTimeout(() => {
-            // Simulasi data berbeda tiap bulan
-            let baseVal = 500000;
-            let simulatedMean = baseVal * bulan; // Sekadar simulasi
-            if (simulatedMean > 3000000) simulatedMean = 3000000 - (bulan * 10000);
-            
-            // Jika filter tanggal aktif, simulasikan perhitungan rata-rata rentang tanggal tsb
-            if (isDateFilter) {
-              simulatedMean = simulatedMean * 1.2; // Sedikit dinaikkan untuk simulasi
-            }
+    async function fetchLaporanData() {
+      const bulan = document.getElementById('filter-bulan').value;
+      const year = new Date().getFullYear();
+      const bulanStr = `${year}-${String(bulan).padStart(2, '0')}`;
 
-            // Memperbarui UI
-            document.getElementById('rata-rata').textContent = formatRpAdmin(simulatedMean);
-          }, 500); // Simulasi delay jaringan
+      try {
+        const res = await fetch(`${API_BASE}/admin/laporan?bulan=${bulanStr}`, {
+          headers: authHeaders()
         });
+        const json = await res.json();
+
+        if (json.success && json.ringkasan) {
+          const { total_transaksi, total_pendapatan } = json.ringkasan;
+          
+          if (total_transaksi === 0) {
+            document.getElementById('rata-rata').textContent = 'Rp 0';
+            document.getElementById('chart-container').innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">Belum ada transaksi lunas di bulan ini.</p>';
+            document.getElementById('chart-labels').innerHTML = '';
+          } else {
+            const rataRata = Math.round(total_pendapatan / total_transaksi);
+            document.getElementById('rata-rata').textContent = formatRpAdmin(rataRata);
+            // Render data laporan jika ada
+            document.getElementById('chart-container').innerHTML = `<p style="color: var(--primary); font-size: 16px; font-weight: 700;">${total_transaksi} transaksi — Total: ${formatRpAdmin(total_pendapatan)}</p>`;
+          }
+        } else {
+          document.getElementById('rata-rata').textContent = 'Rp 0';
+        }
+      } catch (err) {
+        console.error('Gagal memuat laporan:', err);
+        document.getElementById('rata-rata').textContent = 'Gagal memuat';
+        document.getElementById('chart-container').innerHTML = '<p style="color: var(--danger); font-size: 14px;">Gagal terhubung ke server.</p>';
+      }
     }
   </script>
 </body>
