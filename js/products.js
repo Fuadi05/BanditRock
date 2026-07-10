@@ -27,7 +27,7 @@ function formatRupiah(number) {
 // Fungsi utama untuk mengambil data dari backend
 window.fetchProducts = async () => {
   try {
-    const res = await fetch('http://localhost:3000/api/produk');
+    const res = await fetch('https://batumerapi.biz.id/api/produk');
     const json = await res.json();
     
     if (json.success && json.data) {
