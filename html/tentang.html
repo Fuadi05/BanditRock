@@ -72,12 +72,6 @@
     </div>
   </section>
 
-  <!-- STATS -->
-  <section style="padding: 48px 0; border-bottom: 1px solid var(--gray-mid);">
-    <div class="container">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;" id="stats-container"></div>
-    </div>
-  </section>
 
   <!-- CERITA KAMI -->
   <section style="padding: 64px 0;">
@@ -123,14 +117,6 @@
     </div>
   </section>
 
-  <!-- TIM KAMI -->
-  <section style="padding: 64px 0;">
-    <div class="container">
-      <h2 class="section-title" style="text-align: center; margin-bottom: 8px;">Tim kami</h2>
-      <p style="text-align:center; color:var(--gray-text); font-size:14px; margin-bottom:36px;">Orang-orang hebat di balik setiap karya</p>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;" id="team-container"></div>
-    </div>
-  </section>
 
   <!-- LOKASI -->
   <section style="padding: 64px 0;">
@@ -186,22 +172,6 @@
   <script src="../js/main.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Stats
-      const stats = [
-        { number: '5.000+', label: 'Produk Terjual', icon: 'package' },
-        { number: '3.200+', label: 'Pelanggan Puas', icon: 'users' },
-        { number: '100+', label: 'Produk Tersedia', icon: 'grid' },
-        { number: '8+', label: 'Tahun Pengalaman', icon: 'award' }
-      ];
-      const statGrads = ['var(--grad-primary)', 'var(--grad-yellow)', 'var(--grad-primary)', 'var(--grad-yellow)'];
-      const statTextColors = ['var(--white)', 'var(--gray-dark)', 'var(--white)', 'var(--gray-dark)'];
-      document.getElementById('stats-container').innerHTML = stats.map((s, i) => `
-        <div style="background:${statGrads[i]}; border-radius:var(--radius-md); padding:24px 20px; text-align:center; box-shadow:var(--shadow-md); transition:transform .2s;" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''">
-          <div style="width:48px;height:48px;border-radius:50%;background:${i%2!==0?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.2)'};display:flex;align-items:center;justify-content:center;margin:0 auto 12px;"><i data-lucide="${s.icon}" style="width:24px;height:24px;color:${statTextColors[i]};"></i></div>
-          <div style="font-size:34px; font-weight:900; color:${statTextColors[i]}; line-height:1;">${s.number}</div>
-          <div style="font-size:13px; color:${i%2!==0?'var(--gray-dark)':'rgba(255,255,255,0.85)'}; margin-top:6px; font-weight:600;">${s.label}</div>
-        </div>
-      `).join('');
 
       // Values
       const values = [
@@ -262,23 +232,6 @@
       timelineHtml += `</div>`;
       document.getElementById('timeline-container').innerHTML = timelineHtml;
 
-      // Team
-      const teamMembers = [
-        { name: 'Budi Santoso', role: 'Founder & Master Craftsman', initial: 'B', color: 'var(--yellow-primary)', icon: 'star' },
-        { name: 'Sari Wulandari', role: 'Head of Operations', initial: 'S', color: 'var(--green-primary)', icon: 'settings' },
-        { name: 'Ahmad Fauzi', role: 'Lead Stone Carver', initial: 'A', color: 'var(--green-dark)', icon: 'hammer' },
-        { name: 'Dewi Rahayu', role: 'Customer Relations', initial: 'D', color: 'var(--yellow-primary)', icon: 'heart' }
-      ];
-      document.getElementById('team-container').innerHTML = teamMembers.map((t, i) => `
-        <div style="background: ${i % 2 === 0 ? 'var(--grad-primary)' : 'var(--grad-yellow)'}; color: ${i % 2 === 0 ? 'var(--white)' : 'var(--gray-dark)'}; border-radius: var(--radius-md); padding: 28px 20px; text-align: center; border: none; box-shadow: var(--shadow-md); transition:transform .2s;" onmouseenter="this.style.transform='translateY(-6px)'" onmouseleave="this.style.transform=''">
-          <div style="position:relative; width:72px; height:72px; margin:0 auto 14px;">
-            <div style="width:72px; height:72px; border-radius:50%; background:${t.color}; color:var(--white); font-weight:900; font-size:28px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-sm);">${t.initial}</div>
-            <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:${i % 2 === 0 ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.1)'};display:flex;align-items:center;justify-content:center;border:2px solid ${i % 2 === 0 ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.2)'};"><i data-lucide="${t.icon}" style="width:10px;height:10px;color:${i % 2 === 0 ? 'var(--white)' : 'var(--gray-dark)'};"></i></div>
-          </div>
-          <div style="font-weight: 700; font-size: 15px; margin-bottom: 5px;">${t.name}</div>
-          <div style="font-size: 12px; color: ${i % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.7)'}; background:${i % 2 === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.06)'}; border-radius:99px; padding:3px 10px; display:inline-block;">${t.role}</div>
-        </div>
-      `).join('');
 
       // Location
       const locationInfo = [

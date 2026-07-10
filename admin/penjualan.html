@@ -19,21 +19,22 @@
     
     <div class="sidebar-menu">
       <div class="menu-group">
-        <div class="menu-label">Main Menu</div>
-        <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dashboard</a>
+        <div class="menu-label">Menu Utama</div>
+        <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dasbor</a>
         <a href="penjualan.html" class="menu-item active"><i data-lucide="shopping-cart"></i> Penjualan Produk</a>
         <a href="laporan.html" class="menu-item"><i data-lucide="star"></i> Laporan</a>
       </div>
       
       <div class="menu-group">
-        <div class="menu-label">Products</div>
-        <a href="tambah-produk.html" class="menu-item"><i data-lucide="plus-circle"></i> Add Products</a>
-        <a href="produk.html" class="menu-item"><i data-lucide="box"></i> Product List</a>
+        <div class="menu-label">Produk</div>
+        <a href="tambah-order-kustom.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Order Kustom</a>
+        <a href="tambah-produk.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Produk</a>
+        <a href="produk.html" class="menu-item"><i data-lucide="box"></i> Daftar Produk</a>
       </div>
       
       <div class="menu-group">
         <div class="menu-label">Admin</div>
-        <a href="#" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> LogOut</a>
+        <a href="#" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> Keluar</a>
       </div>
     </div>
   </aside>
@@ -72,7 +73,7 @@
                 <th>TOTAL</th>
                 <th>METODE</th>
                 <th>STATUS</th>
-                <th>ACTION</th>
+                <th>AKSI</th>
               </tr>
             </thead>
             <tbody id="sales-table-body">
@@ -82,7 +83,7 @@
         </div>
         
         <div style="padding: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 13px;">
-          <div>Showing <select class="form-control" style="width:auto; display:inline-block; padding:4px 8px;"><option>10</option></select> of <span id="total-rows">0</span></div>
+          <div>Menampilkan <select class="form-control" style="width:auto; display:inline-block; padding:4px 8px;"><option>10</option></select> dari <span id="total-rows">0</span></div>
           <div style="display:flex; gap:8px;">
             <button class="btn-primary" style="padding:4px 10px;">1</button>
             <button style="padding:4px 10px; border:1px solid var(--border-color); background:white; border-radius:8px; cursor:pointer;">2</button>
@@ -157,7 +158,7 @@
                 </select>
               </td>
               <td>
-                <button onclick="viewDetails(${i})" style="border:none; background:none; cursor:pointer; color:var(--info); font-weight:600;">View Details</button>
+                <button onclick="viewDetails(${i})" style="border:none; background:none; cursor:pointer; color:var(--info); font-weight:600;">Lihat Detail</button>
               </td>
             </tr>
           `;

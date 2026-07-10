@@ -19,21 +19,22 @@
     
     <div class="sidebar-menu">
       <div class="menu-group">
-        <div class="menu-label">Main Menu</div>
-        <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dashboard</a>
+        <div class="menu-label">Menu Utama</div>
+        <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dasbor</a>
         <a href="penjualan.html" class="menu-item"><i data-lucide="shopping-cart"></i> Penjualan Produk</a>
         <a href="laporan.html" class="menu-item"><i data-lucide="star"></i> Laporan</a>
       </div>
       
       <div class="menu-group">
-        <div class="menu-label">Products</div>
-        <a href="tambah-produk.html" class="menu-item active"><i data-lucide="plus-circle"></i> Add Products</a>
-        <a href="produk.html" class="menu-item"><i data-lucide="box"></i> Product List</a>
+        <div class="menu-label">Produk</div>
+        <a href="tambah-order-kustom.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Order Kustom</a>
+        <a href="tambah-produk.html" class="menu-item active"><i data-lucide="plus-circle"></i> Tambah Produk</a>
+        <a href="produk.html" class="menu-item"><i data-lucide="box"></i> Daftar Produk</a>
       </div>
       
       <div class="menu-group">
         <div class="menu-label">Admin</div>
-        <a href="#" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> LogOut</a>
+        <a href="#" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> Keluar</a>
       </div>
     </div>
   </aside>
@@ -56,8 +57,8 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
           <h2 style="font-size: 16px;">Tambah Produk</h2>
           <div style="display: flex; gap: 12px;">
-            <button type="button" class="btn-primary" style="background: var(--text-main);" onclick="window.history.back()">Cancel</button>
-            <button type="submit" class="btn-primary">Save & Publish</button>
+            <button type="button" class="btn-primary" style="background: var(--text-main);" onclick="window.history.back()">Batal</button>
+            <button type="submit" class="btn-primary">Simpan & Publikasi</button>
           </div>
         </div>
 
@@ -66,10 +67,10 @@
           <div style="display: flex; flex-direction: column; gap: 24px;">
             <!-- Left Card -->
             <div class="card" style="display: grid; gap: 16px;">
-              <input type="text" id="p-name" class="form-control" placeholder="Product Name" required>
+              <input type="text" id="p-name" class="form-control" placeholder="Nama Produk" required>
               
               <select id="p-cat" class="form-control" required>
-                <option value="" disabled selected>Select Product Category</option>
+                <option value="" disabled selected>Pilih Kategori Produk</option>
                 <option value="Alat Dapur">Alat Dapur</option>
                 <option value="Interior">Interior</option>
                 <option value="Eksterior">Eksterior</option>
@@ -77,14 +78,14 @@
               </select>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                <input type="number" id="p-price" class="form-control" placeholder="Selling Price" required>
-                <input type="number" class="form-control" placeholder="Cost Price">
+                <input type="number" id="p-price" class="form-control" placeholder="Harga Jual" required>
+                <input type="number" class="form-control" placeholder="Harga Modal">
               </div>
 
-              <input type="text" class="form-control" placeholder="Size (e.g. 20x20 cm)">
+              <input type="text" class="form-control" placeholder="Ukuran (misal: 20x20 cm)">
               
               <select class="form-control">
-                <option>Order Type</option>
+                <option>Tipe Pesanan</option>
                 <option>Ready Stock</option>
                 <option>Pre-Order</option>
               </select>
@@ -93,27 +94,27 @@
             <!-- Description Card -->
             <div class="card" style="display: grid; gap: 16px;">
               <div>
-                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Short Description</label>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Deskripsi Singkat</label>
                 <textarea class="form-control" rows="3" placeholder="..."></textarea>
               </div>
               <div>
-                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Product Long Description</label>
-                <textarea id="p-desc" class="form-control" rows="5" placeholder="Your text goes here..."></textarea>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Deskripsi Lengkap Produk</label>
+                <textarea id="p-desc" class="form-control" rows="5" placeholder="Tuliskan detail produk di sini..."></textarea>
               </div>
             </div>
           </div>
 
           <!-- Right Card / Image Upload -->
           <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
-            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block;">Cover Image URL</label>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block;">URL Gambar Utama</label>
             <div style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 32px; text-align: center; background: #F8FAFC;">
               <i data-lucide="image" style="color: var(--primary); width: 32px; height: 32px; margin-bottom: 8px;"></i>
-              <p style="font-size: 13px; color: var(--primary); font-weight: 600; cursor: pointer;">Upload Image</p>
+              <p style="font-size: 13px; color: var(--primary); font-weight: 600; cursor: pointer;">Unggah Gambar</p>
               <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Atau masukkan URL gambar di bawah:</p>
             </div>
             <input type="url" id="p-img" class="form-control" placeholder="https://..." value="https://via.placeholder.com/300" required>
             
-            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-top: 16px;">Additional Images</label>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-top: 16px;">Gambar Tambahan</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               <div style="border: 1px dashed var(--border-color); height: 80px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #F8FAFC; color: var(--primary); cursor: pointer;">
                 <i data-lucide="image"></i>

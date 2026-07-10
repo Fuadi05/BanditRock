@@ -19,21 +19,22 @@
     
     <div class="sidebar-menu">
       <div class="menu-group">
-        <div class="menu-label">Main Menu</div>
-        <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dashboard</a>
+        <div class="menu-label">Menu Utama</div>
+        <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dasbor</a>
         <a href="penjualan.html" class="menu-item"><i data-lucide="shopping-cart"></i> Penjualan Produk</a>
         <a href="laporan.html" class="menu-item"><i data-lucide="star"></i> Laporan</a>
       </div>
       
       <div class="menu-group">
-        <div class="menu-label">Products</div>
-        <a href="tambah-produk.html" class="menu-item"><i data-lucide="plus-circle"></i> Add Products</a>
-        <a href="produk.html" class="menu-item active"><i data-lucide="box"></i> Product List</a>
+        <div class="menu-label">Produk</div>
+        <a href="tambah-order-kustom.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Order Kustom</a>
+        <a href="tambah-produk.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Produk</a>
+        <a href="produk.html" class="menu-item active"><i data-lucide="box"></i> Daftar Produk</a>
       </div>
       
       <div class="menu-group">
         <div class="menu-label">Admin</div>
-        <a href="#" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> LogOut</a>
+        <a href="#" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> Keluar</a>
       </div>
     </div>
   </aside>
@@ -53,33 +54,33 @@
 
     <div class="content-area">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <h2 style="font-size: 16px;">Inventory Summary</h2>
-        <a href="tambah-produk.html" class="btn-primary"><i data-lucide="plus"></i> Add a New Product</a>
+        <h2 style="font-size: 16px;">Ringkasan Inventaris</h2>
+        <a href="tambah-produk.html" class="btn-primary"><i data-lucide="plus"></i> Tambah Produk Baru</a>
       </div>
 
       <div class="card" style="background: var(--primary); color: white; margin-bottom: 24px;">
         <i data-lucide="folder" style="margin-bottom: 16px; opacity: 0.8;"></i>
-        <p style="font-size: 12px; margin-bottom: 4px; opacity: 0.9;">All Products</p>
+        <p style="font-size: 12px; margin-bottom: 4px; opacity: 0.9;">Semua Produk</p>
         <h2 id="total-products" style="font-size: 28px;">0</h2>
       </div>
 
       <div class="card" style="padding: 0;">
         <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="font-size: 14px;">Inventory Items</h3>
+          <h3 style="font-size: 14px;">Item Inventaris</h3>
           <div style="position: relative;">
             <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-muted);"></i>
-            <input type="text" class="form-control" placeholder="Search" style="padding-left: 32px; width: 200px;">
+            <input type="text" class="form-control" placeholder="Cari" style="padding-left: 32px; width: 200px;">
           </div>
         </div>
         <table>
           <thead>
             <tr>
               <th><input type="checkbox"></th>
-              <th>Product Name</th>
-              <th>Category</th>
-              <th>Price</th>
+              <th>Nama Produk</th>
+              <th>Kategori</th>
+              <th>Harga</th>
               <th>Status</th>
-              <th>Action</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody id="product-table-body">
