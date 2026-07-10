@@ -211,7 +211,11 @@
   <script src="../js/products.js"></script>
   <script src="../js/main.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Tunggu data produk dari API sebelum render
+      if (typeof window.fetchProducts === 'function') {
+        await window.fetchProducts();
+      }
       // Setup Partner Strip
       const track = document.getElementById('partner-track');
       let trackHtml = '';
@@ -248,7 +252,6 @@
               <h3 class="product-card-name" style="font-size:clamp(12px,1.2vw,15px);">${p.name}</h3>
               <div class="price-row">
                 <span class="product-price" style="color:var(--green-primary);">${p.price}</span>
-                ${p.originalPrice ? `<span class="price-old">${p.originalPrice}</span>` : ''}
               </div>
               <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;">${sizesHtml}</div>
             </div>

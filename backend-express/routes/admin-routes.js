@@ -1,0 +1,403 @@
+// ============================================
+// routes/admin-routes.js
+// Endpoint khusus admin (dilindungi JWT)
+// ============================================
+
+const express = require('express')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const supabase = require('../config/supabase')
+const verifyToken = require('../middleware/auth')
+
+const router = express.Router()
+
+
+// ─────────────────────────────────────────────
+// POST /api/admin/login
+// Verifikasi kredensial admin → return token JWT
+// ─────────────────────────────────────────────
+// Body JSON:
+// { "username": "admin", "password": "admin123" }
+//
+// ⚠️  Endpoint ini TIDAK memerlukan token (publik).
+router.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body
+
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username dan password wajib diisi.'
+      })
+    }
+
+    // Cari admin di database berdasarkan username
+    const { data: admin, error } = await supabase
+      .from('admins')
+      .select('*')
+      .eq('username', username)
+      .single()
+
+    if (error || !admin) {
+      return res.status(401).json({
+        success: false,
+        message: '⛔ Username atau password salah.'
+      })
+    }
+
+    // Bandingkan password dengan hash di database
+    const isMatch = await bcrypt.compare(password, admin.password_hash)
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: '⛔ Username atau password salah.'
+      })
+    }
+
+    // Generate token JWT (berlaku 24 jam)
+    const token = jwt.sign(
+      { id: admin.id, username: admin.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    )
+
+    res.json({
+      success: true,
+      message: '✅ Login berhasil!',
+      data: {
+        token,
+        admin: {
+          id: admin.id,
+          username: admin.username
+        }
+      }
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal login.',
+      error: err.message
+    })
+  }
+})
+
+
+// ═════════════════════════════════════════════
+// Semua endpoint di bawah ini MEMERLUKAN TOKEN
+// ═════════════════════════════════════════════
+router.use(verifyToken)
+
+
+// ─────────────────────────────────────────────
+// POST /api/admin/order
+// Input pesanan manual dari admin (Sesi 2 & 3)
+// ─────────────────────────────────────────────
+// Digunakan untuk merekam pesanan hasil kesepakatan
+// nego WhatsApp (Produk Range & Pre-order).
+// Admin menentukan harga final per item (harga_disepakati).
+//
+// Body JSON:
+// {
+//   "nama_pembeli": "Siti Nurhaliza",
+//   "telepon": "085678901234",
+//   "items": [
+//     { "product_id": "uuid-produk", "qty": 1, "harga_disepakati": 750000 }
+//   ]
+// }
+router.post('/order', async (req, res) => {
+  try {
+    const { nama_pembeli, telepon, items } = req.body
+
+    // --- Validasi input ---
+    if (!nama_pembeli || !telepon || !items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Data tidak lengkap. Diperlukan: nama_pembeli, telepon, dan items (array dengan harga_disepakati).'
+      })
+    }
+
+    // Pastikan setiap item memiliki harga_disepakati
+    for (const item of items) {
+      if (!item.product_id || !item.qty || !item.harga_disepakati) {
+        return res.status(400).json({
+          success: false,
+          message: 'Setiap item harus memiliki: product_id, qty, dan harga_disepakati.'
+        })
+      }
+    }
+
+    // --- Generate Order ID unik: BMA-YYYYMMDD-XXX ---
+    const now = new Date()
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
+    const randomDigits = String(Math.floor(100 + Math.random() * 900))
+    const orderId = `BMA-${dateStr}-${randomDigits}`
+
+    // --- Hitung total tagihan dari harga yang disepakati ---
+    let totalTagihan = 0
+    const orderItemsData = items.map(item => {
+      totalTagihan += item.harga_disepakati * item.qty
+      return {
+        order_id: orderId,
+        product_id: item.product_id,
+        qty: item.qty,
+        harga_disepakati: item.harga_disepakati
+      }
+    })
+
+    // --- Simpan order ke tabel orders ---
+    const { error: orderErr } = await supabase
+      .from('orders')
+      .insert({
+        id: orderId,
+        nama_pembeli,
+        telepon,
+        total_tagihan: totalTagihan,
+        status: 'pending_payment' // Menunggu pembayaran dari pelanggan
+      })
+
+    if (orderErr) throw orderErr
+
+    // --- Simpan detail item ke tabel order_items ---
+    const { error: itemsErr } = await supabase
+      .from('order_items')
+      .insert(orderItemsData)
+
+    if (itemsErr) throw itemsErr
+
+    // --- Response sukses ---
+    res.status(201).json({
+      success: true,
+      message: `✅ Pesanan manual berhasil dicatat oleh admin!`,
+      data: {
+        order_id: orderId,
+        nama_pembeli,
+        telepon,
+        total_tagihan: totalTagihan,
+        jumlah_item: items.length,
+        status: 'pending_payment',
+        dicatat_oleh: req.admin.username // Dari token JWT
+      }
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mencatat pesanan manual.',
+      error: err.message
+    })
+  }
+})
+
+
+// ─────────────────────────────────────────────
+// GET /api/admin/verifikasi
+// Menampilkan antrean bukti transfer yang belum diverifikasi
+// ─────────────────────────────────────────────
+router.get('/verifikasi', async (req, res) => {
+  try {
+    // Ambil semua payment yang belum diverifikasi,
+    // beserta data order terkait (nama pembeli, telepon, total)
+    const { data, error } = await supabase
+      .from('payments')
+      .select(`
+        id,
+        order_id,
+        bank_pengirim,
+        nominal,
+        bukti_url,
+        status_verifikasi,
+        created_at,
+        orders (
+          nama_pembeli,
+          telepon,
+          total_tagihan,
+          status
+        )
+      `)
+      .eq('status_verifikasi', false)
+      .order('created_at', { ascending: true }) // FIFO: yang paling lama di atas
+
+    if (error) throw error
+
+    res.json({
+      success: true,
+      count: data.length,
+      message: data.length > 0
+        ? `📋 Ada ${data.length} bukti transfer menunggu verifikasi.`
+        : '✅ Tidak ada bukti transfer yang perlu diverifikasi.',
+      data
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengambil antrean verifikasi.',
+      error: err.message
+    })
+  }
+})
+
+
+// ─────────────────────────────────────────────
+// PUT /api/admin/verifikasi/:id
+// Checklist persetujuan/penolakan pembayaran
+// ─────────────────────────────────────────────
+// Body JSON:
+// { "aksi": "approve" }   → Setujui → status order = paid
+// { "aksi": "reject" }    → Tolak   → status order = cancelled
+router.put('/verifikasi/:id', async (req, res) => {
+  try {
+    const { id } = req.params       // ID payment (bukan order)
+    const { aksi } = req.body       // "approve" atau "reject"
+
+    if (!aksi || !['approve', 'reject'].includes(aksi)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Aksi harus berisi "approve" atau "reject".'
+      })
+    }
+
+    // --- Ambil data payment untuk mendapatkan order_id ---
+    const { data: payment, error: payErr } = await supabase
+      .from('payments')
+      .select('id, order_id')
+      .eq('id', id)
+      .single()
+
+    if (payErr || !payment) {
+      return res.status(404).json({
+        success: false,
+        message: `Data pembayaran dengan ID "${id}" tidak ditemukan.`
+      })
+    }
+
+    if (aksi === 'approve') {
+      // ✅ APPROVE: Tandai pembayaran sebagai terverifikasi
+      const { error: updatePayErr } = await supabase
+        .from('payments')
+        .update({ status_verifikasi: true })
+        .eq('id', id)
+
+      if (updatePayErr) throw updatePayErr
+
+      // Ubah status order menjadi "paid" (lunas)
+      const { error: updateOrderErr } = await supabase
+        .from('orders')
+        .update({ status: 'paid' })
+        .eq('id', payment.order_id)
+
+      if (updateOrderErr) throw updateOrderErr
+
+      res.json({
+        success: true,
+        message: `✅ Pembayaran untuk order "${payment.order_id}" telah DISETUJUI dan dicatat sebagai LUNAS.`,
+        data: {
+          payment_id: id,
+          order_id: payment.order_id,
+          status_verifikasi: true,
+          status_order: 'paid'
+        }
+      })
+    } else {
+      // ❌ REJECT: Tolak pembayaran
+      // Status verifikasi tetap false, status order diubah ke "cancelled"
+      const { error: updateOrderErr } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', payment.order_id)
+
+      if (updateOrderErr) throw updateOrderErr
+
+      res.json({
+        success: true,
+        message: `❌ Pembayaran untuk order "${payment.order_id}" telah DITOLAK. Status order diubah ke CANCELLED.`,
+        data: {
+          payment_id: id,
+          order_id: payment.order_id,
+          status_verifikasi: false,
+          status_order: 'cancelled'
+        }
+      })
+    }
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal memproses verifikasi.',
+      error: err.message
+    })
+  }
+})
+
+
+// ─────────────────────────────────────────────
+// GET /api/admin/laporan
+// Rekapan penjualan untuk grafik dashboard admin
+// ─────────────────────────────────────────────
+// Menarik semua transaksi berstatus "paid" (lunas).
+// Opsional filter per bulan: ?bulan=2025-07
+router.get('/laporan', async (req, res) => {
+  try {
+    const { bulan } = req.query // Format: "2025-07"
+
+    // Query dasar: ambil order yang sudah lunas beserta detail item & produk
+    let query = supabase
+      .from('orders')
+      .select(`
+        id,
+        nama_pembeli,
+        telepon,
+        total_tagihan,
+        status,
+        created_at,
+        order_items (
+          qty,
+          harga_disepakati,
+          products (
+            nama,
+            kategori
+          )
+        )
+      `)
+      .eq('status', 'paid')
+      .order('created_at', { ascending: false })
+
+    // Filter berdasarkan bulan jika diberikan
+    if (bulan) {
+      // bulan format "2025-07" → start: "2025-07-01", end: "2025-08-01"
+      const [year, month] = bulan.split('-').map(Number)
+      const startDate = new Date(year, month - 1, 1).toISOString()
+      const endDate = new Date(year, month, 1).toISOString()
+
+      query = query
+        .gte('created_at', startDate)
+        .lt('created_at', endDate)
+    }
+
+    const { data, error } = await query
+
+    if (error) throw error
+
+    // --- Hitung ringkasan statistik ---
+    const totalPendapatan = data.reduce((sum, order) => sum + order.total_tagihan, 0)
+    const totalTransaksi = data.length
+
+    res.json({
+      success: true,
+      message: `📊 Laporan penjualan${bulan ? ` bulan ${bulan}` : ''}: ${totalTransaksi} transaksi lunas.`,
+      ringkasan: {
+        total_transaksi: totalTransaksi,
+        total_pendapatan: totalPendapatan,
+        periode: bulan || 'Seluruh waktu'
+      },
+      data
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengambil laporan penjualan.',
+      error: err.message
+    })
+  }
+})
+
+
+module.exports = router
