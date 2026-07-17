@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product List - Banditrock Admin</title>
+  <title>Product List - Syarif Art Stone Admin</title>
   <link rel="stylesheet" href="css/admin.css">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -13,7 +13,7 @@
     <div class="sidebar-header">
       <a href="index.html" class="sidebar-logo">
         <div style="background: var(--primary); color: white; padding: 4px; border-radius: 6px;"><i data-lucide="layers" style="color: white; width:20px; height:20px;"></i></div> 
-        Banditrock
+        Syarif Art Stone
       </a>
     </div>
     
@@ -93,6 +93,30 @@
 
   <script src="js/admin.js"></script>
   <script>
+    window.editProduct = function(id) {
+      // Fitur Edit: akan membawa id produk ke tambah-produk
+      window.location.href = `tambah-produk.html?edit=${id}`;
+    };
+
+    window.deleteProduct = async function(id) {
+      if(!confirm('Anda yakin ingin menghapus produk ini?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/admin/produk/${id}`, {
+          method: 'DELETE',
+          headers: authHeaders()
+        });
+        const json = await res.json();
+        if(json.success) {
+          alert('Produk dihapus!');
+          window.location.reload();
+        } else {
+          alert('Gagal menghapus: ' + json.message);
+        }
+      } catch(err) {
+        alert('Terjadi kesalahan saat menghapus.');
+      }
+    };
+
     document.addEventListener('DOMContentLoaded', async () => {
       const tbody = document.getElementById('product-table-body');
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px;">Memuat produk...</td></tr>';
@@ -127,8 +151,8 @@
                 </label>
               </td>
               <td>
-                <button style="border:none; background:none; cursor:pointer; color:var(--text-muted);"><i data-lucide="edit" style="width:16px;"></i></button>
-                <button style="border:none; background:none; cursor:pointer; color:var(--danger); margin-left:8px;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+                <button onclick="editProduct('${p.id}')" style="border:none; background:none; cursor:pointer; color:var(--text-muted);"><i data-lucide="edit" style="width:16px;"></i></button>
+                <button onclick="deleteProduct('${p.id}')" style="border:none; background:none; cursor:pointer; color:var(--danger); margin-left:8px;"><i data-lucide="trash-2" style="width:16px;"></i></button>
               </td>
             </tr>
           `;

@@ -6,7 +6,18 @@
 const express = require('express')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const multer = require('multer')
 const supabase = require('../config/supabase')
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (allowedTypes.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Hanya format JPG dan PNG yang diperbolehkan.'));
+  }
+});
 const verifyToken = require('../middleware/auth')
 
 const router = express.Router()
@@ -90,6 +101,42 @@ router.use(verifyToken)
 
 
 // ─────────────────────────────────────────────
+// POST /api/admin/upload
+// Endpoint untuk mengunggah gambar produk
+// ─────────────────────────────────────────────
+router.post('/upload', upload.single('image'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'Tidak ada file yang diunggah.' });
+  }
+  
+  try {
+    const fileExt = req.file.originalname.split('.').pop()
+    const fileName = `product_${Date.now()}.${fileExt}`
+    const filePath = `products/${fileName}`
+
+    const { data: uploadData, error: uploadError } = await supabase
+      .storage
+      .from('bukti-transfer')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false
+      })
+
+    if (uploadError) throw uploadError
+
+    const { data: publicUrlData } = supabase
+      .storage
+      .from('bukti-transfer')
+      .getPublicUrl(filePath)
+
+    res.json({ success: true, url: publicUrlData.publicUrl });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Gagal upload', error: err.message });
+  }
+})
+
+
+// ─────────────────────────────────────────────
 // POST /api/admin/produk
 // Menambahkan produk baru ke katalog
 // ─────────────────────────────────────────────
@@ -129,6 +176,66 @@ router.post('/produk', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Gagal menambahkan produk.',
+      error: err.message
+    })
+  }
+})
+
+
+// ─────────────────────────────────────────────
+// PUT /api/admin/produk/:id
+// Update data produk
+// ─────────────────────────────────────────────
+router.put('/produk/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const updates = req.body
+
+    const { data, error } = await supabase
+      .from('products')
+      .update(updates)
+      .eq('id', id)
+      .select()
+
+    if (error) throw error
+
+    res.json({
+      success: true,
+      message: '✅ Produk berhasil diperbarui!',
+      data: data[0]
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal memperbarui produk.',
+      error: err.message
+    })
+  }
+})
+
+// ─────────────────────────────────────────────
+// DELETE /api/admin/produk/:id
+// Hapus data produk
+// ─────────────────────────────────────────────
+router.delete('/produk/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+
+    res.json({
+      success: true,
+      message: '🗑️ Produk berhasil dihapus!'
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal menghapus produk.',
       error: err.message
     })
   }

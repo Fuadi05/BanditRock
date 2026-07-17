@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detail Produk - Batu Merapi</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="css/style.css">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -34,8 +34,8 @@
             <a href="katalog.html?kategori=Interior" style="display: block; padding: 9px 18px; font-size: 13px;">Interior</a>
             <a href="katalog.html?kategori=Eksterior" style="display: block; padding: 9px 18px; font-size: 13px;">Eksterior</a>
             <a href="katalog.html?kategori=Ornamen Dinding" style="display: block; padding: 9px 18px; font-size: 13px;">Ornamen Dinding</a>
-            <a href="custom-produk.html" style="display: block; padding: 9px 18px; font-size: 13px;">Custom Produk</a>
             <a href="katalog.html?kategori=Dinding %26 Lantai" style="display: block; padding: 9px 18px; font-size: 13px;">Dinding & Lantai</a>
+            <a href="custom-produk.html" style="display: block; padding: 9px 18px; font-size: 13px;">Custom Produk</a>
           </div>
         </div>
         <a href="cara-pesan.html">Cara Pesan</a>
@@ -177,19 +177,19 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span class="footer-copy">Batu Merapi Â© 2015â€“2026, All Rights Reserved</span>
+      <span class="footer-copy">Batu Merapi © 2015–2026, All Rights Reserved</span>
       
     </div>
   </footer>
 
-  <script src="../js/products.js"></script>
-  <script src="../js/main.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/main.js"></script>
   <script>
     let currentProduct = null;
     let activeSize = 'Besar';
     let qty = 1;
     // Toast state is now handled globally
-    const sizes = ['Kecil', 'Sedang', 'Besar', 'Ekstra Besar'];
+    let sizes = ['Kecil', 'Sedang', 'Besar', 'Ekstra Besar'];
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (typeof window.fetchProducts === 'function') {
@@ -229,6 +229,12 @@
       document.getElementById('prod-desc-full').innerHTML = `Kerajinan batu alam <strong>"${currentProduct.name}"</strong> merupakan hasil karya tangan dari pengrajin lokal Wonosobo yang berpengalaman luas. Diukir secara manual dari bongkahan batu candi vulkanik andesit utuh, menjadikannya sangat kuat dan tahan terhadap cuaca panas maupun hujan. Sangat bernilai estetika tinggi, cocok diletakkan sebagai ornamen interior ruangan modern minimalis maupun dekorasi eksterior taman tropis Anda.`;
 
       // Sizes
+      if (currentProduct.ukuran && Array.isArray(currentProduct.ukuran) && currentProduct.ukuran.length > 0) {
+        sizes = currentProduct.ukuran;
+      } else {
+        sizes = ['Kecil', 'Sedang', 'Besar', 'Ekstra Besar'];
+      }
+      activeSize = sizes[0] || 'Besar';
       renderSizes();
 
       // Gallery
@@ -248,7 +254,7 @@
       // Related
       const related = window.products.filter(p => p.category === currentProduct.category && p.id !== currentProduct.id).slice(0, 4);
       if (related.length > 0) {
-        const sizeLabels = ['S', 'M', 'L', 'XL'];
+        const sizeLabels = (p.ukuran && Array.isArray(p.ukuran) && p.ukuran.length > 0) ? p.ukuran.map(u => u === 'Kecil' ? 'S' : u === 'Sedang' ? 'M' : u === 'Besar' ? 'L' : u === 'Ekstra Besar' ? 'XL' : u) : ['S', 'M', 'L', 'XL'];
         const createProductCard = (p) => {
           const sizesHtml = sizeLabels.map(s =>
             `<span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--gray-light); color:var(--gray-dark); border:1px solid var(--gray-mid);">${s}</span>`
@@ -320,6 +326,8 @@
     };
   </script>
 </body>
+
+
 
 
 

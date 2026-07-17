@@ -6,6 +6,7 @@
 // yang digunakan oleh seluruh routes dan middleware.
 
 const { createClient } = require('@supabase/supabase-js')
+const WebSocket = require('ws')
 require('dotenv').config()
 
 // Ambil kredensial dari variabel lingkungan (.env)
@@ -19,6 +20,10 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 }
 
 // Buat instance client Supabase (singleton)
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  realtime: {
+    transport: WebSocket
+  }
+})
 
 module.exports = supabase

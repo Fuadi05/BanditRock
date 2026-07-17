@@ -8,7 +8,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="css/style.css">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
@@ -45,9 +45,8 @@
               style="display: block; padding: 9px 18px; font-size: 13px;">Eksterior</a>
             <a href="katalog.html?kategori=Ornamen Dinding"
               style="display: block; padding: 9px 18px; font-size: 13px;">Ornamen Dinding</a>
+            <a href="katalog.html?kategori=Dinding %26 Lantai" style="display: block; padding: 9px 18px; font-size: 13px;">Dinding & Lantai</a>
             <a href="custom-produk.html" style="display: block; padding: 9px 18px; font-size: 13px;">Custom Produk</a>
-            <a href="katalog.html?kategori=Dinding %26 Lantai"
-              style="display: block; padding: 9px 18px; font-size: 13px;">Dinding & Lantai</a>
           </div>
         </div>
         <a href="cara-pesan.html">Cara Pesan</a>
@@ -98,13 +97,16 @@
         </div>
       </div>
       <div class="hero-image">
-        <img src="../images/hero_stone_1780322879376.png" alt="Hero Stone Craft"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
-        <div class="hero-img-ph" style="display:none">
-          <i data-lucide="image" style="width:36px; height:36px; color:var(--gray-mid);"></i>
-          <span style="font-size: 12px; color: var(--gray-text);">Hero Stone Craft</span>
+        <div id="hero-img-ph" class="hero-img-ph" style="display:flex; flex-direction: column; background: #f8fafc;">
+          <i data-lucide="loader-2" style="width:36px; height:36px; color:var(--primary); animation: spin 2s linear infinite;"></i>
+          <span style="font-size: 13px; color: var(--gray-text); margin-top: 12px; font-weight: 500;">Memuat Koleksi...</span>
         </div>
+        <img id="hero-slider-img" src="" alt="Hero Stone Craft"
+          style="transition: opacity 0.5s ease-in-out; opacity: 0; display: none;" />
       </div>
+      <style>
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+      </style>
     </div>
   </section>
 
@@ -208,14 +210,51 @@
     </div>
   </footer>
 
-  <script src="../js/products.js"></script>
-  <script src="../js/main.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/main.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       // Tunggu data produk dari API sebelum render
       if (typeof window.fetchProducts === 'function') {
         await window.fetchProducts();
       }
+
+      // 2. Hero Image Slider Logic (randomized products)
+      if (window.products && window.products.length > 0) {
+        const heroImg = document.getElementById('hero-slider-img');
+        const heroPh = document.getElementById('hero-img-ph');
+        if (heroImg) {
+          // Hanya ambil produk yang punya gambar
+          const productsWithImg = window.products.filter(p => p.image);
+          
+          if (productsWithImg.length > 0) {
+            // Acak urutan array
+            const shuffledProducts = productsWithImg.sort(() => 0.5 - Math.random());
+            let currentHeroIdx = 0;
+            
+            // Set foto pertama
+            heroImg.src = shuffledProducts[0].image;
+            heroImg.onload = () => {
+              if (heroPh) heroPh.style.display = 'none';
+              heroImg.style.display = 'block';
+              setTimeout(() => { heroImg.style.opacity = 1; }, 50);
+            };
+            
+            // Ganti setiap 3 detik
+            setInterval(() => {
+              currentHeroIdx = (currentHeroIdx + 1) % shuffledProducts.length;
+              
+              // Animasi memudar
+              heroImg.style.opacity = 0;
+              setTimeout(() => {
+                heroImg.src = shuffledProducts[currentHeroIdx].image;
+                heroImg.style.opacity = 1;
+              }, 500); // Tunggu setengah transisi sebelum mengganti gambar
+            }, 3000);
+          }
+        }
+      }
+
       // Setup Partner Strip
       const track = document.getElementById('partner-track');
       let trackHtml = '';
@@ -223,10 +262,10 @@
         trackHtml += `
           <span style="display: flex; gap: 32px;">
             <div class="partner-badge" style="display: flex; align-items: center; justify-content: center;">
-              <img src="../images/logo-pemkab.png" alt="Logo Pemkab Wonosobo" style="height: 32px; width: auto; max-width: none; object-fit: contain;">
+              <img src="images/logo-pemkab.png" alt="Logo Pemkab Wonosobo" style="height: 32px; width: auto; max-width: none; object-fit: contain;">
             </div>
             <div class="partner-badge" style="display: flex; align-items: center; justify-content: center;">
-              <img src="../images/logo-geopark.png" alt="Logo Geopark Dieng" style="height: 32px; width: auto; max-width: none; object-fit: contain;">
+              <img src="images/logo-geopark.png" alt="Logo Geopark Dieng" style="height: 32px; width: auto; max-width: none; object-fit: contain;">
             </div>
           </span>
         `;
@@ -235,7 +274,7 @@
 
       // Product Card HTML Generator
       function createProductCard(p) {
-        const sizeLabels = ['S', 'M', 'L', 'XL'];
+        const sizeLabels = (p.ukuran && Array.isArray(p.ukuran) && p.ukuran.length > 0) ? p.ukuran.map(u => u === 'Kecil' ? 'S' : u === 'Sedang' ? 'M' : u === 'Besar' ? 'L' : u === 'Ekstra Besar' ? 'XL' : u) : ['S', 'M', 'L', 'XL'];
         const sizesHtml = sizeLabels.map(s =>
           `<span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--gray-light); color:var(--gray-dark); border:1px solid var(--gray-mid);">${s}</span>`
         ).join('');
@@ -294,5 +333,7 @@
 </body>
 
 </html>
+
+
 
 

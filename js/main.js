@@ -5,7 +5,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   updateNavbarCartCount();
   setupNavbar();
+  setupTopbar();
 });
+
+// TOPBAR LOGIC
+function setupTopbar() {
+  const topbar = document.getElementById('topbar');
+  if (topbar) {
+    if (sessionStorage.getItem('hideTopbar') === 'true') {
+      topbar.style.display = 'none';
+    }
+    const closeBtn = topbar.querySelector('.topbar-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        sessionStorage.setItem('hideTopbar', 'true');
+        topbar.style.display = 'none';
+      });
+    }
+  }
+}
 
 // CART LOGIC
 function getCart() {
