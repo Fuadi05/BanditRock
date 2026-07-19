@@ -70,7 +70,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { id: admin.id, username: admin.username },
       process.env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '7d' }
     )
 
     res.json({
@@ -142,7 +142,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
 // ─────────────────────────────────────────────
 router.post('/produk', async (req, res) => {
   try {
-    const { nama, kategori, harga_min, harga_max, tipe_harga, deskripsi, image_url, status_stok } = req.body
+    const { nama, kategori, harga_min, harga_max, tipe_harga, deskripsi, deskripsi_singkat, ukuran, image_url, image_url_2, image_url_3, image_url_4, status_stok } = req.body
 
     if (!nama || !kategori || harga_min === undefined) {
       return res.status(400).json({
@@ -160,7 +160,12 @@ router.post('/produk', async (req, res) => {
         harga_max: harga_max || harga_min || 0,
         tipe_harga: tipe_harga || 'fixed',
         deskripsi: deskripsi || '',
+        deskripsi_singkat: deskripsi_singkat || '',
+        ukuran: ukuran || '',
         image_url: image_url || '',
+        image_url_2: image_url_2 || '',
+        image_url_3: image_url_3 || '',
+        image_url_4: image_url_4 || '',
         status_stok: status_stok || 'ready'
       })
       .select()
@@ -173,6 +178,7 @@ router.post('/produk', async (req, res) => {
       data: data[0]
     })
   } catch (err) {
+    console.error('Supabase Insert Error:', err);
     res.status(500).json({
       success: false,
       message: 'Gagal menambahkan produk.',

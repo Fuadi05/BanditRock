@@ -79,23 +79,40 @@
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <input type="number" id="p-price" class="form-control" placeholder="Harga Jual" required>
-                <input type="number" class="form-control" placeholder="Harga Modal">
+                <input type="number" id="p-harga-modal" class="form-control" placeholder="Harga Modal">
               </div>
 
-              <input type="text" class="form-control" placeholder="Ukuran (misal: 20x20 cm)">
               
-              <select class="form-control">
-                <option>Tipe Pesanan</option>
-                <option>Ready Stock</option>
-                <option>Pre-Order</option>
-              </select>
+<div style="margin-bottom: 16px;">
+  <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Pilih Ukuran Tersedia</label>
+  <div style="display: flex; gap: 12px; flex-wrap: wrap;" id="p-ukuran-container">
+    <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+      <input type="checkbox" value="Kecil" class="ukuran-cb"> Kecil
+    </label>
+    <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+      <input type="checkbox" value="Sedang" class="ukuran-cb"> Sedang
+    </label>
+    <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+      <input type="checkbox" value="Besar" class="ukuran-cb"> Besar
+    </label>
+    <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+      <input type="checkbox" value="Ekstra Besar" class="ukuran-cb"> Ekstra Besar
+    </label>
+  </div>
+</div>
+              <div style="margin-top: 16px;">
+                <select id="p-tipe-pesanan" class="form-select">
+                  <option value="ready">Ready Stock</option>
+                  <option value="po">Pre-Order</option>
+                </select>
+              </div>
             </div>
 
             <!-- Description Card -->
             <div class="card" style="display: grid; gap: 16px;">
               <div>
                 <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Deskripsi Singkat</label>
-                <textarea class="form-control" rows="3" placeholder="..."></textarea>
+                <textarea id="p-desc-short" class="form-control" rows="3" placeholder="Deskripsi Singkat"></textarea>
               </div>
               <div>
                 <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Deskripsi Lengkap Produk</label>
@@ -106,22 +123,62 @@
 
           <!-- Right Card / Image Upload -->
           <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
-            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block;">URL Gambar Utama</label>
-            <div id="upload-box" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 32px; text-align: center; background: #F8FAFC; cursor: pointer;" onclick="document.getElementById('file-upload').click()">
-              <i data-lucide="image" style="color: var(--primary); width: 32px; height: 32px; margin-bottom: 8px;"></i>
-              <p id="upload-text" style="font-size: 13px; color: var(--primary); font-weight: 600;">Klik untuk Unggah Gambar</p>
-              <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Pilih file dari komputer Anda (Maks: 5MB)</p>
-            </div>
-            <input type="file" id="file-upload" accept="image/png, image/jpeg, image/jpg" style="display: none;" onchange="handleFileUpload(event)">
-            <input type="hidden" id="p-img" class="form-control" value="" required>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block;">Gambar Produk (Maks 4)</label>
             
-            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-top: 16px;">Gambar Tambahan</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-              <div style="border: 1px dashed var(--border-color); height: 80px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #F8FAFC; color: var(--primary); cursor: pointer;">
-                <i data-lucide="image"></i>
+              <!-- Upload 1 -->
+              <div>
+                <div id="upload-box-1" style="border: 1px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #F8FAFC; cursor: pointer; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="document.getElementById('file-upload-1').click()">
+                  <i data-lucide="image" style="color: var(--primary); width: 24px; height: 24px; margin-bottom: 8px;"></i>
+                  <p id="upload-text-1" style="font-size: 11px; color: var(--primary); font-weight: 600;">Gambar 1 (Utama)</p>
+                </div>
+                <input type="file" id="file-upload-1" accept="image/png, image/jpeg, image/jpg" style="display: none;" onchange="handleGenericUpload(event, 1)">
+                <input type="hidden" id="p-img" value="" required>
+                <div id="preview-container-1" style="display: none; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #F8FAFC; margin-top: 8px; height: 120px;">
+                  <img id="preview-img-1" src="" style="width: 100%; height: 100%; display: block; object-fit: cover;">
+                </div>
               </div>
-              <div style="border: 1px dashed var(--border-color); height: 80px; border-radius: 8px;"></div>
+
+              <!-- Upload 2 -->
+              <div>
+                <div id="upload-box-2" style="border: 1px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #F8FAFC; cursor: pointer; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="document.getElementById('file-upload-2').click()">
+                  <i data-lucide="image" style="color: var(--text-muted); width: 24px; height: 24px; margin-bottom: 8px;"></i>
+                  <p id="upload-text-2" style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Gambar 2</p>
+                </div>
+                <input type="file" id="file-upload-2" accept="image/png, image/jpeg, image/jpg" style="display: none;" onchange="handleGenericUpload(event, 2)">
+                <input type="hidden" id="p-img2" value="">
+                <div id="preview-container-2" style="display: none; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #F8FAFC; margin-top: 8px; height: 120px;">
+                  <img id="preview-img-2" src="" style="width: 100%; height: 100%; display: block; object-fit: cover;">
+                </div>
+              </div>
+
+              <!-- Upload 3 -->
+              <div>
+                <div id="upload-box-3" style="border: 1px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #F8FAFC; cursor: pointer; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="document.getElementById('file-upload-3').click()">
+                  <i data-lucide="image" style="color: var(--text-muted); width: 24px; height: 24px; margin-bottom: 8px;"></i>
+                  <p id="upload-text-3" style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Gambar 3</p>
+                </div>
+                <input type="file" id="file-upload-3" accept="image/png, image/jpeg, image/jpg" style="display: none;" onchange="handleGenericUpload(event, 3)">
+                <input type="hidden" id="p-img3" value="">
+                <div id="preview-container-3" style="display: none; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #F8FAFC; margin-top: 8px; height: 120px;">
+                  <img id="preview-img-3" src="" style="width: 100%; height: 100%; display: block; object-fit: cover;">
+                </div>
+              </div>
+
+              <!-- Upload 4 -->
+              <div>
+                <div id="upload-box-4" style="border: 1px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #F8FAFC; cursor: pointer; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="document.getElementById('file-upload-4').click()">
+                  <i data-lucide="image" style="color: var(--text-muted); width: 24px; height: 24px; margin-bottom: 8px;"></i>
+                  <p id="upload-text-4" style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Gambar 4</p>
+                </div>
+                <input type="file" id="file-upload-4" accept="image/png, image/jpeg, image/jpg" style="display: none;" onchange="handleGenericUpload(event, 4)">
+                <input type="hidden" id="p-img4" value="">
+                <div id="preview-container-4" style="display: none; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #F8FAFC; margin-top: 8px; height: 120px;">
+                  <img id="preview-img-4" src="" style="width: 100%; height: 100%; display: block; object-fit: cover;">
+                </div>
+              </div>
             </div>
+          </div>
           </div>
 
         </div>
@@ -131,34 +188,34 @@
 
   <script src="js/admin.js"></script>
   <script>
-    async function handleFileUpload(event) {
+    async function handleGenericUpload(event, index) {
       const file = event.target.files[0];
       if (!file) return;
-      const uploadText = document.getElementById('upload-text');
+      const uploadText = document.getElementById('upload-text-' + index);
+      const originalText = uploadText.textContent;
       uploadText.textContent = 'Mengunggah...';
       const formData = new FormData();
       formData.append('image', file);
       try {
         const res = await fetch(`${API_BASE}/admin/upload`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${getToken()}`
-          },
+          headers: { 'Authorization': `Bearer ${getToken()}` },
           body: formData
         });
         const json = await res.json();
         if (json.success) {
-          document.getElementById('p-img').value = json.url;
-          uploadText.textContent = 'Gambar Berhasil Diunggah!';
-          document.getElementById('preview-container').style.display = 'block';
-          document.getElementById('preview-img').src = json.url;
+          document.getElementById(index === 1 ? 'p-img' : 'p-img' + index).value = json.url;
+          uploadText.textContent = 'Berhasil!';
+          document.getElementById('preview-container-' + index).style.display = 'block';
+          document.getElementById('preview-img-' + index).src = json.url;
+          document.getElementById('upload-box-' + index).style.display = 'none';
         } else {
           alert('Gagal mengunggah: ' + (json.error || json.message));
-          uploadText.textContent = 'Klik untuk Unggah Gambar';
+          uploadText.textContent = originalText;
         }
       } catch (err) {
         alert('Terjadi kesalahan saat mengunggah gambar.');
-        uploadText.textContent = 'Klik untuk Unggah Gambar';
+        uploadText.textContent = originalText;
       }
     }
 
@@ -175,16 +232,40 @@
             document.getElementById('p-name').value = p.nama;
             document.getElementById('p-cat').value = p.kategori;
             document.getElementById('p-price').value = p.harga_min;
-            document.getElementById('p-desc').value = p.deskripsi;
-            document.getElementById('p-img').value = p.image_url || '';
-            // Checkboxes
-            if(p.ukuran && Array.isArray(p.ukuran)) {
-              document.querySelectorAll('#size-checkboxes input').forEach(cb => {
-                cb.checked = p.ukuran.includes(cb.value);
-              });
+            if (document.getElementById('p-harga-modal')) {
+               document.getElementById('p-harga-modal').value = p.harga_max || '';
             }
+            if (document.getElementById('p-tipe-pesanan')) {
+               document.getElementById('p-tipe-pesanan').value = p.status_stok || 'Ready Stock';
+            }
+            document.getElementById('p-desc').value = p.deskripsi || '';
+            if (document.getElementById('p-desc-short')) {
+               document.getElementById('p-desc-short').value = p.deskripsi_singkat || '';
+            }
+            
+            if (p.ukuran) {
+               const ukuranArr = typeof p.ukuran === 'string' ? p.ukuran.split(',').map(s => s.trim()) : p.ukuran;
+               document.querySelectorAll('.ukuran-cb').forEach(cb => {
+                   cb.checked = ukuranArr.includes(cb.value);
+               });
+            }
+
+            const setImg = (index, url) => {
+               if (url) {
+                  document.getElementById(index === 1 ? 'p-img' : 'p-img'+index).value = url;
+                  document.getElementById('preview-container-'+index).style.display = 'block';
+                  document.getElementById('preview-img-'+index).src = url;
+                  document.getElementById('upload-box-'+index).style.display = 'none';
+               }
+            };
+            setImg(1, p.image_url);
+            setImg(2, p.image_url_2);
+            setImg(3, p.image_url_3);
+            setImg(4, p.image_url_4);
           }
-        } catch(err) {}
+        } catch(err) {
+          console.error(err);
+        }
       }
     });
 
@@ -194,13 +275,23 @@
       submitBtn.textContent = 'Menyimpan...';
       submitBtn.disabled = true;
 
+      
+      // Ambil ukuran yang dicentang
+      const ukuranChecked = Array.from(document.querySelectorAll('.ukuran-cb:checked')).map(cb => cb.value).join(', ');
+      
       const produk = {
         nama: document.getElementById('p-name').value,
         kategori: document.getElementById('p-cat').value,
         harga_min: parseInt(document.getElementById('p-price').value) || 0,
-        harga_max: parseInt(document.getElementById('p-price').value) || 0,
+        harga_max: parseInt(document.getElementById('p-harga-modal') ? document.getElementById('p-harga-modal').value : 0) || 0,
+        status_stok: document.getElementById('p-tipe-pesanan') ? document.getElementById('p-tipe-pesanan').value : 'Ready Stock',
         deskripsi: document.getElementById('p-desc').value,
+        deskripsi_singkat: document.getElementById('p-desc-short').value,
+        ukuran: ukuranChecked,
         image_url: document.getElementById('p-img').value,
+        image_url_2: document.getElementById('p-img2') ? document.getElementById('p-img2').value : '',
+        image_url_3: document.getElementById('p-img3') ? document.getElementById('p-img3').value : '',
+        image_url_4: document.getElementById('p-img4') ? document.getElementById('p-img4').value : '',
       };
 
       try {
