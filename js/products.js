@@ -37,12 +37,17 @@ window.fetchProducts = async () => {
         id: p.id,
         name: p.nama,
         category: p.kategori,
-        image: p.image_url || '../images/media__1780324962198.jpg', // Fallback gambar
+        image: p.image_url || '../images/media__1780324962198.jpg',
+        image2: p.image_url_2 || null,
+        image3: p.image_url_3 || null,
+        image4: p.image_url_4 || null,
         price: formatRupiah(p.harga_min),
         priceNum: p.harga_min,
         rating: 5.0, // Default statis
         ratingCount: 10,
         desc: p.deskripsi,
+        desc_short: p.deskripsi_singkat || p.deskripsi,
+        ukuran: p.ukuran || ''
         // Fitur diskon dihapus, jadi tidak ada discount atau originalPrice
       }));
 

@@ -260,17 +260,17 @@
       
       let thumbHtml = '';
       images.forEach((imgUrl, i) => {
-        thumbHtml += \`
-          <div class="gallery-thumb \${i===0 ? 'active' : ''}" onclick="changeThumb(this, '\${imgUrl}')" style="border: 2px solid \${i===0 ? 'var(--green-primary)' : 'transparent'}; cursor: pointer;">
-            <img src="\${imgUrl}" alt="Thumb \${i+1}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover;">
+        thumbHtml += `
+          <div class="gallery-thumb ${i===0 ? 'active' : ''}" onclick="changeThumb(this, '${imgUrl}')" style="border: 2px solid ${i===0 ? 'var(--green-primary)' : 'transparent'}; cursor: pointer;">
+            <img src="${imgUrl}" alt="Thumb ${i+1}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover;">
           </div>
-        \`;
+        `;
       });
       document.getElementById('gallery-thumbs').innerHTML = thumbHtml;
       
-      document.getElementById('gallery-main').innerHTML = \`
-        <img id="main-img-display" src="\${images[0]}" alt="\${currentProduct.name}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" onerror="this.style.display='none'">
-      \`;
+      document.getElementById('gallery-main').innerHTML = `
+        <img id="main-img-display" src="${images[0]}" alt="${currentProduct.name}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" onerror="this.style.display='none'">
+      `;
 
       // Related
       const related = window.products.filter(p => p.category === currentProduct.category && p.id !== currentProduct.id).slice(0, 4);
