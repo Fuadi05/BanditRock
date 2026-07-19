@@ -422,41 +422,59 @@
     window.closeCheckout = function () {
       document.getElementById('checkout-modal').style.display = 'none';
     }
-
-    window.finishCheckout = function () {
+    
+    window.finishCheckout = async function () {
       const cart = getCart();
       const customerName = document.getElementById('form-name') ? document.getElementById('form-name').value : 'Guest';
-      const prov = document.getElementById('form-prov') ? document.getElementById('form-prov').value : '';
-      let subtotal = 0;
-      cart.forEach(item => subtotal += item.price * item.qty);
-      
-      const newOrder = {
-        id: '#' + Math.floor(Math.random() * 9000 + 1000),
-        pelanggan: customerName,
-        provinsi: prov,
-        tgl: new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}),
-        total: subtotal,
-        metode: 'Transfer Bank', // default
-        status: 'Konfirmasi',
-        items: cart
-      };
+      const phone = document.getElementById('form-phone') ? document.getElementById('form-phone').value : '';
 
-      const existingSalesStr = localStorage.getItem('banditrock_sales');
-      let sales = [];
-      if (existingSalesStr) sales = JSON.parse(existingSalesStr);
-      sales.unshift(newOrder);
-      localStorage.setItem('banditrock_sales', JSON.stringify(sales));
+      if (cart.length === 0) return;
 
-      clearCart();
-      renderCart();
-      closeCheckout();
-      document.getElementById('shipping-form').reset();
+      // Build items array for API
+      const items = cart.map(item => ({
+        product_id: item.product_id,
+        qty: item.qty
+      }));
+
+      try {
+        const res = await fetch('https://batumerapi.biz.id/api/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nama_pembeli: customerName,
+            telepon: phone,
+            items: items
+          })
+        });
+
+        const json = await res.json();
+
+        if (json.success) {
+          clearCart();
+          renderCart();
+          closeCheckout();
+          document.getElementById('shipping-form').reset();
+
+          if (window.showGlobalToast) {
+            window.showGlobalToast(
+              'PESANAN BERHASIL!',
+              `Order ${json.data.order_id} telah dibuat. Total: ${formatRp(json.data.total_tagihan)}`,
+              'success',
+              true
+            );
+          }
+        } else {
+          alert('Gagal membuat pesanan: ' + (json.message || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Checkout error:', err);
+        alert('Gagal terhubung ke server. Silakan coba lagi.');
+      }
     }
 
 
   </script>
 </body>
 
-</html>
 
 

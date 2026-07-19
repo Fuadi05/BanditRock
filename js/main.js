@@ -38,12 +38,13 @@ function saveCart(cart) {
 
 function addToCart(product, size, qty) {
   const cart = getCart();
-  const existing = cart.find(item => item.name === product.name && item.size === size);
+  const existing = cart.find(item => item.product_id === product.id && item.size === size);
   if (existing) {
     existing.qty += qty;
   } else {
     cart.push({
       id: Date.now(),
+      product_id: product.id,
       name: product.name,
       size,
       color: 'Alami',
