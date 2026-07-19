@@ -274,7 +274,8 @@
 
       // Product Card HTML Generator
       function createProductCard(p) {
-        const sizeLabels = (p.ukuran && Array.isArray(p.ukuran) && p.ukuran.length > 0) ? p.ukuran.map(u => u === 'Kecil' ? 'S' : u === 'Sedang' ? 'M' : u === 'Besar' ? 'L' : u === 'Ekstra Besar' ? 'XL' : u) : ['S', 'M', 'L', 'XL'];
+        let uArr = p.ukuran ? p.ukuran.split(',').map(s=>s.trim()).filter(Boolean) : [];
+        const sizeLabels = uArr.length > 0 ? uArr.map(u => u === 'Kecil' ? 'S' : u === 'Sedang' ? 'M' : u === 'Besar' ? 'L' : u === 'Ekstra Besar' ? 'XL' : u) : ['S', 'M', 'L', 'XL'];
         const sizesHtml = sizeLabels.map(s =>
           `<span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--gray-light); color:var(--gray-dark); border:1px solid var(--gray-mid);">${s}</span>`
         ).join('');
