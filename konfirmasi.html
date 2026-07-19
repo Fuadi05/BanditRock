@@ -364,32 +364,61 @@
       });
     }
 
-    function handleFormSubmit(e) {
+    async function handleFormSubmit(e) {
       e.preventDefault();
       const nama = document.getElementById('input-nama').value;
       const noOrder = document.getElementById('input-no-order').value;
+      const bankSelect = document.querySelector('#konfirmasi-form select');
+      const bankPengirim = bankSelect ? bankSelect.value : '';
+      const nominalInput = document.querySelector('#konfirmasi-form input[inputmode="numeric"]');
+      const nominal = nominalInput ? nominalInput.value : '0';
+      const fileInput = document.querySelector('#file-drop-zone input[type="file"]');
 
-      if (uploadedImageBase64) {
-        let sales = JSON.parse(localStorage.getItem('banditrock_sales') || '[]');
-        let found = false;
-        for (let i=0; i<sales.length; i++) {
-          if (sales[i].id === noOrder) {
-            sales[i].bukti = uploadedImageBase64;
-            found = true;
-            break;
-          }
-        }
-        if(!found && sales.length > 0) {
-           sales[0].bukti = uploadedImageBase64; 
-        }
-        localStorage.setItem('banditrock_sales', JSON.stringify(sales));
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        alert('Harap upload bukti transfer terlebih dahulu.');
+        return;
       }
 
-      setStepActive(3);
-      document.getElementById('konfirmasi-form').style.display = 'none';
-      document.getElementById('success-view').style.display = 'block';
-      document.getElementById('success-name').textContent = nama;
-      if (window.lucide) lucide.createIcons();
+      // Build FormData for multipart upload
+      const formData = new FormData();
+      formData.append('order_id', noOrder);
+      formData.append('bank_pengirim', bankPengirim);
+      formData.append('nominal', nominal);
+      formData.append('bukti', fileInput.files[0]);
+
+      // Disable submit button
+      const submitBtn = document.querySelector('#konfirmasi-form button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i data-lucide="loader" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:8px;animation:spin 1s linear infinite;"></i> Mengirim...';
+
+      try {
+        const res = await fetch('https://batumerapi.biz.id/api/pembayaran', {
+          method: 'POST',
+          body: formData
+        });
+
+        const json = await res.json();
+
+        if (json.success) {
+          setStepActive(3);
+          document.getElementById('konfirmasi-form').style.display = 'none';
+          document.getElementById('success-view').style.display = 'block';
+          document.getElementById('success-name').textContent = nama;
+          if (window.lucide) lucide.createIcons();
+        } else {
+          alert('Gagal: ' + (json.message || 'Terjadi kesalahan'));
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+          if (window.lucide) lucide.createIcons();
+        }
+      } catch (err) {
+        console.error('Payment confirmation error:', err);
+        alert('Gagal terhubung ke server. Silakan coba lagi.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+        if (window.lucide) lucide.createIcons();
+      }
     }
 
     function resetForm() {
