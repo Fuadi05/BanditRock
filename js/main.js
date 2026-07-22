@@ -194,29 +194,41 @@ async function searchTrack(query) {
         title: 'Pesanan Dibuat',
         time: dateFormatted,
         desc: 'Pesanan telah dicatat di sistem.',
-        completed: true
+        completed: true,
+        icon: 'check'
       },
       {
         title: 'Verifikasi Pembayaran',
-        time: ['waiting_verification', 'paid', 'processing', 'shipped'].includes(currentStatus) ? 'Selesai / Dalam Proses' : '-',
+        time: ['waiting_verification', 'paid', 'processing', 'shipped'].includes(currentStatus) ? 'Selesai' : '-',
         desc: 'Bukti pembayaran diperiksa oleh admin.',
         completed: ['waiting_verification', 'paid', 'processing', 'shipped'].includes(currentStatus),
-        active: currentStatus === 'waiting_verification'
+        active: currentStatus === 'waiting_verification',
+        icon: 'clock'
       },
       {
         title: 'Disetujui (Lunas)',
         time: ['paid', 'processing', 'shipped'].includes(currentStatus) ? 'Terverifikasi' : '-',
         desc: 'Pembayaran terkonfirmasi lunas.',
         completed: ['paid', 'processing', 'shipped'].includes(currentStatus),
-        active: currentStatus === 'paid'
+        active: currentStatus === 'paid',
+        icon: 'check-circle'
       },
       {
-        title: 'Diproses / Dikirim',
-        time: ['processing', 'shipped'].includes(currentStatus) ? 'Pengiriman' : '-',
-        desc: isCanceled ? 'Pesanan ini telah dibatalkan.' : (currentStatus === 'shipped' ? 'Pesanan sedang dalam pengiriman ke lokasi tujuan.' : 'Pesanan diproses tim pengrajin.'),
+        title: 'Pesanan Diproses',
+        time: ['processing', 'shipped'].includes(currentStatus) ? 'Sedang Diproses' : '-',
+        desc: isCanceled ? 'Pesanan dibatalkan.' : 'Tim pengrajin sedang menyiapkan pesanan Anda.',
         completed: ['processing', 'shipped'].includes(currentStatus),
-        active: ['processing', 'shipped'].includes(currentStatus),
-        isCanceled: isCanceled
+        active: currentStatus === 'processing',
+        icon: 'box'
+      },
+      {
+        title: 'Dalam Pengiriman',
+        time: currentStatus === 'shipped' ? 'Dalam Pengiriman' : '-',
+        desc: isCanceled ? 'Pesanan ini telah dibatalkan.' : (currentStatus === 'shipped' ? 'Pesanan sedang dalam pengiriman ke lokasi tujuan.' : 'Menunggu pengiriman.'),
+        completed: currentStatus === 'shipped',
+        active: currentStatus === 'shipped',
+        isCanceled: isCanceled,
+        icon: isCanceled ? 'x' : 'truck'
       }
     ];
 
@@ -237,10 +249,7 @@ async function searchTrack(query) {
           let iconColor = stepCanceled ? '#ef4444' : (step.completed || step.active ? '#0f5132' : '#94a3b8');
           let bgColor = stepCanceled ? '#fff' : (step.completed || step.active ? '#0f5132' : '#fff');
           let txtColor = bgColor === '#fff' ? iconColor : '#fff';
-          let icon = step.title === 'Pesanan Dibuat' ? 'check' : 
-                     step.title === 'Verifikasi Pembayaran' ? 'clock' : 
-                     step.title === 'Disetujui (Lunas)' ? 'check-circle' : 
-                     stepCanceled ? 'x' : 'truck';
+          let icon = step.icon || 'circle';
           return `
             <div style="display:flex; gap:20px; margin-bottom:24px; position:relative; z-index:2; align-items:flex-start;">
               <div style="width:30px; height:30px; border-radius:50%; background:${bgColor}; border:2px solid ${iconColor}; color:${txtColor}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
