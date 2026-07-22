@@ -14,10 +14,26 @@ function authHeaders() {
   };
 }
 
+function logoutAdmin(e) {
+  if (e) e.preventDefault();
+  localStorage.removeItem('banditrock_token');
+  sessionStorage.removeItem('banditrock_token');
+  window.location.href = 'login.html';
+}
+
+function handleApiAuthError(res, json) {
+  if (res.status === 401 || (json && json.message && (json.message.includes('Token') || json.message.includes('token')))) {
+    console.warn('Session expired or token invalid. Redirecting to login...');
+    logoutAdmin();
+    return true;
+  }
+  return false;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Check login via token
   const token = getToken();
-  const currentPage = window.location.pathname.split('/').pop();
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
   if (!token && currentPage !== 'login.html') {
     window.location.href = 'login.html';
@@ -31,10 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById('btn-logout');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      localStorage.removeItem('banditrock_token');
-      sessionStorage.removeItem('banditrock_token');
-      window.location.href = 'login.html';
+      logoutAdmin(e);
     });
   }
 
@@ -79,6 +92,7 @@ async function setupAdminNotifications() {
       headers: authHeaders()
     });
     const json = await res.json();
+    if (handleApiAuthError(res, json)) return;
     if (!json.success || !json.data) return;
 
     const newOrders = json.data.filter(o => o.status === 'waiting_verification' || o.status === 'pending_payment');
@@ -141,9 +155,8 @@ async function setupAdminNotifications() {
     console.error('Error fetching admin notifications:', err);
   }
 }
-});
 
 // Helper for formatting currency
 function formatRpAdmin(number) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number || 0);
 }
