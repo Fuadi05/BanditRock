@@ -217,13 +217,12 @@
           Selesaikan Pemesanan di WhatsApp</h2>
         <p
           style="font-size: 13px; color: var(--text-secondary); line-height: 1.8; max-width: 340px; margin: 0 auto 24px;">
-          Rincian pesanan Anda telah berhasil dibuat. Silakan periksa WhatsApp Anda untuk melihat pesan rincian pesanan
-          yang dikirimkan oleh sistem kami.
+          Klik tombol di bawah ini untuk menyimpan pesanan dan langsung membuka chat WhatsApp dengan Admin kami.
         </p>
         <div style="display: flex; justify-content: center; max-width: 320px; margin: 0 auto;">
           <button onclick="finishCheckout()"
             style="width: 100%; background: var(--grad-primary); color: var(--white); border: none; padding: 12px 32px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer;">
-            Selesai & Tutup
+            Buka WhatsApp & Selesai
           </button>
         </div>
       </div>
@@ -450,6 +449,14 @@
         const json = await res.json();
 
         if (json.success) {
+          const orderId = json.data.order_id;
+          const totalStr = formatRp(json.data.total_tagihan);
+          const itemSummary = cart.map(i => `- ${i.name} (${i.size || 'Standar'}) x${i.qty}`).join('\n');
+          const waMessage = `Halo Admin Batu Merapi,\n\nSaya ingin mengonfirmasi pesanan baru:\n*Nomor Order*: ${orderId}\n*Nama*: ${customerName}\n*No. HP*: ${phone}\n\n*Detail Pesanan*:\n${itemSummary}\n\n*Total Tagihan*: ${totalStr}\n\nMohon informasi selanjutnya untuk pembayaran. Terima kasih!`;
+          
+          const waUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(waMessage)}`;
+          window.open(waUrl, '_blank');
+
           clearCart();
           renderCart();
           closeCheckout();
@@ -458,7 +465,7 @@
           if (window.showGlobalToast) {
             window.showGlobalToast(
               'PESANAN BERHASIL!',
-              `Order ${json.data.order_id} telah dibuat. Total: ${formatRp(json.data.total_tagihan)}`,
+              `Order ${orderId} telah dibuat. Total: ${totalStr}`,
               'success',
               true
             );
