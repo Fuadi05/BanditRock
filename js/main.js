@@ -163,114 +163,163 @@ const mockOrders = {
   }
 };
 
-function searchTrack(query) {
+async function searchTrack(query) {
   const resultsContainer = document.getElementById('track-results');
   if (!resultsContainer) return;
-  const order = mockOrders[query.toUpperCase().trim()];
-  
-  if (!order) {
-    resultsContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#ef4444">Pesanan tidak ditemukan. Periksa kembali nomor resi/order Anda.</div>';
+  const cleanId = String(query || '').trim().replace(/^#/, '');
+
+  if (!cleanId) {
+    resultsContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#ef4444">Masukkan nomor ID pesanan Anda.</div>';
     return;
   }
 
-  let timelineHtml = `
-    <div style="position:relative; padding-left:8px; margin-top:20px;">
-      <!-- vertical line -->
-      <div style="position:absolute; top:12px; bottom:20px; left:22px; width:2px; background:#e2e8f0; z-index:1;"></div>
-      
-      ${order.timeline.map((step, index) => {
-        let isCanceled = step.isCanceled;
-        let iconColor = isCanceled ? '#ef4444' : (step.completed || step.active ? '#0f5132' : '#94a3b8');
-        let bgColor = isCanceled ? '#fff' : (step.completed || step.active ? '#0f5132' : '#fff');
-        let txtColor = bgColor === '#fff' ? iconColor : '#fff';
-        let icon = step.title === 'Konfirmasi' ? 'check' : 
-                   step.title === 'Disetujui' ? 'check-circle' : 
-                   step.title === 'Diproses' ? 'clock' : 
-                   step.title === 'Dibatalkan' ? 'x' : 
-                   step.title === 'Dikirim' ? 'truck' : 'circle';
-                   
-        return `
-          <div style="display:flex; gap:20px; margin-bottom:28px; position:relative; z-index:2; align-items:flex-start;">
-            <div style="width:30px; height:30px; border-radius:50%; background:${bgColor}; border:2px solid ${iconColor}; color:${txtColor}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-              <i data-lucide="${icon}" style="width:16px; height:16px;"></i>
-            </div>
-            <div style="${isCanceled ? 'opacity: 0.8;' : ''}">
-              <div style="font-size:14px; font-weight:700; color:${isCanceled ? '#ef4444' : (step.completed || step.active ? '#0f5132' : '#1e293b')}; margin-bottom:2px;">${step.title}</div>
-              <div style="font-size:12px; color:#64748b; margin-bottom:6px;">${step.time}</div>
-              <div style="font-size:13px; color:${step.active || isCanceled ? '#1e293b' : '#475569'}; ${step.active || isCanceled ? 'font-weight:600;' : ''}">${step.desc}</div>
-            </div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
+  resultsContainer.innerHTML = '<div style="text-align:center; padding:30px; color:#64748b">🔍 Mencari data pesanan...</div>';
 
-  let productsHtml = order.products.map(p => `
-    <div style="display:flex; gap:12px; margin-bottom:16px; align-items:center;">
-      <img src="${p.img}" alt="${p.name}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; background:#f1f5f9; border:1px solid #e2e8f0;">
-      <div style="flex:1;">
-        <div style="font-size:13px; font-weight:700; color:#1e293b; margin-bottom:2px;">${p.name}</div>
-        <div style="font-size:12px; color:#64748b;">x${p.qty} Unit</div>
+  try {
+    const res = await fetch(`https://batumerapi.biz.id/api/order/track/${encodeURIComponent(cleanId)}`);
+    const json = await res.json();
+
+    if (!json.success || !json.data) {
+      resultsContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444">${json.message || 'Pesanan tidak ditemukan. Periksa kembali nomor resi/order Anda.'}</div>`;
+      return;
+    }
+
+    const order = json.data;
+    const dateFormatted = new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    const currentStatus = order.status;
+    const isCanceled = (currentStatus === 'cancelled');
+
+    const timeline = [
+      {
+        title: 'Pesanan Dibuat',
+        time: dateFormatted,
+        desc: 'Pesanan telah dicatat di sistem.',
+        completed: true
+      },
+      {
+        title: 'Verifikasi Pembayaran',
+        time: ['waiting_verification', 'paid', 'processing', 'shipped'].includes(currentStatus) ? 'Selesai / Dalam Proses' : '-',
+        desc: 'Bukti pembayaran diperiksa oleh admin.',
+        completed: ['waiting_verification', 'paid', 'processing', 'shipped'].includes(currentStatus),
+        active: currentStatus === 'waiting_verification'
+      },
+      {
+        title: 'Disetujui (Lunas)',
+        time: ['paid', 'processing', 'shipped'].includes(currentStatus) ? 'Terverifikasi' : '-',
+        desc: 'Pembayaran terkonfirmasi lunas.',
+        completed: ['paid', 'processing', 'shipped'].includes(currentStatus),
+        active: currentStatus === 'paid'
+      },
+      {
+        title: 'Diproses / Dikirim',
+        time: ['processing', 'shipped'].includes(currentStatus) ? 'Pengiriman' : '-',
+        desc: isCanceled ? 'Pesanan ini telah dibatalkan.' : (currentStatus === 'shipped' ? 'Pesanan sedang dalam pengiriman ke lokasi tujuan.' : 'Pesanan diproses tim pengrajin.'),
+        completed: ['processing', 'shipped'].includes(currentStatus),
+        active: ['processing', 'shipped'].includes(currentStatus),
+        isCanceled: isCanceled
+      }
+    ];
+
+    const statusLabels = {
+      'pending_payment': 'Menunggu Pembayaran',
+      'waiting_verification': 'Verifikasi Pembayaran',
+      'paid': 'Pesanan Disetujui (Lunas)',
+      'processing': 'Pesanan Diproses',
+      'shipped': 'Dalam Pengiriman',
+      'cancelled': 'Pesanan Dibatalkan'
+    };
+
+    let timelineHtml = `
+      <div style="position:relative; padding-left:8px; margin-top:20px;">
+        <div style="position:absolute; top:12px; bottom:20px; left:22px; width:2px; background:#e2e8f0; z-index:1;"></div>
+        ${timeline.map(step => {
+          let stepCanceled = step.isCanceled;
+          let iconColor = stepCanceled ? '#ef4444' : (step.completed || step.active ? '#0f5132' : '#94a3b8');
+          let bgColor = stepCanceled ? '#fff' : (step.completed || step.active ? '#0f5132' : '#fff');
+          let txtColor = bgColor === '#fff' ? iconColor : '#fff';
+          let icon = step.title === 'Pesanan Dibuat' ? 'check' : 
+                     step.title === 'Verifikasi Pembayaran' ? 'clock' : 
+                     step.title === 'Disetujui (Lunas)' ? 'check-circle' : 
+                     stepCanceled ? 'x' : 'truck';
+          return `
+            <div style="display:flex; gap:20px; margin-bottom:24px; position:relative; z-index:2; align-items:flex-start;">
+              <div style="width:30px; height:30px; border-radius:50%; background:${bgColor}; border:2px solid ${iconColor}; color:${txtColor}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i data-lucide="${icon}" style="width:16px; height:16px;"></i>
+              </div>
+              <div style="${stepCanceled ? 'opacity:0.8;' : ''}">
+                <div style="font-size:14px; font-weight:700; color:${stepCanceled ? '#ef4444' : (step.completed || step.active ? '#0f5132' : '#1e293b')}; margin-bottom:2px;">${step.title}</div>
+                <div style="font-size:12px; color:#64748b; margin-bottom:4px;">${step.time}</div>
+                <div style="font-size:13px; color:#475569;">${step.desc}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
       </div>
-      <div style="font-size:13px; font-weight:800; color:#0f5132;">${formatRp(p.price)}</div>
-    </div>
-  `).join('');
+    `;
 
-  resultsContainer.innerHTML = `
-    <div style="display:grid; grid-template-columns: 1fr 340px; gap:24px; text-align:left; background:#e2e8f0; padding:24px; border-radius:16px; margin-top:20px;">
-      
-      <!-- Left Side (Status) -->
-      <div style="background:#fff; border-radius:12px; padding:24px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:16px; border-bottom:1px solid #e2e8f0;">
-          <div style="display:flex; gap:14px; align-items:center;">
-            <div style="width:46px; height:46px; border-radius:10px; background:#f0fdf4; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-              <i data-lucide="truck" style="width:24px; height:24px; color:#0f5132;"></i>
+    let productsHtml = (order.order_items && order.order_items.length > 0) ? order.order_items.map(item => `
+      <div style="display:flex; gap:12px; margin-bottom:12px; align-items:center;">
+        <img src="${item.products && item.products.image_url ? item.products.image_url : '../images/media__1780324962198.jpg'}" alt="${item.products ? item.products.nama : 'Produk'}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; background:#f1f5f9; border:1px solid #e2e8f0;">
+        <div style="flex:1;">
+          <div style="font-size:13px; font-weight:700; color:#1e293b;">${item.products ? item.products.nama : 'Produk'}</div>
+          <div style="font-size:12px; color:#64748b;">x${item.qty} Unit</div>
+        </div>
+        <div style="font-size:13px; font-weight:800; color:#0f5132;">${formatRp((item.harga_disepakati || 0) * item.qty)}</div>
+      </div>
+    `).join('') : '<div style="font-size:13px; color:#64748b;">Tidak ada rincian produk</div>';
+
+    resultsContainer.innerHTML = `
+      <div style="display:grid; grid-template-columns: 1fr 340px; gap:24px; text-align:left; background:#e2e8f0; padding:24px; border-radius:16px; margin-top:20px;">
+        <div style="background:#fff; border-radius:12px; padding:24px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:16px; border-bottom:1px solid #e2e8f0;">
+            <div style="display:flex; gap:14px; align-items:center;">
+              <div style="width:46px; height:46px; border-radius:10px; background:#f0fdf4; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i data-lucide="truck" style="width:24px; height:24px; color:#0f5132;"></i>
+              </div>
+              <div>
+                <div style="font-size:11px; color:#64748b; font-weight:600; margin-bottom:2px;">Status Saat Ini</div>
+                <div style="font-size:18px; font-weight:800; color:${isCanceled ? '#ef4444' : '#0f5132'};">${statusLabels[order.status] || order.status}</div>
+              </div>
             </div>
-            <div>
-              <div style="font-size:11px; color:#64748b; font-weight:600; margin-bottom:2px;">Status Saat Ini</div>
-              <div style="font-size:20px; font-weight:800; color:#0f5132;">${order.status}</div>
+            <div style="text-align:right;">
+              <div style="font-size:13px; font-weight:800; color:#1e293b;">Order ID: ${order.id}</div>
             </div>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:13px; font-weight:800; color:#1e293b;">Order ID: ${order.id}</div>
+          ${timelineHtml}
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div style="background:#fff; border-radius:12px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:16px;">
+              <i data-lucide="user" style="width:18px; height:18px; color:#0f5132;"></i>
+              <div style="font-size:14px; font-weight:800; color:#0f5132;">Detail Pemesan</div>
+            </div>
+            <div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px;">Nama Lengkap</div>
+            <div style="font-size:13px; color:#1e293b; margin-bottom:12px; font-weight:500;">${order.nama_pembeli}</div>
+            <div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px;">Tanggal Pesanan</div>
+            <div style="font-size:13px; color:#1e293b; font-weight:500;">${dateFormatted}</div>
+          </div>
+
+          <div style="background:#fff; border-radius:12px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:16px;">
+              <i data-lucide="package" style="width:18px; height:18px; color:#0f5132;"></i>
+              <div style="font-size:14px; font-weight:800; color:#0f5132;">Rincian Produk</div>
+            </div>
+            <div>${productsHtml}</div>
+            <hr style="border:none; border-top:1px dashed #cbd5e1; margin:16px 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:13px; font-weight:600; color:#475569;">Total Pembayaran</div>
+              <div style="font-size:16px; font-weight:800; color:#0f5132;">${formatRp(order.total_tagihan)}</div>
+            </div>
           </div>
         </div>
-        ${timelineHtml}
       </div>
-
-      <!-- Right Side (Cards) -->
-      <div style="display:flex; flex-direction:column; gap:16px;">
-        
-        <!-- Pemesan -->
-        <div style="background:#fff; border-radius:12px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
-          <div style="display:flex; gap:10px; align-items:center; margin-bottom:20px;">
-            <i data-lucide="user" style="width:18px; height:18px; color:#0f5132;"></i>
-            <div style="font-size:14px; font-weight:800; color:#0f5132;">Detail Pemesan</div>
-          </div>
-          <div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px;">Nama Lengkap</div>
-          <div style="font-size:13px; color:#1e293b; margin-bottom:16px; font-weight:500;">${order.pemesan}</div>
-          <div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px;">Tanggal Pesanan</div>
-          <div style="font-size:13px; color:#1e293b; font-weight:500;">${order.tanggal}</div>
-        </div>
-
-        <!-- Rincian Produk -->
-        <div style="background:#fff; border-radius:12px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
-          <div style="display:flex; gap:10px; align-items:center; margin-bottom:20px;">
-            <i data-lucide="package" style="width:18px; height:18px; color:#0f5132;"></i>
-            <div style="font-size:14px; font-weight:800; color:#0f5132;">Rincian Produk</div>
-          </div>
-          <div>${productsHtml}</div>
-          <hr style="border:none; border-top:1px dashed #cbd5e1; margin:20px 0;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="font-size:13px; font-weight:600; color:#475569;">Total Pembayaran</div>
-            <div style="font-size:16px; font-weight:800; color:#0f5132;">${formatRp(order.total)}</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  `;
-  if (window.lucide) window.lucide.createIcons();
+    `;
+    if (window.lucide) window.lucide.createIcons();
+  } catch (err) {
+    console.error('Error tracking order:', err);
+    resultsContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#ef4444">Gagal menghubungkan ke server untuk melacak pesanan.</div>';
+  }
 }
 
 // Global modal injection

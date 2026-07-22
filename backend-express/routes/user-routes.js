@@ -247,6 +247,53 @@ router.get('/order/search', async (req, res) => {
 
 
 // ─────────────────────────────────────────────
+// GET /api/order/track/:id
+// Lacak pesanan secara real-time berdasarkan Order ID
+// ─────────────────────────────────────────────
+router.get('/order/track/:id', async (req, res) => {
+  try {
+    const cleanId = String(req.params.id).trim().replace(/^#/, '')
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select(`
+        id,
+        nama_pembeli,
+        telepon,
+        total_tagihan,
+        status,
+        created_at,
+        order_items (
+          qty,
+          harga_disepakati,
+          products ( nama, image_url )
+        )
+      `)
+      .eq('id', cleanId)
+      .single()
+
+    if (error || !order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pesanan tidak ditemukan. Periksa kembali nomor resi/order Anda.'
+      })
+    }
+
+    res.json({
+      success: true,
+      data: order
+    })
+  } catch (err) {
+    console.error('Track order error:', err)
+    res.status(500).json({
+      success: false,
+      message: 'Gagal melacak pesanan.',
+      error: err.message
+    })
+  }
+})
+
+
+// ─────────────────────────────────────────────
 // POST /api/pembayaran
 // Upload bukti transfer dan catat konfirmasi pembayaran
 // ─────────────────────────────────────────────
