@@ -304,7 +304,7 @@ router.put('/orders/:id/status', async (req, res) => {
     const { id } = req.params
     const { status } = req.body
 
-    const allowedStatuses = ['pending_payment', 'waiting_verification', 'paid', 'processing', 'shipped', 'cancelled']
+    const allowedStatuses = ['pending_payment', 'waiting_verification', 'paid', 'processing', 'shipped', 'completed', 'cancelled']
     if (!status || !allowedStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -610,7 +610,7 @@ router.get('/laporan', async (req, res) => {
           )
         )
       `)
-      .eq('status', 'paid')
+      .in('status', ['paid', 'processing', 'shipped', 'completed'])
       .order('created_at', { ascending: false })
 
     // Filter berdasarkan bulan jika diberikan

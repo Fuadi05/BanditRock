@@ -76,6 +76,10 @@
           <h3 id="c-kirim">0</h3>
           <p>Dikirim</p>
         </div>
+        <div class="dash-card c-green" style="background: #ECFDF5; border: 1px solid #A7F3D0;">
+          <h3 id="c-selesai" style="color: #047857;">0</h3>
+          <p style="color: #065F46;">Selesai</p>
+        </div>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 32px;">
@@ -92,8 +96,9 @@
             <thead>
               <tr>
                 <th style="width: 50px;">NO</th>
-                <th>PROVINSI</th>
-                <th>JUMLAH</th>
+                <th>PELANGGAN</th>
+                <th>STATUS</th>
+                <th>TOTAL</th>
               </tr>
             </thead>
             <tbody id="prov-table">
@@ -118,41 +123,54 @@
         if (json.success && json.data) {
           const orders = json.data;
           
-          // Mapping status database ke label UI
           let stat = {
-            'Konfirmasi': 0,   // pending_payment
-            'Disetujui': 0,    // waiting_verification
-            'Diproses': 0,     // paid
-            'Dibatalkan': 0,   // cancelled
-            'Dikirim': 0       // (belum ada di DB, reserved)
-          };
-
-          const statusMap = {
-            'pending_payment': 'Konfirmasi',
-            'waiting_verification': 'Disetujui',
-            'paid': 'Diproses',
-            'cancelled': 'Dibatalkan'
+            'pending_payment': 0,
+            'waiting_verification': 0,
+            'paid': 0,
+            'processing': 0,
+            'shipped': 0,
+            'completed': 0,
+            'cancelled': 0
           };
 
           orders.forEach(o => {
-            const label = statusMap[o.status] || 'Konfirmasi';
-            if (stat[label] !== undefined) stat[label]++;
+            if (stat[o.status] !== undefined) stat[o.status]++;
           });
 
-          document.getElementById('c-konf').textContent = stat['Konfirmasi'];
-          document.getElementById('c-setuju').textContent = stat['Disetujui'];
-          document.getElementById('c-proses').textContent = stat['Diproses'];
-          document.getElementById('c-batal').textContent = stat['Dibatalkan'];
-          document.getElementById('c-kirim').textContent = stat['Dikirim'];
+          document.getElementById('c-konf').textContent = stat['pending_payment'] + stat['waiting_verification'];
+          document.getElementById('c-setuju').textContent = stat['paid'];
+          document.getElementById('c-proses').textContent = stat['processing'];
+          document.getElementById('c-kirim').textContent = stat['shipped'];
+          if (document.getElementById('c-selesai')) {
+            document.getElementById('c-selesai').textContent = stat['completed'];
+          }
+          document.getElementById('c-batal').textContent = stat['cancelled'];
 
-          // Tabel provinsi — belum ada data provinsi di tabel orders, tampilkan kosong
+          // Tabel pesanan terbaru di dasbor
+          const statusLabels = {
+            'pending_payment': 'Menunggu Bayar',
+            'waiting_verification': 'Verifikasi',
+            'paid': 'Disetujui',
+            'processing': 'Diproses',
+            'shipped': 'Dikirim',
+            'completed': 'Selesai',
+            'cancelled': 'Dibatalkan'
+          };
+
           document.getElementById('prov-table').innerHTML = orders.length === 0
-            ? '<tr><td colspan="3" style="text-align:center;">Belum ada data penjualan</td></tr>'
-            : '<tr><td colspan="3" style="text-align:center;">Belum ada data penjualan</td></tr>';
+            ? '<tr><td colspan="4" style="text-align:center;">Belum ada pesanan</td></tr>'
+            : orders.slice(0, 5).map((o, idx) => `
+                <tr>
+                  <td>${idx + 1}</td>
+                  <td style="font-weight:700;">${o.nama_pembeli}</td>
+                  <td><span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:#f1f5f9; color:#475569;">${statusLabels[o.status] || o.status}</span></td>
+                  <td style="font-weight:800; color:#0f5132;">${formatRpAdmin(o.total_tagihan)}</td>
+                </tr>
+              `).join('');
         }
       } catch (err) {
         console.error('Gagal memuat data dasbor:', err);
-        document.getElementById('prov-table').innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--danger);">Gagal memuat data</td></tr>';
+        document.getElementById('prov-table').innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--danger);">Gagal memuat data</td></tr>';
       }
     });
   </script>

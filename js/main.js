@@ -199,36 +199,44 @@ async function searchTrack(query) {
       },
       {
         title: 'Verifikasi Pembayaran',
-        time: ['waiting_verification', 'paid', 'processing', 'shipped'].includes(currentStatus) ? 'Selesai' : '-',
+        time: ['waiting_verification', 'paid', 'processing', 'shipped', 'completed'].includes(currentStatus) ? 'Selesai' : '-',
         desc: 'Bukti pembayaran diperiksa oleh admin.',
-        completed: ['waiting_verification', 'paid', 'processing', 'shipped'].includes(currentStatus),
+        completed: ['waiting_verification', 'paid', 'processing', 'shipped', 'completed'].includes(currentStatus),
         active: currentStatus === 'waiting_verification',
         icon: 'clock'
       },
       {
         title: 'Disetujui (Lunas)',
-        time: ['paid', 'processing', 'shipped'].includes(currentStatus) ? 'Terverifikasi' : '-',
+        time: ['paid', 'processing', 'shipped', 'completed'].includes(currentStatus) ? 'Terverifikasi' : '-',
         desc: 'Pembayaran terkonfirmasi lunas.',
-        completed: ['paid', 'processing', 'shipped'].includes(currentStatus),
+        completed: ['paid', 'processing', 'shipped', 'completed'].includes(currentStatus),
         active: currentStatus === 'paid',
         icon: 'check-circle'
       },
       {
         title: 'Pesanan Diproses',
-        time: ['processing', 'shipped'].includes(currentStatus) ? 'Sedang Diproses' : '-',
+        time: ['processing', 'shipped', 'completed'].includes(currentStatus) ? 'Diproses' : '-',
         desc: isCanceled ? 'Pesanan dibatalkan.' : 'Tim pengrajin sedang menyiapkan pesanan Anda.',
-        completed: ['processing', 'shipped'].includes(currentStatus),
+        completed: ['processing', 'shipped', 'completed'].includes(currentStatus),
         active: currentStatus === 'processing',
         icon: 'box'
       },
       {
         title: 'Dalam Pengiriman',
-        time: currentStatus === 'shipped' ? 'Dalam Pengiriman' : '-',
-        desc: isCanceled ? 'Pesanan ini telah dibatalkan.' : (currentStatus === 'shipped' ? 'Pesanan sedang dalam pengiriman ke lokasi tujuan.' : 'Menunggu pengiriman.'),
-        completed: currentStatus === 'shipped',
+        time: ['shipped', 'completed'].includes(currentStatus) ? 'Dikirim' : '-',
+        desc: isCanceled ? 'Pesanan dibatalkan.' : (['shipped', 'completed'].includes(currentStatus) ? 'Pesanan dalam pengiriman ke lokasi tujuan.' : 'Menunggu pengiriman.'),
+        completed: ['shipped', 'completed'].includes(currentStatus),
         active: currentStatus === 'shipped',
+        icon: 'truck'
+      },
+      {
+        title: 'Pesanan Selesai',
+        time: currentStatus === 'completed' ? 'Selesai' : '-',
+        desc: isCanceled ? 'Pesanan telah dibatalkan.' : (currentStatus === 'completed' ? 'Pesanan telah diterima. Transaksi selesai!' : 'Menunggu konfirmasi selesai.'),
+        completed: currentStatus === 'completed',
+        active: currentStatus === 'completed',
         isCanceled: isCanceled,
-        icon: isCanceled ? 'x' : 'truck'
+        icon: isCanceled ? 'x' : 'flag'
       }
     ];
 
@@ -238,6 +246,7 @@ async function searchTrack(query) {
       'paid': 'Pesanan Disetujui (Lunas)',
       'processing': 'Pesanan Diproses',
       'shipped': 'Dalam Pengiriman',
+      'completed': 'Pesanan Selesai',
       'cancelled': 'Pesanan Dibatalkan'
     };
 

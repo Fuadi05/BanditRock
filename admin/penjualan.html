@@ -60,6 +60,7 @@
           <div class="tab-item" onclick="setFilter('paid', this)">Disetujui</div>
           <div class="tab-item" onclick="setFilter('processing', this)">Diproses</div>
           <div class="tab-item" onclick="setFilter('shipped', this)">Dikirim</div>
+          <div class="tab-item" onclick="setFilter('completed', this)">Selesai</div>
           <div class="tab-item" onclick="setFilter('cancelled', this)">Dibatalkan</div>
         </div>
 
@@ -120,23 +121,20 @@
             </div>
           </div>
 
-          <!-- Items Purchased -->
-          <div style="margin-bottom: 20px;">
-            <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">Produk Dipesan</h3>
-            <div id="modal-items-list" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"></div>
-            <div style="display: flex; justify-content: space-between; padding: 12px 16px; background: #F8FAFC; border-top: 1px solid var(--border-color); font-weight: 800; font-size: 15px; color: var(--text-color);">
-              <span>TOTAL TAGIHAN</span>
-              <span id="modal-total-amount">Rp 0</span>
+          <!-- Proof of Payment -->
+          <div style="margin-bottom: 20px; background: #F8FAFC; border: 1px dashed var(--border-color); border-radius: 8px; padding: 14px; text-align: center;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--text-color); margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <i data-lucide="credit-card" style="width: 16px; height: 16px; color: var(--primary);"></i> BUKTI TRANSFER PEMBAYARAN
+            </div>
+            <div id="modal-payment-info" style="font-size: 12px; color: var(--text-muted);">
+              Belum mengunggah bukti transfer.
             </div>
           </div>
 
-          <!-- Payment Verification Section -->
-          <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; background: #FFF; margin-bottom: 20px;">
-            <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-              <i data-lucide="credit-card" style="width:16px; height:16px; color: var(--primary);"></i> Bukti Transfer Pembayaran
-            </h3>
-
-            <div id="payment-info-box">
+          <!-- Items Ordered -->
+          <div style="margin-bottom: 20px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">PRODUK DIPESAN</div>
+            <div id="modal-order-items" style="display: flex; flex-direction: column; gap: 8px;">
               <!-- Rendered via JS -->
             </div>
           </div>
@@ -148,6 +146,7 @@
               <button onclick="updateOrderStatus('paid')" style="padding: 8px 14px; background: #10B981; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">✅ Setujui (Lunas)</button>
               <button onclick="updateOrderStatus('processing')" style="padding: 8px 14px; background: #6366F1; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">⚙️ Diproses</button>
               <button onclick="updateOrderStatus('shipped')" style="padding: 8px 14px; background: #14B8A6; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">🚚 Dikirim</button>
+              <button onclick="updateOrderStatus('completed')" style="padding: 8px 14px; background: #059669; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">🏁 Selesai</button>
               <button onclick="updateOrderStatus('cancelled')" style="padding: 8px 14px; background: #EF4444; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">❌ Batalkan</button>
             </div>
           </div>
@@ -170,6 +169,7 @@
       'paid': { label: 'Disetujui (Lunas)', style: 'background: #D1FAE5; color: #059669; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
       'processing': { label: 'Diproses', style: 'background: #E0E7FF; color: #4338CA; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
       'shipped': { label: 'Dikirim', style: 'background: #CCFBF1; color: #0F766E; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
+      'completed': { label: 'Selesai', style: 'background: #D1FAE5; color: #047857; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
       'cancelled': { label: 'Dibatalkan', style: 'background: #FEE2E2; color: #DC2626; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' }
     };
 
