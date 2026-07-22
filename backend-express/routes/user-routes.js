@@ -268,24 +268,25 @@ router.post('/pembayaran', upload.single('bukti'), async (req, res) => {
       })
     }
 
+    const cleanOrderId = String(order_id).trim().replace(/^#/, '')
+
     // --- Cek apakah order tersebut ada ---
     const { data: order, error: orderErr } = await supabase
       .from('orders')
       .select('id, status')
-      .eq('id', order_id)
+      .eq('id', cleanOrderId)
       .single()
 
     if (orderErr || !order) {
       return res.status(404).json({
         success: false,
-        message: `Order dengan ID "${order_id}" tidak ditemukan.`
+        message: `Order dengan ID "${cleanOrderId}" tidak ditemukan.`
       })
     }
 
     // --- Upload file bukti ke Supabase Storage bucket "bukti-transfer" ---
-    // Buat nama file unik: orderId_timestamp.ext
     const ext = file.originalname.split('.').pop()
-    const fileName = `${order_id}_${Date.now()}.${ext}`
+    const fileName = `${cleanOrderId}_${Date.now()}.${ext}`
 
     const { error: uploadErr } = await supabase.storage
       .from('bukti-transfer')
@@ -294,7 +295,10 @@ router.post('/pembayaran', upload.single('bukti'), async (req, res) => {
         upsert: false
       })
 
-    if (uploadErr) throw uploadErr
+    if (uploadErr) {
+      console.error('Supabase storage upload error:', uploadErr)
+      throw uploadErr
+    }
 
     // Ambil URL publik dari file yang baru di-upload
     const { data: urlData } = supabase.storage
@@ -307,29 +311,35 @@ router.post('/pembayaran', upload.single('bukti'), async (req, res) => {
     const { error: payErr } = await supabase
       .from('payments')
       .insert({
-        order_id,
+        order_id: cleanOrderId,
         bank_pengirim,
         nominal: parseInt(nominal, 10),
         bukti_url: buktiUrl,
         status_verifikasi: false
       })
 
-    if (payErr) throw payErr
+    if (payErr) {
+      console.error('Supabase payments insert error:', payErr)
+      throw payErr
+    }
 
     // --- Ubah status order menjadi "waiting_verification" ---
     const { error: updateErr } = await supabase
       .from('orders')
       .update({ status: 'waiting_verification' })
-      .eq('id', order_id)
+      .eq('id', cleanOrderId)
 
-    if (updateErr) throw updateErr
+    if (updateErr) {
+      console.error('Supabase orders update error:', updateErr)
+      throw updateErr
+    }
 
     // --- Response sukses ---
     res.status(201).json({
       success: true,
       message: '✅ Bukti pembayaran berhasil diupload! Silakan tunggu verifikasi admin (maks 1x24 jam).',
       data: {
-        order_id,
+        order_id: cleanOrderId,
         bank_pengirim,
         nominal: parseInt(nominal, 10),
         bukti_url: buktiUrl,
@@ -337,6 +347,7 @@ router.post('/pembayaran', upload.single('bukti'), async (req, res) => {
       }
     })
   } catch (err) {
+    console.error('Gagal /api/pembayaran:', err)
     res.status(500).json({
       success: false,
       message: 'Gagal mengupload bukti pembayaran.',

@@ -21,6 +21,9 @@ const { checkoutLimiter, paymentLimiter } = require('./middleware/rateLimiter')
 const app = express()
 const PORT = process.env.PORT || 3000
 
+// Trust reverse proxy (cPanel / Nginx / Apache) for rate limiter IP detection
+app.set('trust proxy', true)
+
 
 // ═══════════════════════════════════════
 // MIDDLEWARE GLOBAL
