@@ -454,7 +454,16 @@
           const itemSummary = cart.map(i => `- ${i.name} (${i.size || 'Standar'}) x${i.qty}`).join('\n');
           const waMessage = `Halo Admin Batu Merapi,\n\nSaya ingin mengonfirmasi pesanan baru:\n*Nomor Order*: ${orderId}\n*Nama*: ${customerName}\n*No. HP*: ${phone}\n\n*Detail Pesanan*:\n${itemSummary}\n\n*Total Tagihan*: ${totalStr}\n\nMohon informasi selanjutnya untuk pembayaran. Terima kasih!`;
           
-          const waUrl = `https://wa.me/6287846725184?text=${encodeURIComponent(waMessage)}`;
+          let targetWa = '6287846725184';
+          try {
+            const waRes = await fetch(`${API_BASE}/settings/whatsapp`);
+            const waJson = await waRes.json();
+            if (waJson.success && waJson.whatsapp) {
+              targetWa = waJson.whatsapp.replace(/[^0-9]/g, '');
+            }
+          } catch (e) {}
+
+          const waUrl = `https://wa.me/${targetWa}?text=${encodeURIComponent(waMessage)}`;
           window.open(waUrl, '_blank');
 
           clearCart();

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil - Syarif Art Stone Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">
+        <i data-lucide="gem"></i>
+      </div>
+      <span>Syarif Art Stone</span>
+    </div>
+    
+    <div class="nav-menu">
+      <div class="menu-group">
+        <div class="menu-label">MENU UTAMA</div>
+        <a href="index.html" class="menu-item"><i data-lucide="layout-dashboard"></i> Dasbor</a>
+        <a href="penjualan.html" class="menu-item"><i data-lucide="shopping-bag"></i> Penjualan Produk</a>
+        <a href="laporan.html" class="menu-item"><i data-lucide="bar-chart-3"></i> Laporan</a>
+      </div>
+      
+      <div class="menu-group">
+        <div class="menu-label">PRODUK</div>
+        <a href="tambah-order-kustom.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Order Kustom</a>
+        <a href="tambah-produk.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Produk</a>
+        <a href="produk.html" class="menu-item"><i data-lucide="box"></i> Daftar Produk</a>
+      </div>
+      
+      <div class="menu-group">
+        <div class="menu-label">ADMIN</div>
+        <a href="profil.html" class="menu-item active"><i data-lucide="user"></i> Profil</a>
+        <a href="login.html" onclick="logoutAdmin(event)" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> Keluar</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <header class="topbar">
+      <h1 class="page-title">Profile</h1>
+      <div class="topbar-right">
+        <button class="notif-btn">
+          <i data-lucide="bell"></i>
+          <span class="notif-badge" style="display:none;">0</span>
+        </button>
+        <div class="avatar" id="topbar-avatar">A</div>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div class="card" style="padding: 32px; border-radius: 16px; margin-top: 10px;">
+        
+        <!-- Tab Navigation -->
+        <div style="border-bottom: 1px solid #E2E8F0; margin-bottom: 32px; padding-bottom: 12px;">
+          <span style="font-size: 14px; font-weight: 700; color: #2563EB; border-bottom: 2px solid #2563EB; padding-bottom: 12px; display: inline-block;">Edit Profile</span>
+        </div>
+
+        <form id="form-profile" style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <div style="display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap;">
+            
+            <!-- Left Avatar Container -->
+            <div style="position: relative; width: 110px; height: 110px; flex-shrink: 0; margin-right: 16px;">
+              <img id="profile-avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar Admin" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #F1F5F9; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <label for="avatar-input" style="position: absolute; bottom: 2px; right: 2px; background: #2563EB; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.15);" title="Ubah Foto Profil">
+                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+              </label>
+              <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="previewAvatar(event)">
+            </div>
+
+            <!-- Right Inputs Grid -->
+            <div style="flex: 1; min-width: 280px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: #64748B; display: block; margin-bottom: 8px;">Your Name</label>
+                <input type="text" id="admin-username" class="form-control" placeholder="Nama Admin" required style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 14px; color: #1E293B;">
+              </div>
+
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: #64748B; display: block; margin-bottom: 8px;">No WhatsApp*</label>
+                <input type="text" id="admin-wa" class="form-control" placeholder="+62 878-4672-5184" required style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 14px; color: #1E293B;">
+              </div>
+
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: #64748B; display: block; margin-bottom: 8px;">Password Baru (Opsional)</label>
+                <input type="password" id="admin-password" class="form-control" placeholder="••••••••" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 14px; color: #1E293B;">
+              </div>
+
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: #64748B; display: block; margin-bottom: 8px;">Konfirmasi Password</label>
+                <input type="password" id="admin-confirm-password" class="form-control" placeholder="••••••••" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 14px; color: #1E293B;">
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Alert Notification Box -->
+          <div id="alert-box" style="display: none; padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-top: 8px;"></div>
+
+          <!-- Save Button (Bottom Right) -->
+          <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+            <button type="submit" id="btn-save-profile" style="background: #2563EB; color: white; border: none; padding: 12px 32px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); transition: background 0.2s;">
+              Save
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadProfileData();
+
+      document.getElementById('form-profile').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await saveProfileData();
+      });
+    });
+
+    function previewAvatar(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('profile-avatar-img').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function loadProfileData() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/profile`, {
+          headers: authHeaders()
+        });
+        const json = await res.json();
+        if (handleApiAuthError(res, json)) return;
+
+        if (json.success && json.data) {
+          document.getElementById('admin-username').value = json.data.username || '';
+          document.getElementById('admin-wa').value = json.data.whatsapp || '6287846725184';
+          
+          if (document.getElementById('topbar-avatar')) {
+            document.getElementById('topbar-avatar').textContent = (json.data.username || 'A').charAt(0).toUpperCase();
+          }
+        }
+      } catch (err) {
+        console.error('Gagal memuat profil admin:', err);
+      }
+    }
+
+    async function saveProfileData() {
+      const username = document.getElementById('admin-username').value.trim();
+      const whatsapp = document.getElementById('admin-wa').value.trim();
+      const password = document.getElementById('admin-password').value;
+      const confirmPassword = document.getElementById('admin-confirm-password').value;
+      const alertBox = document.getElementById('alert-box');
+      const btnSave = document.getElementById('btn-save-profile');
+
+      if (!username || !whatsapp) {
+        showAlert('Your Name dan No WhatsApp wajib diisi.', 'error');
+        return;
+      }
+
+      if (password || confirmPassword) {
+        if (password !== confirmPassword) {
+          showAlert('Password dan Konfirmasi Password tidak cocok.', 'error');
+          return;
+        }
+        if (password.length < 4) {
+          showAlert('Password minimal 4 karakter.', 'error');
+          return;
+        }
+      }
+
+      btnSave.disabled = true;
+      btnSave.textContent = 'Saving...';
+      alertBox.style.display = 'none';
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/profile`, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            username,
+            whatsapp,
+            password: password || undefined
+          })
+        });
+        const json = await res.json();
+        if (handleApiAuthError(res, json)) return;
+
+        if (json.success) {
+          showAlert('✅ Profil berhasil diperbarui!', 'success');
+          document.getElementById('admin-password').value = '';
+          document.getElementById('admin-confirm-password').value = '';
+
+          if (json.data && json.data.token) {
+            localStorage.setItem('banditrock_token', json.data.token);
+          }
+
+          if (document.getElementById('topbar-avatar')) {
+            document.getElementById('topbar-avatar').textContent = username.charAt(0).toUpperCase();
+          }
+        } else {
+          showAlert(json.message || 'Gagal memperbarui profil.', 'error');
+        }
+      } catch (err) {
+        console.error('Gagal update profil:', err);
+        showAlert('Terjadi kesalahan koneksi.', 'error');
+      } finally {
+        btnSave.disabled = false;
+        btnSave.textContent = 'Save';
+      }
+    }
+
+    function showAlert(msg, type) {
+      const alertBox = document.getElementById('alert-box');
+      alertBox.style.display = 'block';
+      if (type === 'success') {
+        alertBox.style.background = '#D1FAE5';
+        alertBox.style.color = '#059669';
+        alertBox.style.border = '1px solid #A7F3D0';
+      } else {
+        alertBox.style.background = '#FEE2E2';
+        alertBox.style.color = '#DC2626';
+        alertBox.style.border = '1px solid #FCA5A5';
+      }
+      alertBox.textContent = msg;
+    }
+  </script>
+</body>
+</html>

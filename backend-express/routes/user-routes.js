@@ -26,6 +26,23 @@ const upload = multer({
 })
 
 
+// GET /api/settings/whatsapp
+// Ambil nomor WhatsApp admin aktif untuk checkout
+router.get('/settings/whatsapp', async (req, res) => {
+  try {
+    const { data: admin } = await supabase
+      .from('admins')
+      .select('whatsapp')
+      .limit(1)
+      .single();
+
+    const wa = (admin && admin.whatsapp) ? admin.whatsapp : '6287846725184';
+    res.json({ success: true, whatsapp: wa });
+  } catch (err) {
+    res.json({ success: true, whatsapp: '6287846725184' });
+  }
+});
+
 // ─────────────────────────────────────────────
 // GET /api/produk
 // Menarik katalog produk (opsional: filter kategori)

@@ -3,37 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product List - Syarif Art Stone Admin</title>
+  <title>Daftar Produk - Syarif Art Stone Admin</title>
   <link rel="stylesheet" href="css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-  <!-- Sidebar -->
+  <!-- Sidebar Navigation -->
   <aside class="sidebar">
-    <div class="sidebar-header">
-      <a href="index.html" class="sidebar-logo">
-        <div style="background: var(--primary); color: white; padding: 4px; border-radius: 6px;"><i data-lucide="layers" style="color: white; width:20px; height:20px;"></i></div> 
-        Syarif Art Stone
-      </a>
+    <div class="brand">
+      <div class="brand-icon">
+        <i data-lucide="gem"></i>
+      </div>
+      <span>Syarif Art Stone</span>
     </div>
     
-    <div class="sidebar-menu">
+    <div class="nav-menu">
       <div class="menu-group">
-        <div class="menu-label">Menu Utama</div>
-        <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dasbor</a>
-        <a href="penjualan.html" class="menu-item"><i data-lucide="shopping-cart"></i> Penjualan Produk</a>
-        <a href="laporan.html" class="menu-item"><i data-lucide="star"></i> Laporan</a>
+        <div class="menu-label">MENU UTAMA</div>
+        <a href="index.html" class="menu-item"><i data-lucide="layout-dashboard"></i> Dasbor</a>
+        <a href="penjualan.html" class="menu-item"><i data-lucide="shopping-bag"></i> Penjualan Produk</a>
+        <a href="laporan.html" class="menu-item"><i data-lucide="bar-chart-3"></i> Laporan</a>
       </div>
       
       <div class="menu-group">
-        <div class="menu-label">Produk</div>
+        <div class="menu-label">PRODUK</div>
         <a href="tambah-order-kustom.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Order Kustom</a>
         <a href="tambah-produk.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Produk</a>
         <a href="produk.html" class="menu-item active"><i data-lucide="box"></i> Daftar Produk</a>
       </div>
       
       <div class="menu-group">
-        <div class="menu-label">Admin</div>
+        <div class="menu-label">ADMIN</div>
+        <a href="profil.html" class="menu-item"><i data-lucide="user"></i> Profil</a>
         <a href="login.html" onclick="logoutAdmin(event)" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> Keluar</a>
       </div>
     </div>
@@ -46,9 +48,9 @@
       <div class="topbar-right">
         <button class="notif-btn">
           <i data-lucide="bell"></i>
-          <span class="notif-badge">4</span>
+          <span class="notif-badge" style="display:none;">0</span>
         </button>
-        <div class="avatar">A</div>
+        <div class="avatar" id="topbar-avatar">A</div>
       </div>
     </header>
 
@@ -69,13 +71,13 @@
           <h3 style="font-size: 14px;">Item Inventaris</h3>
           <div style="position: relative;">
             <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-muted);"></i>
-            <input type="text" class="form-control" placeholder="Cari" style="padding-left: 32px; width: 200px;">
+            <input type="text" id="search-product" class="form-control" placeholder="Cari..." style="padding-left: 32px; width: 200px;">
           </div>
         </div>
         <table>
           <thead>
             <tr>
-              <th><input type="checkbox"></th>
+              <th style="width:40px;"><input type="checkbox"></th>
               <th>Nama Produk</th>
               <th>Kategori</th>
               <th>Harga</th>
@@ -93,77 +95,62 @@
 
   <script src="js/admin.js"></script>
   <script>
-    window.editProduct = function(id) {
-      // Fitur Edit: akan membawa id produk ke tambah-produk
-      window.location.href = `tambah-produk.html?edit=${id}`;
-    };
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch(`${API_BASE}/produk`);
+        const json = await res.json();
 
-    window.deleteProduct = async function(id) {
-      if(!confirm('Anda yakin ingin menghapus produk ini?')) return;
+        if (json.success && json.data) {
+          const products = json.data;
+          document.getElementById('total-products').textContent = products.length;
+
+          const tbody = document.getElementById('product-table-body');
+          if (products.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px;">Belum ada produk</td></tr>';
+          } else {
+            tbody.innerHTML = products.map(p => `
+              <tr>
+                <td><input type="checkbox"></td>
+                <td style="display:flex; align-items:center; gap:12px; font-weight:600;">
+                  <img src="${p.gambar || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:6px; object-fit:cover;">
+                  <span>${p.nama}</span>
+                </td>
+                <td>${p.kategori || '-'}</td>
+                <td style="font-weight:700; color:var(--primary);">${formatRpAdmin(p.harga)}</td>
+                <td><span class="badge disetujui">Aktif</span></td>
+                <td>
+                  <a href="tambah-produk.html?edit=${p.id}" style="color:var(--primary); font-weight:600; text-decoration:none; margin-right:12px;">Edit</a>
+                  <button onclick="deleteProduct('${p.id}')" style="background:none; border:none; color:var(--danger); cursor:pointer; font-weight:600;">Hapus</button>
+                </td>
+              </tr>
+            `).join('');
+          }
+        }
+      } catch (err) {
+        console.error('Gagal memuat produk:', err);
+      }
+    });
+
+    async function deleteProduct(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
       try {
         const res = await fetch(`${API_BASE}/admin/produk/${id}`, {
           method: 'DELETE',
           headers: authHeaders()
         });
         const json = await res.json();
-        if(json.success) {
-          alert('Produk dihapus!');
+        if (handleApiAuthError(res, json)) return;
+
+        if (json.success) {
+          alert('Produk berhasil dihapus');
           window.location.reload();
         } else {
-          alert('Gagal menghapus: ' + json.message);
+          alert('Gagal menghapus produk');
         }
-      } catch(err) {
-        alert('Terjadi kesalahan saat menghapus.');
-      }
-    };
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      const tbody = document.getElementById('product-table-body');
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px;">Memuat produk...</td></tr>';
-
-      try {
-        const res = await fetch(`${API_BASE}/produk`);
-        const json = await res.json();
-
-        if (!json.success || !json.data || json.data.length === 0) {
-          document.getElementById('total-products').textContent = '0';
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px;">Belum ada produk. Silakan tambah produk baru.</td></tr>';
-          return;
-        }
-
-        const products = json.data;
-        document.getElementById('total-products').textContent = products.length;
-
-        let html = '';
-        products.forEach(p => {
-          html += `
-            <tr>
-              <td><input type="checkbox"></td>
-              <td style="display: flex; align-items: center; gap: 12px;">
-                <img src="${p.image_url || 'https://via.placeholder.com/32'}" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/32'">
-                <strong>${p.nama}</strong>
-              </td>
-              <td>${p.kategori}</td>
-              <td>${formatRpAdmin(p.harga_min)}</td>
-              <td>
-                <label style="display:inline-flex; align-items:center; cursor:pointer;">
-                  <input type="checkbox" checked style="margin-right: 8px;"> Aktif
-                </label>
-              </td>
-              <td>
-                <button onclick="editProduct('${p.id}')" style="border:none; background:none; cursor:pointer; color:var(--text-muted);"><i data-lucide="edit" style="width:16px;"></i></button>
-                <button onclick="deleteProduct('${p.id}')" style="border:none; background:none; cursor:pointer; color:var(--danger); margin-left:8px;"><i data-lucide="trash-2" style="width:16px;"></i></button>
-              </td>
-            </tr>
-          `;
-        });
-        tbody.innerHTML = html;
-        if (window.lucide) lucide.createIcons();
       } catch (err) {
-        console.error('Gagal memuat produk:', err);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--danger);">Gagal terhubung ke server</td></tr>';
+        alert('Terjadi kesalahan koneksi');
       }
-    });
+    }
   </script>
 </body>
 </html>

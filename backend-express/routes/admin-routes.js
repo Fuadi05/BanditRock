@@ -653,4 +653,108 @@ router.get('/laporan', async (req, res) => {
 })
 
 
+// ─────────────────────────────────────────────
+// GET /api/admin/profile
+// Ambil profil admin yang sedang login
+// ─────────────────────────────────────────────
+router.get('/profile', async (req, res) => {
+  try {
+    const adminId = req.admin.id;
+
+    let { data: admin, error } = await supabase
+      .from('admins')
+      .select('id, username, whatsapp')
+      .eq('id', adminId)
+      .single();
+
+    if (error && error.code === 'PGRST204') {
+      const { data: fallback } = await supabase
+        .from('admins')
+        .select('id, username')
+        .eq('id', adminId)
+        .single();
+      admin = { ...fallback, whatsapp: '6287846725184' };
+    }
+
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Admin tidak ditemukan.' });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        id: admin.id,
+        username: admin.username,
+        whatsapp: admin.whatsapp || '6287846725184'
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Gagal mengambil profil admin.' });
+  }
+});
+
+// ─────────────────────────────────────────────
+// PUT /api/admin/profile
+// Update akun admin yang sedang login (hanya 1 akun aktif yang diubah)
+// ─────────────────────────────────────────────
+router.put('/profile', async (req, res) => {
+  try {
+    const adminId = req.admin.id;
+    const { username, whatsapp, password } = req.body;
+
+    const updates = {};
+    if (username) updates.username = username.trim();
+    if (password) {
+      updates.password_hash = await bcrypt.hash(password, 10);
+    }
+    if (whatsapp) {
+      updates.whatsapp = whatsapp.trim();
+    }
+
+    let { data: updatedAdmin, error } = await supabase
+      .from('admins')
+      .update(updates)
+      .eq('id', adminId)
+      .select('id, username')
+      .single();
+
+    if (error && error.code === 'PGRST204' && updates.whatsapp) {
+      delete updates.whatsapp;
+      const { data: retryData, error: retryErr } = await supabase
+        .from('admins')
+        .update(updates)
+        .eq('id', adminId)
+        .select('id, username')
+        .single();
+
+      if (retryErr) throw retryErr;
+      updatedAdmin = retryData;
+    } else if (error) {
+      throw error;
+    }
+
+    const newToken = jwt.sign(
+      { id: updatedAdmin.id, username: updatedAdmin.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      success: true,
+      message: '✅ Profil akun admin berhasil diperbarui!',
+      data: {
+        token: newToken,
+        admin: {
+          id: updatedAdmin.id,
+          username: updatedAdmin.username,
+          whatsapp: whatsapp || '6287846725184'
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Error updating admin profile:', err);
+    res.status(500).json({ success: false, message: 'Gagal mengupdate profil admin.', error: err.message });
+  }
+});
+
 module.exports = router
