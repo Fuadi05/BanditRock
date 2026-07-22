@@ -40,14 +40,14 @@ app.use(express.urlencoded({ extended: true }))
 
 
 // ═══════════════════════════════════════
-// RATE LIMITER (diterapkan per-route)
+// RATE LIMITER (diterapkan per-route sensitif)
 // ═══════════════════════════════════════
 
-// Batasi endpoint checkout: maks 5 request per 15 menit per IP
-app.use('/api/order', checkoutLimiter)
+// Batasi khusus PEMBUATAN pesanan baru (POST): maks 5 request per 15 menit per IP
+app.post('/api/order', checkoutLimiter)
 
 // Batasi endpoint upload bukti bayar: maks 5 request per 15 menit per IP
-app.use('/api/pembayaran', paymentLimiter)
+app.post('/api/pembayaran', paymentLimiter)
 
 
 // ═══════════════════════════════════════
