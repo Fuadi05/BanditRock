@@ -44,16 +44,12 @@ body {
   z-index: 10;
 }
 
-.sidebar-header, .brand {
+.sidebar-header {
   padding: 24px;
   display: flex;
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--border-color);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-main);
-  text-decoration: none;
 }
 
 .brand-icon {
@@ -69,7 +65,7 @@ body {
 }
 
 .sidebar-logo {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-main);
   text-decoration: none;
