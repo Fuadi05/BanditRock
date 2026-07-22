@@ -56,9 +56,41 @@ document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
   }
 
+  // Handle Topbar Avatar click & load
+  loadTopbarAvatar();
+
   // Handle Notifikasi Dropdown & Real-time Fetch
   setupAdminNotifications();
 });
+
+async function loadTopbarAvatar() {
+  const topbarAvatar = document.querySelector('.avatar');
+  if (!topbarAvatar) return;
+
+  topbarAvatar.style.cursor = 'pointer';
+  topbarAvatar.title = 'Pengaturan Profil Admin';
+  topbarAvatar.onclick = (e) => {
+    e.preventDefault();
+    window.location.href = 'profil.html';
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/profile`, {
+      headers: authHeaders()
+    });
+    const json = await res.json();
+    if (json.success && json.data) {
+      if (json.data.avatar_url) {
+        topbarAvatar.innerHTML = `<img src="${json.data.avatar_url}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        topbarAvatar.style.background = 'transparent';
+      } else {
+        topbarAvatar.textContent = (json.data.username || 'A').charAt(0).toUpperCase();
+      }
+    }
+  } catch (err) {
+    console.error('Error loading topbar avatar:', err);
+  }
+}
 
 async function setupAdminNotifications() {
   const topbarRight = document.querySelector('.topbar-right');

@@ -11,30 +11,30 @@
 <body>
   <!-- Sidebar Navigation -->
   <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-icon">
-        <i data-lucide="gem"></i>
-      </div>
-      <span>Syarif Art Stone</span>
+    <div class="sidebar-header">
+      <a href="index.html" class="sidebar-logo">
+        <div style="background: var(--primary); color: white; padding: 4px; border-radius: 6px; display: flex; align-items: center; justify-content: center;"><i data-lucide="layers" style="color: white; width:20px; height:20px;"></i></div> 
+        Syarif Art Stone
+      </a>
     </div>
     
-    <div class="nav-menu">
+    <div class="sidebar-menu">
       <div class="menu-group">
-        <div class="menu-label">MENU UTAMA</div>
-        <a href="index.html" class="menu-item"><i data-lucide="layout-dashboard"></i> Dasbor</a>
-        <a href="penjualan.html" class="menu-item"><i data-lucide="shopping-bag"></i> Penjualan Produk</a>
-        <a href="laporan.html" class="menu-item"><i data-lucide="bar-chart-3"></i> Laporan</a>
+        <div class="menu-label">Menu Utama</div>
+        <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dasbor</a>
+        <a href="penjualan.html" class="menu-item"><i data-lucide="shopping-cart"></i> Penjualan Produk</a>
+        <a href="laporan.html" class="menu-item"><i data-lucide="star"></i> Laporan</a>
       </div>
       
       <div class="menu-group">
-        <div class="menu-label">PRODUK</div>
+        <div class="menu-label">Produk</div>
         <a href="tambah-order-kustom.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Order Kustom</a>
         <a href="tambah-produk.html" class="menu-item"><i data-lucide="plus-circle"></i> Tambah Produk</a>
         <a href="produk.html" class="menu-item"><i data-lucide="box"></i> Daftar Produk</a>
       </div>
       
       <div class="menu-group">
-        <div class="menu-label">ADMIN</div>
+        <div class="menu-label">Admin</div>
         <a href="profil.html" class="menu-item active"><i data-lucide="user"></i> Profil</a>
         <a href="login.html" onclick="logoutAdmin(event)" id="btn-logout" class="menu-item"><i data-lucide="log-out"></i> Keluar</a>
       </div>
@@ -72,7 +72,8 @@
               <label for="avatar-input" style="position: absolute; bottom: 2px; right: 2px; background: #2563EB; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.15);" title="Ubah Foto Profil">
                 <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
               </label>
-              <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="previewAvatar(event)">
+              <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
+              <input type="hidden" id="admin-avatar-url" value="">
             </div>
 
             <!-- Right Inputs Grid -->
@@ -127,14 +128,34 @@
       });
     });
 
-    function previewAvatar(event) {
+    async function handleAvatarUpload(event) {
       const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById('profile-avatar-img').src = e.target.result;
-        };
-        reader.readAsDataURL(file);
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: formData
+        });
+        const json = await res.json();
+        if (handleApiAuthError(res, json)) return;
+
+        if (json.success && json.url) {
+          document.getElementById('profile-avatar-img').src = json.url;
+          document.getElementById('admin-avatar-url').value = json.url;
+          showAlert('Foto profil berhasil diunggah! Klik Save untuk menyimpan.', 'success');
+        } else {
+          showAlert(json.message || 'Gagal mengunggah foto profil.', 'error');
+        }
+      } catch (err) {
+        console.error('Error uploading avatar:', err);
+        showAlert('Gagal mengunggah foto profil.', 'error');
       }
     }
 
@@ -150,8 +171,18 @@
           document.getElementById('admin-username').value = json.data.username || '';
           document.getElementById('admin-wa').value = json.data.whatsapp || '6287846725184';
           
+          if (json.data.avatar_url) {
+            document.getElementById('profile-avatar-img').src = json.data.avatar_url;
+            document.getElementById('admin-avatar-url').value = json.data.avatar_url;
+          }
+
           if (document.getElementById('topbar-avatar')) {
-            document.getElementById('topbar-avatar').textContent = (json.data.username || 'A').charAt(0).toUpperCase();
+            if (json.data.avatar_url) {
+              document.getElementById('topbar-avatar').innerHTML = `<img src="${json.data.avatar_url}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+              document.getElementById('topbar-avatar').style.background = 'transparent';
+            } else {
+              document.getElementById('topbar-avatar').textContent = (json.data.username || 'A').charAt(0).toUpperCase();
+            }
           }
         }
       } catch (err) {
@@ -164,6 +195,7 @@
       const whatsapp = document.getElementById('admin-wa').value.trim();
       const password = document.getElementById('admin-password').value;
       const confirmPassword = document.getElementById('admin-confirm-password').value;
+      const avatar_url = document.getElementById('admin-avatar-url').value;
       const alertBox = document.getElementById('alert-box');
       const btnSave = document.getElementById('btn-save-profile');
 
@@ -194,7 +226,8 @@
           body: JSON.stringify({
             username,
             whatsapp,
-            password: password || undefined
+            password: password || undefined,
+            avatar_url: avatar_url || undefined
           })
         });
         const json = await res.json();
@@ -210,7 +243,12 @@
           }
 
           if (document.getElementById('topbar-avatar')) {
-            document.getElementById('topbar-avatar').textContent = username.charAt(0).toUpperCase();
+            if (avatar_url) {
+              document.getElementById('topbar-avatar').innerHTML = `<img src="${avatar_url}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+              document.getElementById('topbar-avatar').style.background = 'transparent';
+            } else {
+              document.getElementById('topbar-avatar').textContent = username.charAt(0).toUpperCase();
+            }
           }
         } else {
           showAlert(json.message || 'Gagal memperbarui profil.', 'error');

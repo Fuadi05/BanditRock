@@ -663,7 +663,7 @@ router.get('/profile', async (req, res) => {
 
     let { data: admin, error } = await supabase
       .from('admins')
-      .select('id, username, whatsapp')
+      .select('id, username, whatsapp, avatar_url')
       .eq('id', adminId)
       .single();
 
@@ -673,7 +673,7 @@ router.get('/profile', async (req, res) => {
         .select('id, username')
         .eq('id', adminId)
         .single();
-      admin = { ...fallback, whatsapp: '6287846725184' };
+      admin = { ...fallback, whatsapp: '6287846725184', avatar_url: null };
     }
 
     if (!admin) {
@@ -685,7 +685,8 @@ router.get('/profile', async (req, res) => {
       data: {
         id: admin.id,
         username: admin.username,
-        whatsapp: admin.whatsapp || '6287846725184'
+        whatsapp: admin.whatsapp || '6287846725184',
+        avatar_url: admin.avatar_url || null
       }
     });
   } catch (err) {
@@ -700,7 +701,7 @@ router.get('/profile', async (req, res) => {
 router.put('/profile', async (req, res) => {
   try {
     const adminId = req.admin.id;
-    const { username, whatsapp, password } = req.body;
+    const { username, whatsapp, password, avatar_url } = req.body;
 
     const updates = {};
     if (username) updates.username = username.trim();
@@ -710,6 +711,9 @@ router.put('/profile', async (req, res) => {
     if (whatsapp) {
       updates.whatsapp = whatsapp.trim();
     }
+    if (avatar_url !== undefined) {
+      updates.avatar_url = avatar_url;
+    }
 
     let { data: updatedAdmin, error } = await supabase
       .from('admins')
@@ -718,8 +722,9 @@ router.put('/profile', async (req, res) => {
       .select('id, username')
       .single();
 
-    if (error && error.code === 'PGRST204' && updates.whatsapp) {
+    if (error && error.code === 'PGRST204') {
       delete updates.whatsapp;
+      delete updates.avatar_url;
       const { data: retryData, error: retryErr } = await supabase
         .from('admins')
         .update(updates)
@@ -747,7 +752,8 @@ router.put('/profile', async (req, res) => {
         admin: {
           id: updatedAdmin.id,
           username: updatedAdmin.username,
-          whatsapp: whatsapp || '6287846725184'
+          whatsapp: whatsapp || '6287846725184',
+          avatar_url: avatar_url || null
         }
       }
     });
