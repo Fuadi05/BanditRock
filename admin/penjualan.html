@@ -46,7 +46,7 @@
       <div class="topbar-right">
         <button class="notif-btn">
           <i data-lucide="bell"></i>
-          <span class="notif-badge">4</span>
+          <span class="notif-badge" id="order-count-badge">0</span>
         </button>
         <div class="avatar">A</div>
       </div>
@@ -55,23 +55,23 @@
     <div class="content-area">
       <div class="card" style="padding: 0;">
         <div class="tabs" style="margin-bottom: 0; padding: 8px 16px 0;">
-          <div class="tab-item active">Semua</div>
-          <div class="tab-item">Konfirmasi</div>
-          <div class="tab-item">Disetujui</div>
-          <div class="tab-item">Diproses</div>
-          <div class="tab-item">Dibatalkan</div>
-          <div class="tab-item">Dikirim</div>
+          <div class="tab-item active" onclick="setFilter('all', this)">Semua</div>
+          <div class="tab-item" onclick="setFilter('waiting_verification', this)">Konfirmasi</div>
+          <div class="tab-item" onclick="setFilter('paid', this)">Disetujui</div>
+          <div class="tab-item" onclick="setFilter('processing', this)">Diproses</div>
+          <div class="tab-item" onclick="setFilter('shipped', this)">Dikirim</div>
+          <div class="tab-item" onclick="setFilter('cancelled', this)">Dibatalkan</div>
         </div>
 
         <div class="table-wrapper" style="border: none; border-radius: 0;">
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>ID ORDER</th>
                 <th>PELANGGAN</th>
                 <th>TGL</th>
                 <th>TOTAL</th>
-                <th>METODE</th>
+                <th>NO. TELEPON</th>
                 <th>STATUS</th>
                 <th>AKSI</th>
               </tr>
@@ -82,34 +82,76 @@
           </table>
         </div>
         
-        <div style="padding: 16px; border-top: 1px solid var(--border-color); display: none; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 13px;">
-          <div>Menampilkan <select class="form-control" style="width:auto; display:inline-block; padding:4px 8px;"><option>10</option></select> dari <span id="total-rows">0</span></div>
-          <div style="display:flex; gap:8px;">
-            <button class="btn-primary" style="padding:4px 10px;">1</button>
-            <button style="padding:4px 10px; border:1px solid var(--border-color); background:white; border-radius:8px; cursor:pointer;">2</button>
-          </div>
+        <div style="padding: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 13px;">
+          <div>Menampilkan <span id="showing-rows">0</span> dari <span id="total-rows">0</span> pesanan</div>
         </div>
 
       </div>
     </div>
     
     <!-- Transaction Detail Modal -->
-    <div id="receipt-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+    <div id="receipt-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
       
-      <div style="background: white; width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+      <div style="background: white; width: 100%; max-width: 600px; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); margin: auto;">
         
         <!-- Header -->
-        <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">Bukti Pembayaran</h2>
-          <button onclick="closeReceipt()" style="background: none; border: none; cursor: pointer; color: var(--text-muted);">
+        <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #F8FAFC;">
+          <div>
+            <h2 style="font-size: 16px; font-weight: 700; margin: 0; color: var(--text-color);" id="modal-order-id">Detail Pesanan</h2>
+            <span id="modal-order-date" style="font-size: 12px; color: var(--text-muted);"></span>
+          </div>
+          <button onclick="closeReceipt()" style="background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px;">
             <i data-lucide="x" style="width: 20px; height: 20px;"></i>
           </button>
         </div>
 
         <!-- Receipt Content -->
-        <div style="padding: 24px; text-align: center; background: #F8FAFC;">
-          <img id="rec-img" src="" alt="Bukti Pembayaran" style="max-width: 100%; max-height: 60vh; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none;">
-          <p id="rec-no-img" style="color: var(--text-muted); font-size: 14px; display: none; padding: 40px 0;">Pengguna belum mengupload bukti pembayaran untuk pesanan ini.</p>
+        <div style="padding: 24px; max-height: 75vh; overflow-y: auto;">
+          
+          <!-- Buyer Info -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #F1F5F9; padding: 14px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+            <div>
+              <div style="color: var(--text-muted); font-weight: 600;">NAMA PEMBELI</div>
+              <div id="modal-buyer-name" style="font-weight: 700; color: var(--text-color); margin-top: 2px;">-</div>
+            </div>
+            <div>
+              <div style="color: var(--text-muted); font-weight: 600;">NO. TELEPON</div>
+              <div id="modal-buyer-phone" style="font-weight: 700; color: var(--text-color); margin-top: 2px;">-</div>
+            </div>
+          </div>
+
+          <!-- Items Purchased -->
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">Produk Dipesan</h3>
+            <div id="modal-items-list" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"></div>
+            <div style="display: flex; justify-content: space-between; padding: 12px 16px; background: #F8FAFC; border-top: 1px solid var(--border-color); font-weight: 800; font-size: 15px; color: var(--text-color);">
+              <span>TOTAL TAGIHAN</span>
+              <span id="modal-total-amount">Rp 0</span>
+            </div>
+          </div>
+
+          <!-- Payment Verification Section -->
+          <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; background: #FFF; margin-bottom: 20px;">
+            <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="credit-card" style="width:16px; height:16px; color: var(--primary);"></i> Bukti Transfer Pembayaran
+            </h3>
+
+            <div id="payment-info-box">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Update Order Status Controls -->
+          <div style="background: #F8FAFC; border-radius: 8px; padding: 16px; border: 1px solid var(--border-color);">
+            <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">Ubah Status Pesanan</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;" id="action-buttons-group">
+              <button onclick="updateOrderStatus('paid')" style="padding: 8px 14px; background: #10B981; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">✅ Setujui (Lunas)</button>
+              <button onclick="updateOrderStatus('processing')" style="padding: 8px 14px; background: #6366F1; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">⚙️ Diproses</button>
+              <button onclick="updateOrderStatus('shipped')" style="padding: 8px 14px; background: #14B8A6; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">🚚 Dikirim</button>
+              <button onclick="updateOrderStatus('cancelled')" style="padding: 8px 14px; background: #EF4444; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">❌ Batalkan</button>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -118,9 +160,29 @@
 
   <script src="js/admin.js"></script>
   <script>
+    window.allOrders = [];
+    window.currentFilter = 'all';
+    window.activeOrderId = null;
+
+    const statusBadgeMap = {
+      'pending_payment': { label: 'Menunggu Bayar', style: 'background: #FEF3C7; color: #D97706; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
+      'waiting_verification': { label: 'Konfirmasi (Verifikasi)', style: 'background: #DBEAFE; color: #1D4ED8; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
+      'paid': { label: 'Disetujui (Lunas)', style: 'background: #D1FAE5; color: #059669; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
+      'processing': { label: 'Diproses', style: 'background: #E0E7FF; color: #4338CA; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
+      'shipped': { label: 'Dikirim', style: 'background: #CCFBF1; color: #0F766E; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
+      'cancelled': { label: 'Dibatalkan', style: 'background: #FEE2E2; color: #DC2626; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
       renderSales();
     });
+
+    function setFilter(status, tabEl) {
+      window.currentFilter = status;
+      document.querySelectorAll('.tabs .tab-item').forEach(t => t.classList.remove('active'));
+      if (tabEl) tabEl.classList.add('active');
+      renderFilteredOrders();
+    }
 
     async function renderSales() {
       const tbody = document.getElementById('sales-table-body');
@@ -137,61 +199,130 @@
           return;
         }
 
-        const orders = json.data;
-        document.getElementById('total-rows').textContent = orders.length;
+        window.allOrders = json.data;
+        document.getElementById('total-rows').textContent = window.allOrders.length;
+        document.getElementById('order-count-badge').textContent = window.allOrders.filter(o => o.status === 'waiting_verification').length;
 
-        if (orders.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px;">Belum ada pesanan</td></tr>';
-          return;
-        }
-
-        const statusLabels = {
-          'pending_payment': 'Menunggu Bayar',
-          'waiting_verification': 'Verifikasi',
-          'paid': 'Lunas',
-          'cancelled': 'Dibatalkan'
-        };
-
-        let html = '';
-        orders.forEach(o => {
-          const tgl = new Date(o.created_at).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'});
-          const statusLabel = statusLabels[o.status] || o.status;
-
-          html += `
-            <tr>
-              <td><strong>${o.id}</strong></td>
-              <td>${o.nama_pembeli}</td>
-              <td>${tgl}</td>
-              <td><strong>${formatRpAdmin(o.total_tagihan)}</strong></td>
-              <td>${o.telepon}</td>
-              <td><span class="badge">${statusLabel}</span></td>
-              <td>
-                <button onclick="viewDetails('${o.id}')" style="border:none; background:none; cursor:pointer; color:var(--info); font-weight:600;">Lihat Detail</button>
-              </td>
-            </tr>
-          `;
-        });
-        tbody.innerHTML = html;
-        if (window.lucide) lucide.createIcons();
+        renderFilteredOrders();
       } catch (err) {
         console.error('Gagal memuat pesanan:', err);
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--danger);">Gagal terhubung ke server</td></tr>';
       }
     }
 
-    async function viewDetails(orderId) {
-      // Tampilkan modal bukti pembayaran (jika ada)
-      const imgEl = document.getElementById('rec-img');
-      const noImgEl = document.getElementById('rec-no-img');
-      imgEl.style.display = 'none';
-      noImgEl.style.display = 'block';
-      noImgEl.textContent = 'Fitur lihat bukti pembayaran akan tersedia setelah ada transaksi masuk.';
+    function renderFilteredOrders() {
+      const tbody = document.getElementById('sales-table-body');
+      let orders = window.allOrders;
+
+      if (window.currentFilter !== 'all') {
+        orders = orders.filter(o => o.status === window.currentFilter);
+      }
+
+      document.getElementById('showing-rows').textContent = orders.length;
+
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color: var(--text-muted);">Tidak ada pesanan dalam kategori ini.</td></tr>';
+        return;
+      }
+
+      let html = '';
+      orders.forEach(o => {
+        const tgl = new Date(o.created_at).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'});
+        const badgeInfo = statusBadgeMap[o.status] || { label: o.status, style: 'background: #E2E8F0; color: #475569; padding: 4px 10px; border-radius: 9999px;' };
+
+        html += `
+          <tr>
+            <td><strong>${o.id}</strong></td>
+            <td>${o.nama_pembeli}</td>
+            <td>${tgl}</td>
+            <td><strong>${formatRpAdmin(o.total_tagihan)}</strong></td>
+            <td>${o.telepon}</td>
+            <td><span style="${badgeInfo.style}">${badgeInfo.label}</span></td>
+            <td>
+              <button onclick="viewDetails('${o.id}')" style="border:none; background:none; cursor:pointer; color:var(--primary); font-weight:700;">Lihat Detail</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function viewDetails(orderId) {
+      window.activeOrderId = orderId;
+      const order = window.allOrders.find(o => o.id === orderId);
+      if (!order) return;
+
+      document.getElementById('modal-order-id').textContent = `Order ${order.id}`;
+      document.getElementById('modal-order-date').textContent = new Date(order.created_at).toLocaleString('id-ID');
+      document.getElementById('modal-buyer-name').textContent = order.nama_pembeli;
+      document.getElementById('modal-buyer-phone').textContent = order.telepon;
+      document.getElementById('modal-total-amount').textContent = formatRpAdmin(order.total_tagihan);
+
+      // Render Items
+      const itemsContainer = document.getElementById('modal-items-list');
+      if (order.order_items && order.order_items.length > 0) {
+        itemsContainer.innerHTML = order.order_items.map(i => `
+          <div style="display: flex; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
+            <span>${i.products ? i.products.nama : 'Produk'} <strong>x${i.qty}</strong></span>
+            <span style="font-weight: 600;">${formatRpAdmin((i.harga_disepakati || 0) * i.qty)}</span>
+          </div>
+        `).join('');
+      } else {
+        itemsContainer.innerHTML = '<div style="padding: 12px 16px; font-size: 13px; color: var(--text-muted);">Tidak ada detail item</div>';
+      }
+
+      // Render Payments
+      const payBox = document.getElementById('payment-info-box');
+      if (order.payments && order.payments.length > 0) {
+        const pay = order.payments[0];
+        payBox.innerHTML = `
+          <div style="font-size: 13px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div>Bank Pengirim: <strong>${pay.bank_pengirim}</strong></div>
+            <div>Nominal Transfer: <strong>${formatRpAdmin(pay.nominal)}</strong></div>
+          </div>
+          <div style="text-align: center; background: #F8FAFC; padding: 16px; border-radius: 8px; border: 1px solid #E2E8F0;">
+            <img src="${pay.bukti_url}" alt="Bukti Transfer" style="max-width: 100%; max-height: 250px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 12px;" onerror="this.onerror=null; this.src='../images/media__1780324962198.jpg';">
+            <div>
+              <a href="${pay.bukti_url}" target="_blank" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">🔍 Lihat Gambar Ukuran Penuh</a>
+            </div>
+          </div>
+        `;
+      } else {
+        payBox.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); margin: 0;">Pengguna belum mengupload bukti pembayaran untuk pesanan ini.</p>';
+      }
+
       document.getElementById('receipt-modal').style.display = 'flex';
       if (window.lucide) lucide.createIcons();
     }
 
+    async function updateOrderStatus(newStatus) {
+      if (!window.activeOrderId) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/orders/${window.activeOrderId}/status`, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ status: newStatus })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          closeReceipt();
+          await renderSales();
+        } else {
+          alert('Gagal memperbarui status: ' + (json.message || 'Error'));
+        }
+      } catch (err) {
+        console.error('Error updating order status:', err);
+        alert('Gagal terhubung ke server');
+      }
+    }
+
     function closeReceipt() {
       document.getElementById('receipt-modal').style.display = 'none';
+      window.activeOrderId = null;
     }
   </script>
 </body>

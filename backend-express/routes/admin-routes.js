@@ -267,6 +267,14 @@ router.get('/orders', async (req, res) => {
           qty,
           harga_disepakati,
           products ( nama )
+        ),
+        payments (
+          id,
+          bank_pengirim,
+          nominal,
+          bukti_url,
+          status_verifikasi,
+          created_at
         )
       `)
       .order('created_at', { ascending: false })
@@ -282,6 +290,44 @@ router.get('/orders', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Gagal mengambil data pesanan.',
+      error: err.message
+    })
+  }
+})
+
+// ─────────────────────────────────────────────
+// PUT /api/admin/orders/:id/status
+// Update status pesanan (pending_payment, waiting_verification, paid, processing, shipped, cancelled)
+// ─────────────────────────────────────────────
+router.put('/orders/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+
+    const allowedStatuses = ['pending_payment', 'waiting_verification', 'paid', 'processing', 'shipped', 'cancelled']
+    if (!status || !allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Status tidak valid. Gunakan salah satu dari: ${allowedStatuses.join(', ')}`
+      })
+    }
+
+    const { error } = await supabase
+      .from('orders')
+      .update({ status })
+      .eq('id', id)
+
+    if (error) throw error
+
+    res.json({
+      success: true,
+      message: `Status order "${id}" berhasil diubah menjadi "${status}".`
+    })
+  } catch (err) {
+    console.error('Update order status error:', err)
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengubah status pesanan.',
       error: err.message
     })
   }
