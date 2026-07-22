@@ -168,7 +168,7 @@ export default function CaraPesan({ cartCount }) {
           <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 26, fontWeight: 800, marginBottom: 12 }}>Masih Ada Pertanyaan?</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24 }}>Tim kami siap membantu Anda melalui WhatsApp setiap hari pukul 08.00–21.00 WIB</p>
           <a
-            href="https://wa.me/6281234567890"
+            href="https://wa.me/6287846725184"
             target="_blank"
             rel="noreferrer"
             style={{
