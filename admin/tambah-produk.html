@@ -67,40 +67,53 @@
           <div style="display: flex; flex-direction: column; gap: 24px;">
             <!-- Left Card -->
             <div class="card" style="display: grid; gap: 16px;">
-              <input type="text" id="p-name" class="form-control" placeholder="Nama Produk" required>
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Nama Produk</label>
+                <input type="text" id="p-name" class="form-control" placeholder="Masukkan nama produk..." required>
+              </div>
               
-              <select id="p-cat" class="form-control" required>
-                <option value="" disabled selected>Pilih Kategori Produk</option>
-                <option value="Alat Dapur">Alat Dapur</option>
-                <option value="Interior">Interior</option>
-                <option value="Eksterior">Eksterior</option>
-                <option value="Ornamen Dinding">Ornamen Dinding</option>
-              </select>
-
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                <input type="number" id="p-price" class="form-control" placeholder="Harga Jual" required>
-                <input type="number" id="p-harga-modal" class="form-control" placeholder="Harga Modal">
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Kategori Produk</label>
+                <select id="p-cat" class="form-control" required>
+                  <option value="" disabled selected>Pilih Kategori Produk</option>
+                  <option value="Alat Dapur">Alat Dapur</option>
+                  <option value="Interior">Interior</option>
+                  <option value="Eksterior">Eksterior</option>
+                  <option value="Ornamen Dinding">Ornamen Dinding</option>
+                </select>
               </div>
 
-              
-<div style="margin-bottom: 16px;">
-  <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Pilih Ukuran Tersedia</label>
-  <div style="display: flex; gap: 12px; flex-wrap: wrap;" id="p-ukuran-container">
-    <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
-      <input type="checkbox" value="Kecil" class="ukuran-cb"> Kecil
-    </label>
-    <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
-      <input type="checkbox" value="Sedang" class="ukuran-cb"> Sedang
-    </label>
-    <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
-      <input type="checkbox" value="Besar" class="ukuran-cb"> Besar
-    </label>
-    <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
-      <input type="checkbox" value="Ekstra Besar" class="ukuran-cb"> Ekstra Besar
-    </label>
-  </div>
-</div>
-              <div style="margin-top: 16px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                  <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Harga Jual (Rp)</label>
+                  <input type="number" id="p-price" class="form-control" placeholder="Contoh: 150000" required>
+                </div>
+                <div>
+                  <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Harga Modal (Rp)</label>
+                  <input type="number" id="p-harga-modal" class="form-control" placeholder="Contoh: 100000">
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Pilih Ukuran Tersedia</label>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;" id="p-ukuran-container">
+                  <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" value="Kecil" class="ukuran-cb"> Kecil
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" value="Sedang" class="ukuran-cb"> Sedang
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" value="Besar" class="ukuran-cb"> Besar
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" value="Ekstra Besar" class="ukuran-cb"> Ekstra Besar
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Tipe Pemesanan</label>
                 <select id="p-tipe-pesanan" class="form-control">
                   <option value="ready">Ready Stock</option>
                   <option value="custom">Pre-Order</option>
