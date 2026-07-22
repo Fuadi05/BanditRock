@@ -43,30 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
   }
 
-  // Reset notification badge ke 0 (notifikasi real-time belum diimplementasi)
-  const badges = document.querySelectorAll('.notif-badge');
-  badges.forEach(b => {
-    b.textContent = '0';
-    b.style.display = 'none';
-  });
+  // Handle Notifikasi Dropdown & Real-time Fetch
+  setupAdminNotifications();
+});
 
-  // Handle Notifikasi Dropdown
+async function setupAdminNotifications() {
   const topbarRight = document.querySelector('.topbar-right');
   const notifBtn = document.querySelector('.notif-btn');
-  if (topbarRight && notifBtn) {
-    topbarRight.style.position = 'relative';
-    const notifDropdown = document.createElement('div');
-    notifDropdown.style.cssText = 'display:none; position:absolute; top:120%; right:0; background:white; width:280px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.1); border:1px solid #e2e8f0; z-index:999; padding:16px;';
-    notifDropdown.innerHTML = `
-      <div style="font-weight:700; font-size:14px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:10px; color:#1e293b; display:flex; justify-content:space-between; align-items:center;">
-        <span>Notifikasi</span>
-        <span style="font-size:11px; background:#f1f5f9; padding:2px 8px; border-radius:10px; color:#64748b;">0 Baru</span>
-      </div>
-      <div style="text-align:center; color:#94a3b8; font-size:13px; padding:30px 0;">
-        <i data-lucide="bell-off" style="width:32px; height:32px; margin-bottom:8px; opacity:0.5;"></i>
-        <div>Belum ada notifikasi baru</div>
-      </div>
-    `;
+  if (!topbarRight || !notifBtn) return;
+
+  topbarRight.style.position = 'relative';
+  let notifDropdown = document.getElementById('global-notif-dropdown');
+  if (!notifDropdown) {
+    notifDropdown = document.createElement('div');
+    notifDropdown.id = 'global-notif-dropdown';
+    notifDropdown.style.cssText = 'display:none; position:absolute; top:120%; right:0; background:white; width:300px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.15); border:1px solid #e2e8f0; z-index:999; padding:16px;';
     topbarRight.appendChild(notifDropdown);
 
     notifBtn.addEventListener('click', (e) => {
@@ -81,9 +72,75 @@ document.addEventListener('DOMContentLoaded', () => {
         notifDropdown.style.display = 'none';
       }
     });
-
-    if (window.lucide) window.lucide.createIcons();
   }
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/orders`, {
+      headers: authHeaders()
+    });
+    const json = await res.json();
+    if (!json.success || !json.data) return;
+
+    const newOrders = json.data.filter(o => o.status === 'waiting_verification' || o.status === 'pending_payment');
+    const badgeCount = newOrders.length;
+
+    const badges = document.querySelectorAll('.notif-badge');
+    badges.forEach(b => {
+      if (badgeCount > 0) {
+        b.textContent = badgeCount;
+        b.style.display = 'flex';
+      } else {
+        b.textContent = '0';
+        b.style.display = 'none';
+      }
+    });
+
+    if (badgeCount === 0) {
+      notifDropdown.innerHTML = `
+        <div style="font-weight:700; font-size:14px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:10px; color:#1e293b; display:flex; justify-content:space-between; align-items:center;">
+          <span>Notifikasi</span>
+          <span style="font-size:11px; background:#f1f5f9; padding:2px 8px; border-radius:10px; color:#64748b;">0 Baru</span>
+        </div>
+        <div style="text-align:center; color:#94a3b8; font-size:13px; padding:20px 0;">
+          <i data-lucide="bell-off" style="width:32px; height:32px; margin-bottom:8px; opacity:0.5;"></i>
+          <div>Belum ada notifikasi baru</div>
+        </div>
+      `;
+    } else {
+      let itemsHtml = newOrders.slice(0, 5).map(o => {
+        const dateStr = new Date(o.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+        const label = o.status === 'waiting_verification' ? '💡 Perlu Verifikasi Transfer' : '🕒 Pesanan Menunggu Pembayaran';
+        return `
+          <a href="penjualan.html" style="display:flex; gap:10px; align-items:flex-start; padding:10px; border-radius:8px; background:#F8FAFC; margin-bottom:8px; text-decoration:none; transition:background 0.2s; border:1px solid #E2E8F0;">
+            <div style="width:32px; height:32px; border-radius:50%; background:#FEF3C7; color:#D97706; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <i data-lucide="shopping-bag" style="width:16px; height:16px;"></i>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:12px; font-weight:700; color:#1E293B; display:flex; justify-content:space-between;">
+                <span>${o.id}</span>
+                <span style="font-size:10px; color:#94A3B8;">${dateStr}</span>
+              </div>
+              <div style="font-size:11px; color:#475569; margin-top:2px;">${o.nama_pembeli}</div>
+              <div style="font-size:10px; font-weight:700; color:#D97706; margin-top:2px;">${label}</div>
+            </div>
+          </a>
+        `;
+      }).join('');
+
+      notifDropdown.innerHTML = `
+        <div style="font-weight:700; font-size:14px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:10px; color:#1e293b; display:flex; justify-content:space-between; align-items:center;">
+          <span>Notifikasi Pesanan</span>
+          <span style="font-size:11px; background:#EF4444; color:white; padding:2px 8px; border-radius:10px; font-weight:700;">${badgeCount} Baru</span>
+        </div>
+        <div style="max-height:260px; overflow-y:auto;">${itemsHtml}</div>
+        <a href="penjualan.html" style="display:block; text-align:center; font-size:12px; font-weight:700; color:#7C3AED; text-decoration:none; margin-top:10px; padding-top:8px; border-top:1px solid #E2E8F0;">Lihat Semua Penjualan →</a>
+      `;
+    }
+    if (window.lucide) window.lucide.createIcons();
+  } catch (err) {
+    console.error('Error fetching admin notifications:', err);
+  }
+}
 });
 
 // Helper for formatting currency

@@ -141,22 +141,34 @@
             document.getElementById('rata-rata').textContent = formatRpAdmin(rataRata);
             
             const orders = json.data || [];
-            let html = `
-              <div style="width:100%; text-align:center;">
-                <div style="font-size:24px; font-weight:800; color:var(--primary); margin-bottom:4px;">${formatRpAdmin(total_pendapatan)}</div>
-                <div style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Total dari <strong>${total_transaksi}</strong> pesanan yang disetujui/selesai bulan ini</div>
-                <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
-                  ${orders.slice(0, 5).map(o => `
-                    <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:8px; padding:10px 16px; font-size:12px; text-align:left;">
-                      <div style="font-weight:700; color:var(--text-color);">${o.id}</div>
-                      <div style="color:var(--text-muted);">${o.nama_pembeli}</div>
-                      <div style="font-weight:800; color:var(--primary); margin-top:4px;">${formatRpAdmin(o.total_tagihan)}</div>
+            
+            // Group sales by Date for the Bar Chart
+            const salesByDate = {};
+            orders.forEach(o => {
+              const d = new Date(o.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+              salesByDate[d] = (salesByDate[d] || 0) + o.total_tagihan;
+            });
+
+            const dateKeys = Object.keys(salesByDate);
+            const maxVal = Math.max(...Object.values(salesByDate), 1);
+
+            let chartBarsHtml = `
+              <div style="display:flex; align-items:flex-end; justify-content:space-around; width:100%; height:100%; padding:20px 10px 10px; gap:16px;">
+                ${dateKeys.map(date => {
+                  const val = salesByDate[date];
+                  const heightPct = Math.max((val / maxVal) * 80, 20);
+                  return `
+                    <div style="display:flex; flex-direction:column; align-items:center; flex:1; max-width:100px; height:100%; justify-content:flex-end;">
+                      <div style="font-size:11px; font-weight:800; color:var(--primary); margin-bottom:6px; white-space:nowrap;">${formatRpAdmin(val)}</div>
+                      <div title="${date}: ${formatRpAdmin(val)}" style="width:100%; max-width:54px; height:${heightPct}%; background:linear-gradient(180deg, #7C3AED 0%, #A78BFA 100%); border-radius:8px 8px 0 0; transition:height 0.5s ease; box-shadow:0 4px 6px rgba(124,58,237,0.2);"></div>
+                      <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-top:10px;">${date}</div>
                     </div>
-                  `).join('')}
-                </div>
+                  `;
+                }).join('')}
               </div>
             `;
-            document.getElementById('chart-container').innerHTML = html;
+
+            document.getElementById('chart-container').innerHTML = chartBarsHtml;
           }
         } else {
           document.getElementById('rata-rata').textContent = 'Rp 0';
