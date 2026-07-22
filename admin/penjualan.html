@@ -121,22 +121,22 @@
             </div>
           </div>
 
-          <!-- Proof of Payment -->
-          <div style="margin-bottom: 20px; background: #F8FAFC; border: 1px dashed var(--border-color); border-radius: 8px; padding: 14px; text-align: center;">
-            <div style="font-size: 13px; font-weight: 700; color: var(--text-color); margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;">
-              <i data-lucide="credit-card" style="width: 16px; height: 16px; color: var(--primary);"></i> BUKTI TRANSFER PEMBAYARAN
-            </div>
-            <div id="modal-payment-info" style="font-size: 12px; color: var(--text-muted);">
-              Belum mengunggah bukti transfer.
+          <!-- Items Purchased -->
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">Produk Dipesan</h3>
+            <div id="modal-items-list" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"></div>
+            <div style="display: flex; justify-content: space-between; padding: 12px 16px; background: #F8FAFC; border-top: 1px solid var(--border-color); font-weight: 800; font-size: 15px; color: var(--text-color);">
+              <span>TOTAL TAGIHAN</span>
+              <span id="modal-total-amount">Rp 0</span>
             </div>
           </div>
 
-          <!-- Items Ordered -->
-          <div style="margin-bottom: 20px;">
-            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">PRODUK DIPESAN</div>
-            <div id="modal-order-items" style="display: flex; flex-direction: column; gap: 8px;">
-              <!-- Rendered via JS -->
-            </div>
+          <!-- Payment Verification Section -->
+          <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; background: #FFF; margin-bottom: 20px;">
+            <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="credit-card" style="width:16px; height:16px; color: var(--primary);"></i> Bukti Transfer Pembayaran
+            </h3>
+            <div id="payment-info-box"></div>
           </div>
 
           <!-- Update Order Status Controls -->
