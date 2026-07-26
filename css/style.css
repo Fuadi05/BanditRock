@@ -40,6 +40,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -49,6 +50,7 @@ body {
   background-attachment: fixed;
   line-height: 1.6;
   font-size: 14px;
+  overflow-x: hidden;
 }
 
 a {
@@ -1718,8 +1720,23 @@ input[type="range"].price-slider::-moz-range-thumb {
     position: static;
   }
 
+  .navbar-inner {
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
   .navbar-nav {
     display: none;
+  }
+
+  .search-bar {
+    width: auto;
+    max-width: 140px;
+    padding: 8px 12px;
+  }
+
+  .search-bar input {
+    font-size: 12px;
   }
 
   .hamburger {
