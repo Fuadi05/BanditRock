@@ -11,7 +11,6 @@ window.categories = [
   { id: 'interior', name: 'Interior', image: 'images/media__1780324641278.jpg' },
   { id: 'eksterior', name: 'Eksterior', image: 'images/stone_product2_1780322918796.png' },
   { id: 'ornamen-dinding', name: 'Ornamen Dinding', image: 'images/media__1780324962433.jpg' },
-  { id: 'dinding-lantai', name: 'Dinding & Lantai', image: 'images/media__1780324641278.jpg' },
 ]
 
 window.allCategories = [];
