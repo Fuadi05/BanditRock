@@ -31,3 +31,6 @@ cpanel-key/
 *.rsa
 *.pem
 *.key
+
+# Custom
+laporan dsbnya/
