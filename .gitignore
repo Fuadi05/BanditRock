@@ -25,3 +25,9 @@ dist-ssr
 # Backend
 backend-express/.env
 backend-express/node_modules
+
+# Keys & Secrets
+cpanel-key/
+*.rsa
+*.pem
+*.key
