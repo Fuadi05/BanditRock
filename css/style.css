@@ -15,10 +15,10 @@
   --yellow-primary: #FFBF00;
   --yellow-light: #FFF78D;
 
---grad-primary: linear-gradient(135deg, #10B981, #6fc43a);
---grad-yellow: radial-gradient(circle, #f5c63b, #f3e738);
---grad-purple: radial-gradient(circle, #a021da, #c15af8);
---grad-blue: radial-gradient(circle, #5a86f8, #2139da);
+  --grad-primary: linear-gradient(135deg, #10B981, #6fc43a);
+  --grad-yellow: radial-gradient(circle, #f5c63b, #f3e738);
+  --grad-purple: radial-gradient(circle, #a021da, #c15af8);
+  --grad-blue: radial-gradient(circle, #5a86f8, #2139da);
 
   --white: #ffffff;
   --off-white: #f3f4f5;
@@ -1617,7 +1617,7 @@ input[type="range"] {
   height: 100vh;
   background: #fff;
   z-index: 99999;
-  box-shadow: -4px 0 16px rgba(0,0,0,0.1);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
   transition: right 0.3s ease;
   padding: 60px 24px 24px;
   display: flex;
