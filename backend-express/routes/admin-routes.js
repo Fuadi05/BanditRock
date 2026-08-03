@@ -137,6 +137,32 @@ router.post('/upload', upload.single('image'), async (req, res) => {
 
 
 // ─────────────────────────────────────────────
+// GET /api/admin/produk
+// Mengambil semua produk untuk admin (termasuk nonaktif)
+// ─────────────────────────────────────────────
+router.get('/produk', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    res.json({
+      success: true,
+      data
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal memuat produk',
+      error: err.message
+    })
+  }
+})
+
+// ─────────────────────────────────────────────
 // POST /api/admin/produk
 // Menambahkan produk baru ke katalog
 // ─────────────────────────────────────────────
@@ -187,6 +213,37 @@ router.post('/produk', async (req, res) => {
   }
 })
 
+
+// ─────────────────────────────────────────────
+// PUT /api/admin/produk/:id/status
+// Toggle status is_active produk
+// ─────────────────────────────────────────────
+router.put('/produk/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { is_active } = req.body
+
+    const { data, error } = await supabase
+      .from('products')
+      .update({ is_active })
+      .eq('id', id)
+      .select()
+
+    if (error) throw error
+
+    res.json({
+      success: true,
+      message: `Status produk berhasil diubah menjadi ${is_active ? 'Aktif' : 'Tidak Aktif'}`,
+      data: data[0]
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengubah status',
+      error: err.message
+    })
+  }
+})
 
 // ─────────────────────────────────────────────
 // PUT /api/admin/produk/:id

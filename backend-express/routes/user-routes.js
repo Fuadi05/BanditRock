@@ -56,6 +56,7 @@ router.get('/produk', async (req, res) => {
     let query = supabase
       .from('products')
       .select('*')
+      .eq('is_active', true)
       .order('created_at', { ascending: false })
 
     // Terapkan filter kategori jika diberikan
