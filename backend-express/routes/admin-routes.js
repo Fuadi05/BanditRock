@@ -837,7 +837,7 @@ router.post('/custom-order', async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: 'Gagal menyimpan order kustom.',
+      message: 'Gagal menyimpan order kustom: ' + err.message,
       error: err.message
     });
   }
