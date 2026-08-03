@@ -273,7 +273,6 @@
       document.getElementById('modal-buyer-name').textContent = order.nama_pembeli;
       document.getElementById('modal-buyer-phone').textContent = order.telepon;
       document.getElementById('modal-price-input').value = order.total_tagihan || '';
-      document.getElementById('modal-total-amount').textContent = 'Kustom (Negosiasi)';
 
       const itemsContainer = document.getElementById('modal-items-list');
       itemsContainer.innerHTML = `
@@ -297,6 +296,11 @@
 
       document.getElementById('receipt-modal').style.display = 'flex';
       if (window.lucide) lucide.createIcons();
+    }
+
+    function closeReceipt() {
+      document.getElementById('receipt-modal').style.display = 'none';
+      window.activeOrderId = null;
     }
 
     async function updateOrderStatus(newStatus) {
