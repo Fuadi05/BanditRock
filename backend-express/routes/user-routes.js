@@ -240,18 +240,28 @@ router.get('/order/search', async (req, res) => {
       })
     }
 
-    const { data, error } = await supabase
+    const { data: dataNormal, error: err1 } = await supabase
       .from('orders')
       .select('id, nama_pembeli, telepon, total_tagihan, status, created_at')
       .eq('telepon', telepon)
       .order('created_at', { ascending: false })
 
-    if (error) throw error
+    if (err1) throw err1
+
+    const { data: dataKustom, error: err2 } = await supabase
+      .from('custom_orders')
+      .select('id, nama_pembeli, telepon, total_tagihan, status, created_at')
+      .eq('telepon', telepon)
+      .order('created_at', { ascending: false })
+      
+    if (err2) throw err2
+
+    const combinedData = [...dataNormal, ...dataKustom].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
     res.json({
       success: true,
-      count: data.length,
-      data
+      count: combinedData.length,
+      data: combinedData
     })
   } catch (err) {
     res.status(500).json({
@@ -270,23 +280,55 @@ router.get('/order/search', async (req, res) => {
 router.get('/order/track/:id', async (req, res) => {
   try {
     const cleanId = String(req.params.id).trim().replace(/^#/, '')
-    const { data: order, error } = await supabase
-      .from('orders')
-      .select(`
-        id,
-        nama_pembeli,
-        telepon,
-        total_tagihan,
-        status,
-        created_at,
-        order_items (
-          qty,
-          harga_disepakati,
-          products ( nama, image_url )
-        )
-      `)
-      .eq('id', cleanId)
-      .single()
+    
+    let order = null;
+    let error = null;
+
+    if (cleanId.startsWith('BMA-K-')) {
+      const result = await supabase
+        .from('custom_orders')
+        .select('id, nama_pembeli, telepon, total_tagihan, status, created_at, nama_produk, deskripsi')
+        .eq('id', cleanId)
+        .single()
+      
+      error = result.error;
+      if (result.data) {
+        order = {
+          ...result.data,
+          order_items: [
+            {
+              qty: 1,
+              harga_disepakati: result.data.total_tagihan,
+              products: {
+                nama: `KUSTOM: ${result.data.nama_produk}`,
+                image_url: null
+              }
+            }
+          ]
+        }
+      }
+    } else {
+      const result = await supabase
+        .from('orders')
+        .select(`
+          id,
+          nama_pembeli,
+          telepon,
+          total_tagihan,
+          status,
+          created_at,
+          order_items (
+            qty,
+            harga_disepakati,
+            products ( nama, image_url )
+          )
+        `)
+        .eq('id', cleanId)
+        .single()
+        
+      error = result.error;
+      order = result.data;
+    }
 
     if (error || !order) {
       return res.status(404).json({
@@ -335,11 +377,26 @@ router.post('/pembayaran', upload.single('bukti'), async (req, res) => {
     const cleanOrderId = String(order_id).trim().replace(/^#/, '')
 
     // --- Cek apakah order tersebut ada ---
-    const { data: order, error: orderErr } = await supabase
-      .from('orders')
-      .select('id, status')
-      .eq('id', cleanOrderId)
-      .single()
+    let order = null;
+    let orderErr = null;
+
+    if (cleanOrderId.startsWith('BMA-K-')) {
+      const res = await supabase
+        .from('custom_orders')
+        .select('id, status')
+        .eq('id', cleanOrderId)
+        .single();
+      order = res.data;
+      orderErr = res.error;
+    } else {
+      const res = await supabase
+        .from('orders')
+        .select('id, status')
+        .eq('id', cleanOrderId)
+        .single();
+      order = res.data;
+      orderErr = res.error;
+    }
 
     if (orderErr || !order) {
       return res.status(404).json({
@@ -388,13 +445,14 @@ router.post('/pembayaran', upload.single('bukti'), async (req, res) => {
     }
 
     // --- Ubah status order menjadi "waiting_verification" ---
+    const tableToUpdate = cleanOrderId.startsWith('BMA-K-') ? 'custom_orders' : 'orders';
     const { error: updateErr } = await supabase
-      .from('orders')
+      .from(tableToUpdate)
       .update({ status: 'waiting_verification' })
       .eq('id', cleanOrderId)
 
     if (updateErr) {
-      console.error('Supabase orders update error:', updateErr)
+      console.error(`Supabase ${tableToUpdate} update error:`, updateErr)
       throw updateErr
     }
 

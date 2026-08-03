@@ -136,7 +136,7 @@ ON CONFLICT (username) DO NOTHING;
 -- ==================
 -- Menyimpan data pesanan kustom.
 CREATE TABLE IF NOT EXISTS custom_orders (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  id              VARCHAR(20) PRIMARY KEY,      -- Format: BMA-K-YYYYMMDD-XXX
   nama_pembeli    VARCHAR(255) NOT NULL,
   telepon         VARCHAR(20) NOT NULL,
   nama_produk     VARCHAR(255) NOT NULL,
@@ -148,6 +148,10 @@ CREATE TABLE IF NOT EXISTS custom_orders (
   alamat_lengkap  TEXT,
   lat             DECIMAL(10, 8),
   lng             DECIMAL(11, 8),
+  total_tagihan   INTEGER NOT NULL DEFAULT 0,
   status          VARCHAR(30) NOT NULL DEFAULT 'pending',
   created_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Hapus konstrain foreign key pada tabel payments agar bisa menerima id pesanan kustom (BMA-K-...)
+ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_order_id_fkey;

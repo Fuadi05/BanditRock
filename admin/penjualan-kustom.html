@@ -76,12 +76,13 @@
             <thead>
               <tr>
                 <th>ID ORDER</th>
-   <th>PELANGGAN</th>
-   <th>PRODUK</th>
-   <th>TGL</th>
-   <th>NO. TELEPON</th>
-   <th>STATUS</th>
-   <th>AKSI</th>
+               <th>PELANGGAN</th>
+               <th>PRODUK</th>
+               <th>TGL</th>
+               <th>TOTAL</th>
+               <th>NO. TELEPON</th>
+               <th>STATUS</th>
+               <th>AKSI</th>
               </tr>
             </thead>
             <tbody id="sales-table-body">
@@ -134,7 +135,10 @@
             <div id="modal-items-list" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"></div>
             <div style="display: flex; justify-content: space-between; padding: 12px 16px; background: #F8FAFC; border-top: 1px solid var(--border-color); font-weight: 800; font-size: 15px; color: var(--text-color);">
               <span>TOTAL TAGIHAN</span>
-              <span id="modal-total-amount">Rp 0</span>
+              <div style="display:flex; gap:8px;">
+                <input type="number" id="modal-price-input" style="padding: 4px 8px; border:1px solid #CBD5E1; border-radius:4px; font-size:14px; width:120px;" placeholder="Masukkan Harga">
+                <button onclick="updateOrderPrice()" style="padding: 4px 12px; background:var(--primary); color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Simpan Harga</button>
+              </div>
             </div>
           </div>
 
@@ -245,6 +249,7 @@
             <td>${o.nama_pembeli}</td>
             <td>${o.nama_produk}</td>
             <td>${tgl}</td>
+            <td><strong>${o.total_tagihan > 0 ? formatRpAdmin(o.total_tagihan) : '<span style="color:#F59E0B">Belum Set Harga</span>'}</strong></td>
             <td>${o.telepon}</td>
             <td><span style="${badgeInfo.style}">${badgeInfo.label}</span></td>
             <td>
@@ -263,10 +268,11 @@
       const order = window.allOrders.find(o => o.id === orderId);
       if (!order) return;
 
-      document.getElementById('modal-order-id').textContent = `Order Kustom: ...${order.id.substring(order.id.length - 6)}`;
+      document.getElementById('modal-order-id').textContent = `Order Kustom: ${order.id}`;
       document.getElementById('modal-order-date').textContent = new Date(order.created_at).toLocaleString('id-ID');
       document.getElementById('modal-buyer-name').textContent = order.nama_pembeli;
       document.getElementById('modal-buyer-phone').textContent = order.telepon;
+      document.getElementById('modal-price-input').value = order.total_tagihan || '';
       document.getElementById('modal-total-amount').textContent = 'Kustom (Negosiasi)';
 
       const itemsContainer = document.getElementById('modal-items-list');
@@ -312,6 +318,33 @@
         }
       } catch (err) {
         console.error('Error updating order status:', err);
+        alert('Gagal terhubung ke server');
+      }
+    }
+
+    
+    async function updateOrderPrice() {
+      if (!window.activeOrderId) return;
+      const priceVal = document.getElementById('modal-price-input').value;
+      if (!priceVal) return alert('Masukkan harga yang disepakati.');
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/custom-orders/${window.activeOrderId}/price`, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ total_tagihan: priceVal })
+        });
+        const json = await res.json();
+        if (json.success) {
+          alert('Harga berhasil disimpan!');
+          await renderSales();
+          // update modal UI
+          const order = window.allOrders.find(o => o.id === window.activeOrderId);
+          if (order) order.total_tagihan = parseInt(priceVal, 10);
+        } else {
+          alert('Gagal: ' + (json.message || 'Error'));
+        }
+      } catch(err) {
         alert('Gagal terhubung ke server');
       }
     }

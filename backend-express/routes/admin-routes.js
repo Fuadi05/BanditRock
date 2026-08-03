@@ -809,12 +809,20 @@ router.post('/custom-order', async (req, res) => {
       });
     }
 
+    // --- Generate Order ID unik: BMA-K-YYYYMMDD-XXX ---
+    const now = new Date()
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
+    const randomDigits = String(Math.floor(100 + Math.random() * 900))
+    const orderId = `BMA-K-${dateStr}-${randomDigits}`
+
     const { data, error } = await supabase
       .from('custom_orders')
       .insert({
+        id: orderId,
         nama_pembeli, telepon, nama_produk, deskripsi,
         provinsi, kabupaten, kecamatan, desa,
         alamat_lengkap, lat, lng,
+        total_tagihan: 0,
         status: 'pending'
       })
       .select();
@@ -859,6 +867,35 @@ router.put('/custom-orders/:id/status', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Gagal mengubah status.',
+      error: err.message
+    });
+  }
+});
+
+// ─────────────────────────────────────────────
+// PUT /api/admin/custom-orders/:id/price
+// Update harga/total tagihan order kustom
+// ─────────────────────────────────────────────
+router.put('/custom-orders/:id/price', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { total_tagihan } = req.body;
+
+    const { error } = await supabase
+      .from('custom_orders')
+      .update({ total_tagihan: parseInt(total_tagihan, 10) })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: 'Harga berhasil diperbarui.'
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengubah harga.',
       error: err.message
     });
   }
