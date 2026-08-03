@@ -799,7 +799,7 @@ router.get('/custom-orders', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('custom_orders')
-      .select('*')
+      .select('*, payments(*)')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
