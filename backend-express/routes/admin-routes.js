@@ -249,6 +249,43 @@ router.delete('/produk/:id', async (req, res) => {
 
 
 // ─────────────────────────────────────────────
+// GET /api/admin/dashboard
+// Mengambil rekapan semua pesanan (biasa & kustom) untuk dasbor
+// ─────────────────────────────────────────────
+router.get('/dashboard', async (req, res) => {
+  try {
+    let query1 = supabase
+      .from('orders')
+      .select('id, nama_pembeli, total_tagihan, status, created_at')
+      .order('created_at', { ascending: false })
+
+    let query2 = supabase
+      .from('custom_orders')
+      .select('id, nama_pembeli, total_tagihan, status, created_at')
+      .order('created_at', { ascending: false })
+
+    const [res1, res2] = await Promise.all([query1, query2])
+
+    if (res1.error) throw res1.error
+    if (res2.error) throw res2.error
+
+    const combinedData = [...res1.data, ...res2.data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+
+    res.json({
+      success: true,
+      count: combinedData.length,
+      data: combinedData
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengambil data dashboard.',
+      error: err.message
+    })
+  }
+})
+
+// ─────────────────────────────────────────────
 // GET /api/admin/orders
 // Mengambil seluruh pesanan (semua status)
 // ─────────────────────────────────────────────
@@ -592,26 +629,15 @@ router.get('/laporan', async (req, res) => {
     const { bulan } = req.query // Format: "2025-07"
 
     // Query dasar: ambil order yang sudah lunas beserta detail item & produk
-    let query = supabase
+    let query1 = supabase
       .from('orders')
-      .select(`
-        id,
-        nama_pembeli,
-        telepon,
-        total_tagihan,
-        status,
-        created_at,
-        order_items (
-          qty,
-          harga_disepakati,
-          products (
-            nama,
-            kategori
-          )
-        )
-      `)
+      .select('id, nama_pembeli, telepon, total_tagihan, status, created_at, order_items (qty, harga_disepakati, products (nama, kategori))')
       .in('status', ['paid', 'processing', 'shipped', 'completed'])
-      .order('created_at', { ascending: false })
+
+    let query2 = supabase
+      .from('custom_orders')
+      .select('id, nama_pembeli, telepon, total_tagihan, status, created_at, nama_produk, deskripsi')
+      .in('status', ['paid', 'processing', 'shipped', 'completed'])
 
     // Filter berdasarkan bulan jika diberikan
     if (bulan) {
@@ -620,18 +646,20 @@ router.get('/laporan', async (req, res) => {
       const startDate = new Date(year, month - 1, 1).toISOString()
       const endDate = new Date(year, month, 1).toISOString()
 
-      query = query
-        .gte('created_at', startDate)
-        .lt('created_at', endDate)
+      query1 = query1.gte('created_at', startDate).lt('created_at', endDate)
+      query2 = query2.gte('created_at', startDate).lt('created_at', endDate)
     }
 
-    const { data, error } = await query
+    const [res1, res2] = await Promise.all([query1, query2])
 
-    if (error) throw error
+    if (res1.error) throw res1.error
+    if (res2.error) throw res2.error
+
+    const combinedData = [...res1.data, ...res2.data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
     // --- Hitung ringkasan statistik ---
-    const totalPendapatan = data.reduce((sum, order) => sum + order.total_tagihan, 0)
-    const totalTransaksi = data.length
+    const totalPendapatan = combinedData.reduce((sum, order) => sum + (order.total_tagihan || 0), 0)
+    const totalTransaksi = combinedData.length
 
     res.json({
       success: true,
@@ -641,8 +669,7 @@ router.get('/laporan', async (req, res) => {
         total_pendapatan: totalPendapatan,
         periode: bulan || 'Seluruh waktu'
       },
-      data
-    })
+      data: combinedData
   } catch (err) {
     res.status(500).json({
       success: false,

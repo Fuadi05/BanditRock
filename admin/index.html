@@ -131,7 +131,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const res = await fetch(`${API_BASE}/admin/orders`, {
+        const res = await fetch(`${API_BASE}/admin/dashboard`, {
           headers: authHeaders()
         });
         const json = await res.json();

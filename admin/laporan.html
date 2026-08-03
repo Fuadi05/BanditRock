@@ -87,7 +87,7 @@
             <input type="date" id="date-from" class="form-control" style="width: auto; cursor: pointer; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #F8FAFC; color: var(--text-muted); font-size: 13px;">
             <span style="font-size: 13px; color: var(--text-muted);">sampai</span>
             <input type="date" id="date-to" class="form-control" style="width: auto; cursor: pointer; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #F8FAFC; color: var(--text-muted); font-size: 13px;">
-            <button class="btn-primary" style="background: #F1F5F9; color: var(--text-main); border: 1px solid var(--border-color);">
+            <button onclick="exportToCSV()" class="btn-primary" style="background: #F1F5F9; color: var(--text-main); border: 1px solid var(--border-color);">
               Ekspor XLS <i data-lucide="upload" style="width: 14px; margin-left: 8px;"></i>
             </button>
           </div>
@@ -149,6 +149,7 @@
             document.getElementById('rata-rata').textContent = formatRpAdmin(rataRata);
             
             const orders = json.data || [];
+            window.reportData = orders;
             
             // Group sales by Date for the Bar Chart
             const salesByDate = {};
@@ -186,6 +187,34 @@
         document.getElementById('rata-rata').textContent = 'Gagal memuat';
         document.getElementById('chart-container').innerHTML = '<p style="color: var(--danger); font-size: 14px;">Gagal terhubung ke server.</p>';
       }
+    }
+
+    function exportToCSV() {
+      if (!window.reportData || window.reportData.length === 0) {
+        return alert("Tidak ada data untuk diekspor!");
+      }
+      
+      let csv = "ID Pesanan,Tanggal,Pelanggan,Telepon,Total Tagihan,Status\n";
+      
+      window.reportData.forEach(o => {
+        const tgl = new Date(o.created_at).toLocaleDateString('id-ID');
+        const id = o.id || "";
+        const nama = (o.nama_pembeli || "").replace(/,/g, " ");
+        const telp = (o.telepon || "").replace(/,/g, " ");
+        const total = o.total_tagihan || 0;
+        const status = o.status || "";
+        
+        csv += `${id},${tgl},${nama},${telp},${total},${status}\n`;
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', 'Laporan_Penjualan_BanditRock.csv');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     }
   </script>
 </body>
