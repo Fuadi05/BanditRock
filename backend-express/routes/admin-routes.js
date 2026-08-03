@@ -670,6 +670,7 @@ router.get('/laporan', async (req, res) => {
         periode: bulan || 'Seluruh waktu'
       },
       data: combinedData
+    })
   } catch (err) {
     res.status(500).json({
       success: false,
