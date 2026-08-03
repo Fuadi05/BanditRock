@@ -763,4 +763,105 @@ router.put('/profile', async (req, res) => {
   }
 });
 
-module.exports = router
+// ─────────────────────────────────────────────
+// GET /api/admin/custom-orders
+// Mengambil daftar order kustom
+// ─────────────────────────────────────────────
+router.get('/custom-orders', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('custom_orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      count: data.length,
+      data
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengambil data order kustom.',
+      error: err.message
+    });
+  }
+});
+
+// ─────────────────────────────────────────────
+// POST /api/admin/custom-order
+// Menyimpan form tambah order kustom
+// ─────────────────────────────────────────────
+router.post('/custom-order', async (req, res) => {
+  try {
+    const { 
+      nama_pembeli, telepon, nama_produk, deskripsi, 
+      provinsi, kabupaten, kecamatan, desa, 
+      alamat_lengkap, lat, lng 
+    } = req.body;
+
+    if (!nama_pembeli || !telepon || !nama_produk || !provinsi || !kabupaten || !kecamatan || !desa || !alamat_lengkap || lat === undefined || lng === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mohon lengkapi semua field wajib.'
+      });
+    }
+
+    const { data, error } = await supabase
+      .from('custom_orders')
+      .insert({
+        nama_pembeli, telepon, nama_produk, deskripsi,
+        provinsi, kabupaten, kecamatan, desa,
+        alamat_lengkap, lat, lng,
+        status: 'pending'
+      })
+      .select();
+
+    if (error) throw error;
+
+    res.status(201).json({
+      success: true,
+      message: '✅ Order kustom berhasil disimpan!',
+      data: data[0]
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal menyimpan order kustom.',
+      error: err.message
+    });
+  }
+});
+
+// ─────────────────────────────────────────────
+// PUT /api/admin/custom-orders/:id/status
+// Update status order kustom
+// ─────────────────────────────────────────────
+router.put('/custom-orders/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const { error } = await supabase
+      .from('custom_orders')
+      .update({ status })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: `Status order kustom berhasil diubah menjadi "${status}".`
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengubah status.',
+      error: err.message
+    });
+  }
+});
+
+module.exports = router;

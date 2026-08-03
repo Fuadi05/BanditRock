@@ -23,7 +23,13 @@
       <div class="menu-group">
         <div class="menu-label">Menu Utama</div>
         <a href="index.html" class="menu-item"><i data-lucide="home"></i> Dasbor</a>
-        <a href="penjualan.html" class="menu-item"><i data-lucide="shopping-cart"></i> Penjualan Produk</a>
+        <div class="menu-item has-dropdown">
+          <i data-lucide="shopping-cart"></i> Penjualan Produk <i data-lucide="chevron-down" class="dropdown-icon"></i>
+        </div>
+        <div class="submenu">
+          <a href="penjualan.html" class="submenu-item">Biasa</a>
+          <a href="penjualan-kustom.html" class="submenu-item">Kustom</a>
+        </div>
         <a href="laporan.html" class="menu-item"><i data-lucide="star"></i> Laporan</a>
       </div>
       
@@ -82,12 +88,12 @@
 
             <div class="form-group" style="margin-bottom:0;">
               <label>Nama Produk <span style="color:var(--danger)">*</span></label>
-              <input type="text" class="form-control" placeholder="Misal: Patung Doraemon" required>
+              <input type="text" id="cust-product" class="form-control" placeholder="Misal: Patung Doraemon" required>
             </div>
 
             <div class="form-group" style="margin-bottom:0;">
               <label>Deskripsi Produk</label>
-              <textarea class="form-control" rows="4" placeholder="Misal: Ukuran 19 Meter"></textarea>
+              <textarea id="cust-desc" class="form-control" rows="4" placeholder="Misal: Ukuran 19 Meter"></textarea>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -97,24 +103,24 @@
               </div>
               <div class="form-group" style="margin-bottom:0;">
                 <label>Kabupaten/Kota <span style="color:var(--danger)">*</span></label>
-                <input type="text" class="form-control" placeholder="Pilih Kabupaten/Kota" required>
+                <input type="text" id="cust-kab" class="form-control" placeholder="Pilih Kabupaten/Kota" required>
               </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
               <div class="form-group" style="margin-bottom:0;">
                 <label>Kecamatan <span style="color:var(--danger)">*</span></label>
-                <input type="text" class="form-control" placeholder="Pilih Kecamatan" required>
+                <input type="text" id="cust-kec" class="form-control" placeholder="Pilih Kecamatan" required>
               </div>
               <div class="form-group" style="margin-bottom:0;">
                 <label>Desa/Kelurahan <span style="color:var(--danger)">*</span></label>
-                <input type="text" class="form-control" placeholder="Pilih Desa/Kelurahan" required>
+                <input type="text" id="cust-desa" class="form-control" placeholder="Pilih Desa/Kelurahan" required>
               </div>
             </div>
 
             <div class="form-group" style="margin-bottom:0;">
               <label>Alamat Pengiriman <span style="color:var(--danger)">*</span></label>
-              <textarea class="form-control" rows="3" placeholder="Tuliskan alamat lengkap pengiriman..." required></textarea>
+              <textarea id="cust-alamat" class="form-control" rows="3" placeholder="Tuliskan alamat lengkap pengiriman..." required></textarea>
             </div>
 
           </div>
@@ -171,23 +177,29 @@
       submitBtn.textContent = 'Menyimpan...';
       submitBtn.disabled = true;
 
-      // Note: Karena UI form order kustom belum memiliki daftar item secara spesifik, 
-      // kita kirimkan data dummy product_id untuk memenuhi schema database.
-      // Nantinya Anda bisa mengembangkan UI untuk memilih produk secara spesifik.
       const payload = {
         nama_pembeli: document.getElementById('cust-name').value,
         telepon: document.getElementById('cust-phone').value,
-        items: [
-          {
-            product_id: "00000000-0000-0000-0000-000000000000", // Ganti dengan ID produk "Order Kustom" di DB jika ada
-            qty: 1,
-            harga_disepakati: 0 // Harga 0, bisa diedit nanti, atau tambahkan input harga di form
-          }
-        ]
+        nama_produk: document.getElementById('cust-product').value,
+        deskripsi: document.getElementById('cust-desc').value,
+        provinsi: document.getElementById('cust-prov').value,
+        kabupaten: document.getElementById('cust-kab').value,
+        kecamatan: document.getElementById('cust-kec').value,
+        desa: document.getElementById('cust-desa').value,
+        alamat_lengkap: document.getElementById('cust-alamat').value,
+        lat: parseFloat(document.getElementById('cust-lat').value),
+        lng: parseFloat(document.getElementById('cust-lng').value)
       };
+
+      if (!payload.lat || !payload.lng) {
+        alert("Pilih lokasi pada peta terlebih dahulu!");
+        submitBtn.textContent = 'Save & Publish';
+        submitBtn.disabled = false;
+        return;
+      }
       
       try {
-        const res = await fetch(`${API_BASE}/admin/order`, {
+        const res = await fetch(`${API_BASE}/admin/custom-order`, {
           method: 'POST',
           headers: authHeaders(),
           body: JSON.stringify(payload)
@@ -196,7 +208,7 @@
         const json = await res.json();
         if (json.success) {
           alert('Order Kustom berhasil disimpan ke database!');
-          window.location.href = 'penjualan.html';
+          window.location.href = 'penjualan-kustom.html';
         } else {
           alert('Gagal: ' + (json.message || 'Terjadi kesalahan'));
         }

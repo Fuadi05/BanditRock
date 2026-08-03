@@ -130,3 +130,24 @@ ON CONFLICT (username) DO NOTHING;
 -- Nama bucket: bukti-transfer
 -- Access: Public (agar URL bisa diakses langsung oleh frontend)
 -- ============================================================
+
+-- ==================
+-- 7. TABEL CUSTOM_ORDERS
+-- ==================
+-- Menyimpan data pesanan kustom.
+CREATE TABLE IF NOT EXISTS custom_orders (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nama_pembeli    VARCHAR(255) NOT NULL,
+  telepon         VARCHAR(20) NOT NULL,
+  nama_produk     VARCHAR(255) NOT NULL,
+  deskripsi       TEXT,
+  provinsi        VARCHAR(100),
+  kabupaten       VARCHAR(100),
+  kecamatan       VARCHAR(100),
+  desa            VARCHAR(100),
+  alamat_lengkap  TEXT,
+  lat             DECIMAL(10, 8),
+  lng             DECIMAL(11, 8),
+  status          VARCHAR(30) NOT NULL DEFAULT 'pending',
+  created_at      TIMESTAMPTZ DEFAULT NOW()
+);

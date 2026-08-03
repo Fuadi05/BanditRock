@@ -61,6 +61,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle Notifikasi Dropdown & Real-time Fetch
   setupAdminNotifications();
+
+  // Handle Sidebar Dropdown
+  const dropdowns = document.querySelectorAll('.has-dropdown');
+  dropdowns.forEach(dropdown => {
+    dropdown.addEventListener('click', (e) => {
+      e.preventDefault();
+      dropdown.classList.toggle('open');
+      const submenu = dropdown.nextElementSibling;
+      if (submenu && submenu.classList.contains('submenu')) {
+        submenu.classList.toggle('open');
+      }
+    });
+  });
 });
 
 async function loadTopbarAvatar() {

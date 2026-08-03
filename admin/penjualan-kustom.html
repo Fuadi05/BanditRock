@@ -49,7 +49,7 @@
   <!-- Main Content -->
   <main class="main-content">
     <header class="topbar">
-      <h1 class="page-title">Penjualan Produk</h1>
+      <h1 class="page-title">Penjualan Produk Kustom</h1>
       <div class="topbar-right">
         <button class="notif-btn">
           <i data-lucide="bell"></i>
@@ -76,12 +76,12 @@
             <thead>
               <tr>
                 <th>ID ORDER</th>
-                <th>PELANGGAN</th>
-                <th>TGL</th>
-                <th>TOTAL</th>
-                <th>NO. TELEPON</th>
-                <th>STATUS</th>
-                <th>AKSI</th>
+   <th>PELANGGAN</th>
+   <th>PRODUK</th>
+   <th>TGL</th>
+   <th>NO. TELEPON</th>
+   <th>STATUS</th>
+   <th>AKSI</th>
               </tr>
             </thead>
             <tbody id="sales-table-body">
@@ -196,7 +196,7 @@
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px;">Memuat data...</td></tr>';
 
       try {
-        const res = await fetch(`${API_BASE}/admin/orders`, {
+        const res = await fetch(`${API_BASE}/admin/custom-orders`, {
           headers: authHeaders()
         });
         const json = await res.json();
@@ -229,7 +229,7 @@
       document.getElementById('showing-rows').textContent = orders.length;
 
       if (orders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color: var(--text-muted);">Tidak ada pesanan dalam kategori ini.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color: var(--text-muted);">Tidak ada pesanan kustom dalam kategori ini.</td></tr>';
         return;
       }
 
@@ -237,13 +237,14 @@
       orders.forEach(o => {
         const tgl = new Date(o.created_at).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'});
         const badgeInfo = statusBadgeMap[o.status] || { label: o.status, style: 'background: #E2E8F0; color: #475569; padding: 4px 10px; border-radius: 9999px;' };
+        const shortId = o.id.split('-')[0]; // using UUID short
 
         html += `
           <tr>
-            <td><strong>${o.id}</strong></td>
+            <td title="${o.id}"><strong>...${o.id.substring(o.id.length - 6)}</strong></td>
             <td>${o.nama_pembeli}</td>
+            <td>${o.nama_produk}</td>
             <td>${tgl}</td>
-            <td><strong>${formatRpAdmin(o.total_tagihan)}</strong></td>
             <td>${o.telepon}</td>
             <td><span style="${badgeInfo.style}">${badgeInfo.label}</span></td>
             <td>
@@ -262,44 +263,31 @@
       const order = window.allOrders.find(o => o.id === orderId);
       if (!order) return;
 
-      document.getElementById('modal-order-id').textContent = `Order ${order.id}`;
+      document.getElementById('modal-order-id').textContent = `Order Kustom: ...${order.id.substring(order.id.length - 6)}`;
       document.getElementById('modal-order-date').textContent = new Date(order.created_at).toLocaleString('id-ID');
       document.getElementById('modal-buyer-name').textContent = order.nama_pembeli;
       document.getElementById('modal-buyer-phone').textContent = order.telepon;
-      document.getElementById('modal-total-amount').textContent = formatRpAdmin(order.total_tagihan);
+      document.getElementById('modal-total-amount').textContent = 'Kustom (Negosiasi)';
 
-      // Render Items
       const itemsContainer = document.getElementById('modal-items-list');
-      if (order.order_items && order.order_items.length > 0) {
-        itemsContainer.innerHTML = order.order_items.map(i => `
-          <div style="display: flex; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
-            <span>${i.products ? i.products.nama : 'Produk'} <strong>x${i.qty}</strong></span>
-            <span style="font-weight: 600;">${formatRpAdmin((i.harga_disepakati || 0) * i.qty)}</span>
-          </div>
-        `).join('');
-      } else {
-        itemsContainer.innerHTML = '<div style="padding: 12px 16px; font-size: 13px; color: var(--text-muted);">Tidak ada detail item</div>';
-      }
+      itemsContainer.innerHTML = `
+        <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
+          <strong>Nama Produk:</strong> ${order.nama_produk}
+        </div>
+        <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
+          <strong>Deskripsi:</strong> ${order.deskripsi || '-'}
+        </div>
+        <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
+          <strong>Alamat:</strong> ${order.alamat_lengkap}<br>
+          ${order.desa}, ${order.kecamatan}, ${order.kabupaten}, ${order.provinsi}
+        </div>
+        <div style="padding: 10px 16px; font-size: 13px;">
+          <strong>Lokasi Peta:</strong><br>
+          <a href="https://www.google.com/maps/search/?api=1&query=${order.lat},${order.lng}" target="_blank" style="color:var(--primary); font-weight:bold;">📍 Buka di Google Maps</a>
+        </div>
+      `;
 
-      // Render Payments
-      const payBox = document.getElementById('payment-info-box');
-      if (order.payments && order.payments.length > 0) {
-        const pay = order.payments[0];
-        payBox.innerHTML = `
-          <div style="font-size: 13px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div>Bank Pengirim: <strong>${pay.bank_pengirim}</strong></div>
-            <div>Nominal Transfer: <strong>${formatRpAdmin(pay.nominal)}</strong></div>
-          </div>
-          <div style="text-align: center; background: #F8FAFC; padding: 16px; border-radius: 8px; border: 1px solid #E2E8F0;">
-            <img src="${pay.bukti_url}" alt="Bukti Transfer" style="max-width: 100%; max-height: 250px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 12px;" onerror="this.onerror=null; this.src='../images/media__1780324962198.jpg';">
-            <div>
-              <a href="${pay.bukti_url}" target="_blank" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">🔍 Lihat Gambar Ukuran Penuh</a>
-            </div>
-          </div>
-        `;
-      } else {
-        payBox.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); margin: 0;">Pengguna belum mengupload bukti pembayaran untuk pesanan ini.</p>';
-      }
+      document.getElementById('payment-info-box').innerHTML = '<p style="font-size: 13px; color: var(--text-muted); margin: 0;">(Tidak ada info pembayaran untuk pemesanan kustom awal)</p>';
 
       document.getElementById('receipt-modal').style.display = 'flex';
       if (window.lucide) lucide.createIcons();
@@ -309,7 +297,7 @@
       if (!window.activeOrderId) return;
 
       try {
-        const res = await fetch(`${API_BASE}/admin/orders/${window.activeOrderId}/status`, {
+        const res = await fetch(`${API_BASE}/admin/custom-orders/${window.activeOrderId}/status`, {
           method: 'PUT',
           headers: authHeaders(),
           body: JSON.stringify({ status: newStatus })
