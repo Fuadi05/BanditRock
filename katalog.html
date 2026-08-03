@@ -164,9 +164,9 @@
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px;">
-            <input type="range" id="range-price-min" min="100000" max="3000000" step="50000" value="100000"
+            <input type="range" id="range-price-min" min="1000" max="1000000000" step="1000" value="1000"
               class="price-slider">
-            <input type="range" id="range-price-max" min="100000" max="3000000" step="50000" value="3000000"
+            <input type="range" id="range-price-max" min="1000" max="1000000000" step="1000" value="1000000000"
               class="price-slider">
           </div>
 
@@ -174,14 +174,14 @@
             <div
               style="flex: 1; border: 1px solid var(--gray-mid); border-radius: 6px; padding: 6px 8px; font-size: 12px;">
               <div style="color: var(--gray-text); margin-bottom: 2px;">Min</div>
-              <input type="number" id="input-price-min" value="100000" min="100000" max="3000000"
+              <input type="number" id="input-price-min" value="1000" min="1000" max="1000000000"
                 style="width: 100%; border: none; outline: none; font-size: 13px; font-weight: 600;">
             </div>
             <div style="display: flex; align-items: flex-end; padding-bottom: 6px; color: var(--gray-text);"><i data-lucide="minus" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></div>
             <div
               style="flex: 1; border: 1px solid var(--gray-mid); border-radius: 6px; padding: 6px 8px; font-size: 12px;">
               <div style="color: var(--gray-text); margin-bottom: 2px;">Maks</div>
-              <input type="number" id="input-price-max" value="3000000" min="100000" max="3000000"
+              <input type="number" id="input-price-max" value="1000000000" min="1000" max="1000000000"
                 style="width: 100%; border: none; outline: none; font-size: 13px; font-weight: 600;">
             </div>
           </div>
@@ -261,8 +261,8 @@
   <script src="js/main.js"></script>
   <script>
     const PER_PAGE = 9;
-    const MIN_PRICE = 0;
-    const MAX_PRICE = 3000000;
+    const MIN_PRICE = 1000;
+    const MAX_PRICE = 1000000000;
 
     let allProds = window.products || [];
     let state = {
@@ -303,6 +303,7 @@
     }
 
     function formatRpShort(n) {
+      if (n >= 1000000000) return `Rp ${(n / 1000000000).toFixed(1).replace('.0', '')} Miliar`;
       if (n >= 1000000) return `Rp ${(n / 1000000).toFixed(1).replace('.0', '')} Jt`;
       return `Rp ${(n / 1000).toFixed(0)}.000`;
     }
@@ -359,26 +360,26 @@
       }
 
       rMin.addEventListener('input', (e) => {
-        if (Number(rMin.value) > Number(rMax.value) - 50000) rMin.value = Number(rMax.value) - 50000;
+        if (Number(rMin.value) > Number(rMax.value) - 1000) rMin.value = Number(rMax.value) - 1000;
         updateRangeVisuals();
       });
       rMax.addEventListener('input', (e) => {
-        if (Number(rMax.value) < Number(rMin.value) + 50000) rMax.value = Number(rMin.value) + 50000;
+        if (Number(rMax.value) < Number(rMin.value) + 1000) rMax.value = Number(rMin.value) + 1000;
         updateRangeVisuals();
       });
 
       // Bind text inputs back to range sliders
       iMin.addEventListener('change', (e) => {
         let v = Number(e.target.value);
-        if (v < 100000) v = 100000;
-        if (v > Number(rMax.value) - 50000) v = Number(rMax.value) - 50000;
+        if (v < 1000) v = 1000;
+        if (v > Number(rMax.value) - 1000) v = Number(rMax.value) - 1000;
         rMin.value = v;
         updateRangeVisuals();
       });
       iMax.addEventListener('change', (e) => {
         let v = Number(e.target.value);
-        if (v > 3000000) v = 3000000;
-        if (v < Number(rMin.value) + 50000) v = Number(rMin.value) + 50000;
+        if (v > 1000000000) v = 1000000000;
+        if (v < Number(rMin.value) + 1000) v = Number(rMin.value) + 1000;
         rMax.value = v;
         updateRangeVisuals();
       });
