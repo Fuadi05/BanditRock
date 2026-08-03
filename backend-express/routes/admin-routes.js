@@ -291,7 +291,7 @@ router.get('/dashboard', async (req, res) => {
 // ─────────────────────────────────────────────
 router.get('/orders', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { data: orders, error } = await supabase
       .from('orders')
       .select(`
         id,
@@ -304,19 +304,33 @@ router.get('/orders', async (req, res) => {
           qty,
           harga_disepakati,
           products ( nama )
-        ),
-        payments (
-          id,
-          bank_pengirim,
-          nominal,
-          bukti_url,
-          status_verifikasi,
-          created_at
         )
       `)
       .order('created_at', { ascending: false })
 
     if (error) throw error
+
+    // Manual join untuk payments karena foreign key constraint dihapus
+    const orderIds = orders.map(o => o.id);
+    let paymentsMap = {};
+    if (orderIds.length > 0) {
+      const { data: paymentsData } = await supabase
+        .from('payments')
+        .select('id, order_id, bank_pengirim, nominal, bukti_url, status_verifikasi, created_at')
+        .in('order_id', orderIds);
+        
+      if (paymentsData) {
+        paymentsData.forEach(p => {
+          if (!paymentsMap[p.order_id]) paymentsMap[p.order_id] = [];
+          paymentsMap[p.order_id].push(p);
+        });
+      }
+    }
+    
+    const data = orders.map(o => ({
+      ...o,
+      payments: paymentsMap[o.id] || []
+    }));
 
     res.json({
       success: true,
@@ -797,12 +811,34 @@ router.put('/profile', async (req, res) => {
 // ─────────────────────────────────────────────
 router.get('/custom-orders', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { data: customOrders, error } = await supabase
       .from('custom_orders')
-      .select('*, payments(*)')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
+
+    // Manual join untuk payments karena foreign key constraint dihapus
+    const orderIds = customOrders.map(o => o.id);
+    let paymentsMap = {};
+    if (orderIds.length > 0) {
+      const { data: paymentsData } = await supabase
+        .from('payments')
+        .select('id, order_id, bank_pengirim, nominal, bukti_url, status_verifikasi, created_at')
+        .in('order_id', orderIds);
+        
+      if (paymentsData) {
+        paymentsData.forEach(p => {
+          if (!paymentsMap[p.order_id]) paymentsMap[p.order_id] = [];
+          paymentsMap[p.order_id].push(p);
+        });
+      }
+    }
+    
+    const data = customOrders.map(o => ({
+      ...o,
+      payments: paymentsMap[o.id] || []
+    }));
 
     res.json({
       success: true,
