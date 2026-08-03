@@ -174,11 +174,13 @@
 
     <!-- DETAIL INFO & DESKRIPSI -->
     <div style="margin-top: 48px; border-top: 1px solid var(--gray-mid); padding-top: 36px;">
-
-
       <div class="desc-block" style="margin-bottom: 32px;">
-        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">DESKRIPSI LENGKAP</h3>
-        <p id="prod-desc-full" style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;"></p>
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; font-family: 'Poppins', sans-serif;">DESKRIPSI LENGKAP</h3>
+        <div id="desc-wrapper" style="position: relative; max-height: 160px; overflow: hidden; transition: max-height 0.4s ease;">
+          <p id="prod-desc-full" style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin: 0;"></p>
+          <div id="desc-gradient" style="position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)); pointer-events: none;"></div>
+        </div>
+        <button id="read-more-btn" style="background: none; border: none; color: var(--green-primary); font-weight: 700; font-size: 14px; cursor: pointer; padding: 0; margin-top: 8px; display: none;">Baca Selengkapnya</button>
       </div>
     </div>
   </div>
@@ -268,11 +270,42 @@
       const shortDesc = document.getElementById('prod-desc-short') || document.getElementById('prod-desc');
       if (shortDesc) shortDesc.textContent = currentProduct.desc_short || (currentProduct.desc ? currentProduct.desc.substring(0, 100) + '...' : '');
       
+      const formattedDesc = (currentProduct.desc || '').replace(/\n/g, '<br>');
+
       const fullDescText = document.getElementById('prod-desc-full-text');
-      if (fullDescText) fullDescText.innerHTML = currentProduct.desc || '';
+      if (fullDescText) fullDescText.innerHTML = formattedDesc;
       
       const oldFullDesc = document.getElementById('prod-desc-full');
-      if (oldFullDesc) oldFullDesc.innerHTML = currentProduct.desc || '';
+      if (oldFullDesc) oldFullDesc.innerHTML = formattedDesc;
+
+      const descWrapper = document.getElementById('desc-wrapper');
+      const readMoreBtn = document.getElementById('read-more-btn');
+      const descGradient = document.getElementById('desc-gradient');
+      
+      if (descWrapper && oldFullDesc && readMoreBtn) {
+         setTimeout(() => {
+           if (oldFullDesc.scrollHeight > 160) {
+             readMoreBtn.style.display = 'inline-block';
+             descGradient.style.display = 'block';
+             
+             readMoreBtn.onclick = () => {
+               if (descWrapper.style.maxHeight === '160px' || descWrapper.style.maxHeight === '') {
+                 descWrapper.style.maxHeight = (oldFullDesc.scrollHeight + 50) + 'px';
+                 descGradient.style.display = 'none';
+                 readMoreBtn.textContent = 'Sembunyikan';
+               } else {
+                 descWrapper.style.maxHeight = '160px';
+                 descGradient.style.display = 'block';
+                 readMoreBtn.textContent = 'Baca Selengkapnya';
+               }
+             };
+           } else {
+             readMoreBtn.style.display = 'none';
+             descGradient.style.display = 'none';
+             descWrapper.style.maxHeight = 'none';
+           }
+         }, 50);
+      }
 
       // Sizes dynamically populated
       if (currentProduct.ukuran) {
