@@ -1,26 +1,30 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tentang Kami - Batu Merapi</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
 
   <!-- TopBar -->
   <div class="topbar" id="topbar">
     Selamat datang di Batu Merapi! Dapatkan kerajinan batu alam berkualitas terbaik untuk hunian Anda.
-    <button class="topbar-close" onclick="document.getElementById('topbar').style.display='none'" aria-label="Tutup"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button>
+    <button class="topbar-close" onclick="document.getElementById('topbar').style.display='none'" aria-label="Tutup"><i
+        data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button>
   </div>
 
   <!-- Navbar -->
   <nav class="navbar" onclick="document.getElementById('nav-katalog-dropdown').style.display='none'">
     <div class="navbar-inner" onclick="event.stopPropagation()">
       <a href="index.html" class="navbar-logo">BATU<br />MERAPI</a>
-      
+
       <div class="navbar-nav">
         <a href="index.html">Beranda</a>
         <div style="position: relative;">
@@ -28,12 +32,19 @@
             Katalog
             <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
           </button>
-          <div id="nav-katalog-dropdown" style="background: var(--white); display:none; position: absolute; top: 110%; left: 0; border: 1px solid var(--gray-mid); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.1); min-width: 170px; z-index: 100; padding: 6px 0;">
-            <a href="katalog.html" style="display: block; padding: 9px 18px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--gray-light);">Semua Produk</a>
-            <a href="katalog.html?kategori=Alat Dapur" style="display: block; padding: 9px 18px; font-size: 13px;">Alat Dapur</a>
-            <a href="katalog.html?kategori=Interior" style="display: block; padding: 9px 18px; font-size: 13px;">Interior</a>
-            <a href="katalog.html?kategori=Eksterior" style="display: block; padding: 9px 18px; font-size: 13px;">Eksterior</a>
-            <a href="katalog.html?kategori=Ornamen Dinding" style="display: block; padding: 9px 18px; font-size: 13px;">Ornamen Dinding</a>
+          <div id="nav-katalog-dropdown"
+            style="background: var(--white); display:none; position: absolute; top: 110%; left: 0; border: 1px solid var(--gray-mid); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.1); min-width: 170px; z-index: 100; padding: 6px 0;">
+            <a href="katalog.html"
+              style="display: block; padding: 9px 18px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--gray-light);">Semua
+              Produk</a>
+            <a href="katalog.html?kategori=Alat Dapur" style="display: block; padding: 9px 18px; font-size: 13px;">Alat
+              Dapur</a>
+            <a href="katalog.html?kategori=Interior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Interior</a>
+            <a href="katalog.html?kategori=Eksterior"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Eksterior</a>
+            <a href="katalog.html?kategori=Ornamen Dinding"
+              style="display: block; padding: 9px 18px; font-size: 13px;">Ornamen Dinding</a>
             <a href="custom-produk.html" style="display: block; padding: 9px 18px; font-size: 13px;">Custom Produk</a>
           </div>
         </div>
@@ -45,7 +56,8 @@
       <div class="navbar-right">
         <form id="navbar-search-form" style="display: contents;">
           <div class="search-bar">
-            <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+            <button type="submit"
+              style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
               <i data-lucide="search" style="width:16px; height:16px; color:var(--gray-text);"></i>
             </button>
             <input type="text" id="navbar-search-input" placeholder="Cari Produk">
@@ -69,10 +81,12 @@
     </button>
     <a href="index.html">Beranda</a>
     <div class="mobile-dropdown">
-      <button class="mobile-dropdown-btn" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border: none; border-bottom: 1px solid var(--gray-mid); background: none; font-size: inherit; font-family: inherit; font-weight: 500; color: var(--text-primary); cursor: pointer; text-align: left;">
+      <button class="mobile-dropdown-btn"
+        style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border: none; border-bottom: 1px solid var(--gray-mid); background: none; font-size: inherit; font-family: inherit; font-weight: 500; color: var(--text-primary); cursor: pointer; text-align: left;">
         Katalog <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
       </button>
-      <div class="mobile-dropdown-content" style="display: none; flex-direction: column; padding-left: 16px; margin-top: 8px;">
+      <div class="mobile-dropdown-content"
+        style="display: none; flex-direction: column; padding-left: 16px; margin-top: 8px;">
         <a href="katalog.html">Semua Produk</a>
         <a href="katalog.html?kategori=Alat Dapur">Alat Dapur</a>
         <a href="katalog.html?kategori=Interior">Interior</a>
@@ -99,7 +113,7 @@
         mobileCloseBtn.addEventListener('click', () => {
           mobileMenu.classList.remove('open');
         });
-        
+
         const mobileDropdownBtn = document.querySelector('.mobile-dropdown-btn');
         const mobileDropdownContent = document.querySelector('.mobile-dropdown-content');
         if (mobileDropdownBtn && mobileDropdownContent) {
@@ -123,11 +137,13 @@
   <!-- HERO -->
   <section style="background: var(--green-dark); padding: 72px 0;">
     <div class="container" style="text-align: center;">
-      <h1 style="font-family: 'Poppins', sans-serif; font-size: 42px; font-weight: 900; color: var(--white); text-transform: none; margin-bottom: 16px; line-height: 1.1;">
+      <h1
+        style="font-family: 'Poppins', sans-serif; font-size: 42px; font-weight: 900; color: var(--white); text-transform: none; margin-bottom: 16px; line-height: 1.1;">
         Tentang Batu Merapi
       </h1>
       <p style="color: rgba(255,255,255,.75); font-size: 15px; max-width: 580px; margin: 0 auto; line-height: 1.7;">
-        Kerajinan batu alam premium dari Wonosobo, Jawa Tengah. Kami menggabungkan warisan seni pahat tradisional dengan sentuhan desain modern untuk menghadirkan produk yang memukau.
+        Kerajinan batu alam premium dari Magelang, Jawa Tengah. Kami menggabungkan warisan seni pahat tradisional dengan
+        sentuhan desain modern untuk menghadirkan produk yang memukau.
       </p>
     </div>
   </section>
@@ -136,22 +152,34 @@
   <!-- CERITA KAMI -->
   <section style="padding: 64px 0;">
     <div class="container">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 56px; align-items: center;">
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 56px; align-items: center;">
         <div>
-          <h2 style="font-family: 'Poppins', sans-serif; font-size: 30px; font-weight: 900; text-transform: none; margin-bottom: 16px; line-height: 1.2;">
+          <h2
+            style="font-family: 'Poppins', sans-serif; font-size: 30px; font-weight: 900; text-transform: none; margin-bottom: 16px; line-height: 1.2;">
             Cerita di Balik<br />Setiap Batu
           </h2>
           <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px;">
-            BATU MERAPI lahir dari kecintaan mendalam terhadap kekayaan alam dan seni ukir tradisional Jawa Tengah. Berawal dari sebuah bengkel kecil di kaki Gunung Merapi, kami memulai perjalanan untuk memperkenalkan keindahan kerajinan batu alam kepada dunia.
+            BATU MERAPI lahir dari kecintaan mendalam terhadap kekayaan alam dan seni ukir tradisional Jawa Tengah.
+            Berawal dari sebuah bengkel kecil di kaki Gunung Merapi, kami memulai perjalanan untuk memperkenalkan
+            keindahan kerajinan batu alam kepada dunia.
           </p>
           <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 24px;">
-            Setiap produk yang kami hasilkan merupakan karya tangan pengrajin lokal yang berpengalaman, menggunakan teknik pahat yang telah diwariskan secara turun-temurun selama berabad-abad. Kami bangga menjadi jembatan antara seni tradisional dan kebutuhan modern.
+            Setiap produk yang kami hasilkan merupakan karya tangan pengrajin lokal yang berpengalaman, menggunakan
+            teknik pahat yang telah diwariskan secara turun-temurun selama berabad-abad. Kami bangga menjadi jembatan
+            antara seni tradisional dan kebutuhan modern.
           </p>
-          <a href="katalog.html" class="btn-primary" style="display:inline-block;">Jelajahi Produk Kami <i data-lucide="arrow-right" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></a>
+          <a href="katalog.html" class="btn-primary" style="display:inline-block;">Jelajahi Produk Kami <i
+              data-lucide="arrow-right"
+              style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></a>
         </div>
-        <div style="background: var(--gray-light); border-radius: var(--radius-lg); aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: var(--gray-text); overflow: hidden;">
-          <img src="images/about-workshop.jpg" alt="Workshop" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-          <div style="display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; height: 100%; justify-content: center;">
+        <div
+          style="background: var(--gray-light); border-radius: var(--radius-lg); aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: var(--gray-text); overflow: hidden;">
+          <img src="images/about-workshop.jpg" alt="Workshop"
+            style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg);"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <div
+            style="display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; height: 100%; justify-content: center;">
             <i data-lucide="image" style="width: 48px; height: 48px; color: var(--gray-mid);"></i>
             <span style="font-size: 13px;">Foto Workshop</span>
           </div>
@@ -164,8 +192,10 @@
   <section style="padding: 64px 0;">
     <div class="container">
       <h2 class="section-title" style="text-align: center; margin-bottom: 8px;">Nilai-nilai kami</h2>
-      <p style="text-align:center; color:var(--gray-text); font-size:14px; margin-bottom:36px;">Prinsip yang menjadi fondasi setiap langkah kami</p>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;" id="values-container"></div>
+      <p style="text-align:center; color:var(--gray-text); font-size:14px; margin-bottom:36px;">Prinsip yang menjadi
+        fondasi setiap langkah kami</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;"
+        id="values-container"></div>
     </div>
   </section>
 
@@ -182,23 +212,23 @@
   <section style="padding: 64px 0;">
     <div class="container">
       <h2 class="section-title" style="text-align: center; margin-bottom: 32px;">Lokasi kami</h2>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; align-items: center;">
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; align-items: center;">
         <div>
           <div style="display: flex; flex-direction: column; gap: 18px;" id="location-container"></div>
         </div>
         <div style="display: flex; flex-direction: column; gap: 16px;">
-          <div style="border-radius: var(--radius-md); height: 280px; overflow: hidden; border: 1px solid var(--gray-mid); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-            <iframe 
-              src="https://maps.google.com/maps?q=Sedayu,%20Kec.%20Muntilan,%20Kabupaten%20Magelang&t=&z=14&ie=UTF8&iwloc=&output=embed" 
-              width="100%" 
-              height="100%" 
-              style="border:0;" 
-              allowfullscreen="" 
-              loading="lazy">
+          <div
+            style="border-radius: var(--radius-md); height: 280px; overflow: hidden; border: 1px solid var(--gray-mid); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <iframe
+              src="https://maps.google.com/maps?q=Sedayu,%20Kec.%20Muntilan,%20Kabupaten%20Magelang&t=&z=14&ie=UTF8&iwloc=&output=embed"
+              width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
             </iframe>
           </div>
-          <a href="https://share.google/Z6ZQivpWpVTbkZuHN" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--gray-mid); padding: 12px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; color: var(--text-primary); box-shadow: var(--shadow-sm); text-align: center;">
-            <i data-lucide="map-pin" style="width: 18px; height: 18px; color: var(--red);"></i> Buka Titik Lokasi di Aplikasi Maps
+          <a href="https://share.google/Z6ZQivpWpVTbkZuHN" target="_blank"
+            style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--gray-mid); padding: 12px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; color: var(--text-primary); box-shadow: var(--shadow-sm); text-align: center;">
+            <i data-lucide="map-pin" style="width: 18px; height: 18px; color: var(--red);"></i> Buka Titik Lokasi di
+            Aplikasi Maps
           </a>
         </div>
       </div>
@@ -215,16 +245,18 @@
 
   <footer class="footer">
     <div class="footer-inner">
-      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto; max-width: 520px;">
+      <div
+        style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto; max-width: 520px;">
         <div class="footer-logo" style="letter-spacing: 1px;">BATU<br />MERAPI</div>
         <p class="footer-desc">
-          Pusat kerajinan batu alam premium dan ornamen tradisional berkualitas tinggi langsung dari kaki Gunung Merapi, Wonosobo.
+          Pusat kerajinan batu alam premium dan ornamen tradisional berkualitas tinggi langsung dari kaki Gunung Merapi,
+          Magelang.
         </p>
       </div>
     </div>
     <div class="footer-bottom">
       <span class="footer-copy">Batu Merapi © 2015–2026, All Rights Reserved</span>
-      
+
     </div>
   </footer>
 
@@ -236,7 +268,7 @@
       // Values
       const values = [
         { title: 'Batu Alam Asli', desc: 'Semua produk kami terbuat dari batu alam pilihan, dipilih langsung dari sumbernya untuk memastikan kualitas terbaik.', icon: 'gem' },
-        { title: 'Pengrajin Lokal', desc: 'Kami bekerja sama dengan pengrajin lokal berpengalaman dari Wonosobo yang mewarisi teknik pahat tradisional turun-temurun.', icon: 'hammer' },
+        { title: 'Pengrajin Lokal', desc: 'Kami bekerja sama dengan pengrajin lokal berpengalaman dari Magelang yang mewarisi teknik pahat tradisional turun-temurun.', icon: 'hammer' },
         { title: 'Ramah Lingkungan', desc: 'Proses produksi kami memperhatikan kelestarian lingkungan, menggunakan bahan batu yang diambil secara bertanggung jawab.', icon: 'leaf' },
         { title: 'Kualitas Terjamin', desc: 'Setiap produk melewati quality control ketat sebelum dikirim ke pelanggan. Kepuasan Anda adalah prioritas kami.', icon: 'shield-check' }
       ];
@@ -253,15 +285,15 @@
 
       // Timeline
       const milestones = [
-        { year: '2015', title: 'Awal Berdiri', desc: 'BATU MERAPI didirikan di Wonosobo dengan tim 3 pengrajin dan 12 produk perdana.' },
+        { year: '2015', title: 'Awal Berdiri', desc: 'BATU MERAPI didirikan di Magelang dengan tim 3 pengrajin dan 12 produk perdana.' },
         { year: '2017', title: 'Ekspansi Online', desc: 'Mulai berjualan secara online, menjangkau pelanggan dari seluruh Indonesia.' },
-        { year: '2019', title: 'Kolaborasi Pemkab', desc: 'Resmi bermitra dengan Pemerintah Kabupaten Wonosobo sebagai UMKM unggulan.' },
+        { year: '2019', title: 'Kolaborasi Pemkab', desc: 'Resmi bermitra dengan Pemerintah Kabupaten Magelang sebagai UMKM unggulan.' },
         { year: '2022', title: 'Ekspor Perdana', desc: 'Berhasil melakukan ekspor pertama ke Malaysia dan Singapura.' },
         { year: '2025', title: 'Platform Digital', desc: 'Meluncurkan platform e-commerce sendiri untuk pengalaman belanja yang lebih baik.' }
       ];
       let timelineHtml = `<div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--gray-mid); transform: translateX(-50%);"></div>`;
       timelineHtml += `<div style="display: flex; flex-direction: column; gap: 32px;">`;
-      
+
       milestones.forEach((m, i) => {
         timelineHtml += `<div style="display: flex; gap: 24px; align-items: flex-start; justify-content: ${i % 2 === 0 ? 'flex-start' : 'flex-end'};">`;
         if (i % 2 === 0) {
@@ -312,14 +344,9 @@
         </div>
       `).join('');
 
-      if(window.lucide) lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     });
   </script>
 </body>
+
 </html>
-
-
-
-
-
-
