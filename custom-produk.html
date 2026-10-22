@@ -98,40 +98,6 @@
     <a href="tentang.html">Tentang Kami</a>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const hamburgerBtn = document.getElementById('hamburger-btn');
-      const mobileMenu = document.getElementById('mobile-menu');
-      const mobileCloseBtn = document.getElementById('mobile-menu-close');
-
-      if (hamburgerBtn && mobileMenu && mobileCloseBtn) {
-        hamburgerBtn.addEventListener('click', () => {
-          mobileMenu.classList.add('open');
-        });
-        mobileCloseBtn.addEventListener('click', () => {
-          mobileMenu.classList.remove('open');
-        });
-        
-        const mobileDropdownBtn = document.querySelector('.mobile-dropdown-btn');
-        const mobileDropdownContent = document.querySelector('.mobile-dropdown-content');
-        if (mobileDropdownBtn && mobileDropdownContent) {
-          // Prevent multiple bindings if script runs multiple times
-          if (!mobileDropdownBtn.dataset.bound) {
-            mobileDropdownBtn.dataset.bound = 'true';
-            mobileDropdownBtn.addEventListener('click', () => {
-              const isVisible = mobileDropdownContent.style.display === 'flex';
-              mobileDropdownContent.style.display = isVisible ? 'none' : 'flex';
-            });
-          }
-        }
-        // re-initialize lucide icons for new elements
-        if (typeof lucide !== 'undefined') {
-          lucide.createIcons();
-        }
-      }
-    });
-  </script>
-
   <!-- HERO -->
   <section style="padding: 80px 24px; position:relative; overflow:hidden;">
     <!-- Gradient blur blob for the background right side -->
@@ -280,8 +246,8 @@
     </div>
   </footer>
 
-  <script src="js/products.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/products.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
   <script>
     if (window.lucide) lucide.createIcons();
   </script>

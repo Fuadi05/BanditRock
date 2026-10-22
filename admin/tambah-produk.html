@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Add Product - Syarif Art Stone Admin</title>
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin.css?v=2">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
@@ -133,6 +133,7 @@
                     <input type="checkbox" value="Ekstra Besar" class="ukuran-cb"> Ekstra Besar
                   </label>
                 </div>
+                <input type="text" id="p-ukuran-custom" class="form-control" placeholder="Ukuran tambahan / kustom (pisahkan koma, misal: Diameter 20cm, 30x40cm)" style="margin-top: 8px; font-size: 12.5px;">
               </div>
 
               <div>
@@ -258,7 +259,7 @@
     </div>
   </main>
 
-  <script src="js/admin.js"></script>
+  <script src="js/admin.js?v=3"></script>
   <script>
     async function handleGenericUpload(event, index) {
       const file = event.target.files[0];
@@ -305,8 +306,11 @@
         document.querySelector('.page-title').textContent = 'Edit Produk';
         document.querySelector('h2').textContent = 'Edit Produk';
         try {
-          const res = await fetch(`${API_BASE}/produk/${editId}`);
+          const res = await fetch(`${API_BASE}/admin/produk/${encodeURIComponent(editId)}`, {
+            headers: authHeaders()
+          });
           const json = await res.json();
+          if (handleApiAuthError(res, json)) return;
           if (json.success && json.data) {
             const p = json.data;
             document.getElementById('p-name').value = p.nama;
@@ -316,7 +320,7 @@
               document.getElementById('p-harga-modal').value = p.harga_max || '';
             }
             if (document.getElementById('p-tipe-pesanan')) {
-              document.getElementById('p-tipe-pesanan').value = p.status_stok || 'Ready Stock';
+              document.getElementById('p-tipe-pesanan').value = (p.status_stok === 'custom' || p.status_stok === 'Pre-Order') ? 'custom' : 'ready';
             }
             document.getElementById('p-desc').value = p.deskripsi || '';
             if (document.getElementById('p-desc-short')) {
@@ -324,10 +328,16 @@
             }
 
             if (p.ukuran) {
-              const ukuranArr = typeof p.ukuran === 'string' ? p.ukuran.split(',').map(s => s.trim()) : p.ukuran;
+              const ukuranArr = (typeof p.ukuran === 'string' ? p.ukuran.split(',') : p.ukuran).map(s => s.trim()).filter(Boolean);
+              const standardSizes = ['Kecil', 'Sedang', 'Besar', 'Ekstra Besar'];
               document.querySelectorAll('.ukuran-cb').forEach(cb => {
                 cb.checked = ukuranArr.includes(cb.value);
               });
+              const customSizes = ukuranArr.filter(u => !standardSizes.includes(u));
+              const customInput = document.getElementById('p-ukuran-custom');
+              if (customInput && customSizes.length > 0) {
+                customInput.value = customSizes.join(', ');
+              }
             }
 
             const setImg = (index, url) => {
@@ -351,31 +361,39 @@
 
     document.getElementById('add-product-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const mainImgUrl = document.getElementById('p-img').value.trim();
+      if (!mainImgUrl) {
+        alert('Harap unggah minimal Gambar 1 (Utama) terlebih dahulu.');
+        return;
+      }
+
       const submitBtn = e.target.querySelector('button[type="submit"]');
       submitBtn.textContent = 'Menyimpan...';
       submitBtn.disabled = true;
 
-
-      // Ambil ukuran yang dicentang
-      const ukuranChecked = Array.from(document.querySelectorAll('.ukuran-cb:checked')).map(cb => cb.value).join(', ');
+      // Ambil ukuran yang dicentang + ukuran kustom
+      const checkedList = Array.from(document.querySelectorAll('.ukuran-cb:checked')).map(cb => cb.value);
+      const customRaw = document.getElementById('p-ukuran-custom') ? document.getElementById('p-ukuran-custom').value : '';
+      const customList = customRaw.split(',').map(s => s.trim()).filter(Boolean);
+      const ukuranCombined = [...new Set([...checkedList, ...customList])].join(', ');
 
       const produk = {
-        nama: document.getElementById('p-name').value,
+        nama: document.getElementById('p-name').value.trim(),
         kategori: document.getElementById('p-cat').value,
         harga_min: parseInt(document.getElementById('p-price').value) || 0,
         harga_max: parseInt(document.getElementById('p-harga-modal') ? document.getElementById('p-harga-modal').value : 0) || 0,
-        status_stok: document.getElementById('p-tipe-pesanan') ? document.getElementById('p-tipe-pesanan').value : 'Ready Stock',
+        status_stok: document.getElementById('p-tipe-pesanan') ? document.getElementById('p-tipe-pesanan').value : 'ready',
         deskripsi: document.getElementById('p-desc').value,
         deskripsi_singkat: document.getElementById('p-desc-short').value,
-        ukuran: ukuranChecked,
-        image_url: document.getElementById('p-img').value,
+        ukuran: ukuranCombined,
+        image_url: mainImgUrl,
         image_url_2: document.getElementById('p-img2') ? document.getElementById('p-img2').value : '',
         image_url_3: document.getElementById('p-img3') ? document.getElementById('p-img3').value : '',
         image_url_4: document.getElementById('p-img4') ? document.getElementById('p-img4').value : '',
       };
 
       try {
-        const url = editId ? `${API_BASE}/admin/produk/${editId}` : `${API_BASE}/admin/produk`;
+        const url = editId ? `${API_BASE}/admin/produk/${encodeURIComponent(editId)}` : `${API_BASE}/admin/produk`;
         const res = await fetch(url, {
           method: editId ? 'PUT' : 'POST',
           headers: authHeaders(),
@@ -384,9 +402,8 @@
         const json = await res.json();
 
         if (json.success) {
-          alert('Produk berhasil ditambahkan ke database!');
-          if (!editId) window.location.href = 'produk.html';
-          else alert('Produk berhasil diperbarui!');
+          alert(editId ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan ke database!');
+          window.location.href = 'produk.html';
         } else {
           alert('Gagal: ' + (json.message || 'Terjadi kesalahan'));
         }

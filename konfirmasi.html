@@ -98,40 +98,6 @@
     <a href="tentang.html">Tentang Kami</a>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const hamburgerBtn = document.getElementById('hamburger-btn');
-      const mobileMenu = document.getElementById('mobile-menu');
-      const mobileCloseBtn = document.getElementById('mobile-menu-close');
-
-      if (hamburgerBtn && mobileMenu && mobileCloseBtn) {
-        hamburgerBtn.addEventListener('click', () => {
-          mobileMenu.classList.add('open');
-        });
-        mobileCloseBtn.addEventListener('click', () => {
-          mobileMenu.classList.remove('open');
-        });
-        
-        const mobileDropdownBtn = document.querySelector('.mobile-dropdown-btn');
-        const mobileDropdownContent = document.querySelector('.mobile-dropdown-content');
-        if (mobileDropdownBtn && mobileDropdownContent) {
-          // Prevent multiple bindings if script runs multiple times
-          if (!mobileDropdownBtn.dataset.bound) {
-            mobileDropdownBtn.dataset.bound = 'true';
-            mobileDropdownBtn.addEventListener('click', () => {
-              const isVisible = mobileDropdownContent.style.display === 'flex';
-              mobileDropdownContent.style.display = isVisible ? 'none' : 'flex';
-            });
-          }
-        }
-        // re-initialize lucide icons for new elements
-        if (typeof lucide !== 'undefined') {
-          lucide.createIcons();
-        }
-      }
-    });
-  </script>
-
   <!-- HERO with Step Indicator -->
   <section style="background: var(--grad-primary); padding: 40px 0 0;">
     <div class="container" style="text-align: center;">
@@ -188,40 +154,49 @@
           </div>
 
           <div style="padding:28px 28px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 20px;">
-            <!-- Nama -->
-            <div>
-              <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">
-                <i data-lucide="user" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Nama Lengkap *
-              </label>
-              <input id="input-nama" required placeholder="Masukkan nama lengkap"
-                style="width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'">
-            </div>
-
-            <!-- No Order -->
-            <div>
+            <!-- No Order + Cek Pesanan -->
+            <div style="grid-column: 1 / -1;">
               <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">
                 <i data-lucide="hash" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Nomor Order *
               </label>
-              <input id="input-no-order" required placeholder="Contoh: BM-2025-001"
+              <div style="display:flex; gap:10px;">
+                <input id="input-no-order" required placeholder="Contoh: BMA-20261022-1234 atau BMA-K-..."
+                  style="flex:1; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'; checkOrderDetails(this.value);">
+                <button type="button" id="btn-cek-order" onclick="checkOrderDetails(document.getElementById('input-no-order').value)" class="btn-outline" style="padding: 0 18px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); white-space: nowrap; cursor: pointer;">
+                  Cek Pesanan
+                </button>
+              </div>
+              <div id="order-lookup-box" style="display:none; margin-top:12px; padding:14px 16px; border-radius:var(--radius-sm); border:1px solid #cbd5e1; background:#f8fafc; font-size:13px;"></div>
+            </div>
+
+            <!-- Nama -->
+            <div>
+              <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">
+                <i data-lucide="user" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Nama Lengkap / Pengirim *
+              </label>
+              <input id="input-nama" required placeholder="Masukkan nama lengkap"
                 style="width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'">
             </div>
 
             <!-- Bank -->
             <div>
               <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">
-                <i data-lucide="landmark" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Bank Pengirim *
+                <i data-lucide="landmark" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Bank / E-Wallet Pengirim *
               </label>
-              <select required
+              <select id="input-bank" required
                 style="width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; cursor: pointer; background:var(--white); transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'">
                 <option value="">Pilih bank pengirim</option>
-                <option>BCA</option>
-                <option>BRI</option>
-                <option>BNI</option>
-                <option>Mandiri</option>
-                <option>GoPay</option>
-                <option>OVO</option>
-                <option>Dana</option>
-                <option>Lainnya</option>
+                <option value="BCA">BCA</option>
+                <option value="BRI">BRI</option>
+                <option value="BNI">BNI</option>
+                <option value="Mandiri">Mandiri</option>
+                <option value="BSI">BSI</option>
+                <option value="BPD DIY / Jateng">BPD DIY / Jateng</option>
+                <option value="GoPay">GoPay</option>
+                <option value="OVO">OVO</option>
+                <option value="Dana">Dana</option>
+                <option value="ShopeePay">ShopeePay</option>
+                <option value="Lainnya">Lainnya</option>
               </select>
             </div>
 
@@ -230,26 +205,36 @@
               <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">
                 <i data-lucide="calendar" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Tanggal Transfer *
               </label>
-              <input type="date" required
+              <input id="input-tanggal" type="date" required
                 style="width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'">
             </div>
 
             <!-- Nominal -->
             <div>
               <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">
-                <i data-lucide="banknote" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Nominal Transfer *
+                <i data-lucide="banknote" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Nominal Transfer (Rp) *
               </label>
-              <input required type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Contoh: 999000"
+              <input id="input-nominal" required type="text" inputmode="numeric" pattern="[0-9.]*" placeholder="Contoh: 999000"
                 style="width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'">
             </div>
 
             <!-- No Rek -->
-            <div>
+            <div style="grid-column: 1 / -1;">
               <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">
-                <i data-lucide="credit-card" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>No. Rek / No. HP Pengirim *
+                <i data-lucide="credit-card" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>No. Rekening / No. HP Pengirim *
               </label>
-              <input required placeholder="Contoh: 081234567890"
+              <input id="input-norek" required placeholder="Contoh: 1234567890 atau 081234567890"
                 style="width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'">
+            </div>
+
+            <!-- Alamat Pengiriman -->
+            <div style="grid-column: 1 / -1;">
+              <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">
+                <i data-lucide="map-pin" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Alamat Lengkap Pengiriman *
+              </label>
+              <textarea id="input-alamat" rows="2" required placeholder="Nama jalan, RT/RW, Desa/Kelurahan, Kecamatan, Kabupaten/Kota, Provinsi, Kode Pos..."
+                style="width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; resize: vertical; transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'"></textarea>
+              <div id="alamat-helper" style="font-size:11.5px; color:var(--gray-text); margin-top:4px;">Pastikan alamat pengiriman lengkap agar pesanan dapat dikirim dengan tepat.</div>
             </div>
 
             <!-- Upload Bukti -->
@@ -260,7 +245,7 @@
               <div
                 style="border: 2px dashed var(--green-medium); border-radius: var(--radius-sm); padding: 32px; text-align: center; background: linear-gradient(135deg, rgba(91,192,27,0.04), rgba(131,219,77,0.06)); cursor: pointer; position: relative; transition:background .2s;"
                 id="file-drop-zone" onmouseenter="this.style.background='linear-gradient(135deg, rgba(91,192,27,0.08), rgba(131,219,77,0.12))'" onmouseleave="this.style.background='linear-gradient(135deg, rgba(91,192,27,0.04), rgba(131,219,77,0.06))'">
-                <input type="file" required accept="image/*,.pdf" onchange="handleFile(this)"
+                <input id="input-bukti" type="file" required accept="image/*,.pdf" onchange="handleFile(this)"
                   style="position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;">
 
                 <div id="file-placeholder">
@@ -268,7 +253,7 @@
                     <i data-lucide="upload-cloud" style="width:28px;height:28px;color:var(--white);"></i>
                   </div>
                   <p style="font-size: 14px; font-weight:700; color:var(--green-primary); margin-bottom:4px;">Klik atau drag file di sini</p>
-                  <p style="font-size: 12px; color: var(--gray-text);">Format: JPG, PNG, PDF (Maks 5MB)</p>
+                  <p style="font-size: 12px; color: var(--gray-text);">Format: JPG, PNG, WEBP, PDF (Maks 5MB)</p>
                 </div>
 
                 <div id="file-selected" style="display:none;">
@@ -284,9 +269,9 @@
             <!-- Catatan -->
             <div style="grid-column: 1 / -1;">
               <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">
-                <i data-lucide="message-square" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Catatan (opsional)
+                <i data-lucide="message-square" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Catatan Tambahan (opsional)
               </label>
-              <textarea rows="3" placeholder="Tuliskan catatan tambahan jika ada..."
+              <textarea id="input-catatan" rows="2" placeholder="Tuliskan catatan tambahan untuk pengrajin / kurir jika ada..."
                 style="width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; resize: vertical; transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'"></textarea>
             </div>
           </div>
@@ -375,12 +360,124 @@
     </div>
   </footer>
 
-  <script src="js/products.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/products.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
   <script>
     if (window.lucide) lucide.createIcons();
 
-    let uploadedImageBase64 = null;
+    let lastCheckedOrderId = '';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const dateInput = document.getElementById('input-tanggal');
+      if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const orderIdParam = params.get('order_id') || params.get('id');
+      if (orderIdParam) {
+        const orderInput = document.getElementById('input-no-order');
+        if (orderInput) {
+          orderInput.value = orderIdParam.trim();
+          checkOrderDetails(orderIdParam.trim());
+        }
+      }
+    });
+
+    async function checkOrderDetails(rawOrderId) {
+      const box = document.getElementById('order-lookup-box');
+      const helper = document.getElementById('alamat-helper');
+      const cleanId = String(rawOrderId || '').trim().replace(/^#/, '');
+
+      if (!cleanId) {
+        if (box) box.style.display = 'none';
+        return;
+      }
+      if (cleanId === lastCheckedOrderId && box && box.style.display === 'block') {
+        return;
+      }
+      lastCheckedOrderId = cleanId;
+
+      if (box) {
+        box.style.display = 'block';
+        box.style.borderColor = '#cbd5e1';
+        box.style.background = '#f8fafc';
+        box.innerHTML = '<span style="color:#64748b;">🔍 Mengecek rincian pesanan...</span>';
+      }
+
+      try {
+        const res = await fetch(`https://batumerapi.biz.id/api/order/track/${encodeURIComponent(cleanId)}`);
+        const json = await res.json();
+
+        if (!json.success || !json.data) {
+          if (box) {
+            box.style.borderColor = '#fca5a5';
+            box.style.background = '#fef2f2';
+            box.innerHTML = `<span style="color:#dc2626; font-weight:600;">⚠️ ${escapeHtml(json.message || 'Nomor order tidak ditemukan. Pastikan ID pesanan sesuai.')}</span>`;
+          }
+          setStepActive(1);
+          return;
+        }
+
+        const order = json.data;
+        const namaInput = document.getElementById('input-nama');
+        const nominalInput = document.getElementById('input-nominal');
+        const alamatInput = document.getElementById('input-alamat');
+
+        if (namaInput && !namaInput.value.trim() && order.nama_pembeli) {
+          namaInput.value = order.nama_pembeli;
+        }
+        if (nominalInput && !nominalInput.value.trim() && Number(order.total_tagihan) > 0) {
+          nominalInput.value = Number(order.total_tagihan);
+        }
+
+        const existingAddressParts = [order.alamat_lengkap, order.desa, order.kecamatan, order.kabupaten, order.provinsi].filter(Boolean);
+        const existingAddress = existingAddressParts.join(', ');
+
+        if (alamatInput) {
+          if (existingAddress && !alamatInput.value.trim()) {
+            alamatInput.value = existingAddress;
+          }
+          if (existingAddress) {
+            if (helper) {
+              helper.style.color = '#15803d';
+              helper.textContent = '✓ Alamat pengiriman dari pesanan Anda telah dimuat otomatis. Anda dapat memperbaruinya jika ada perubahan.';
+            }
+          } else {
+            if (helper) {
+              helper.style.color = '#d97706';
+              helper.style.fontWeight = '600';
+              helper.textContent = '⚠️ Pesanan ini belum memiliki detail alamat pengiriman. Mohon lengkapi alamat pengiriman di atas.';
+            }
+          }
+        }
+
+        const itemsSummary = (order.order_items && order.order_items.length > 0)
+          ? order.order_items.map(it => `${escapeHtml(it.products ? it.products.nama : 'Produk')} (x${Number(it.qty) || 1}${it.ukuran ? ', ' + escapeHtml(it.ukuran) : ''})`).join(', ')
+          : 'Pesanan Kustom';
+
+        const totalFormatted = Number(order.total_tagihan) > 0
+          ? 'Rp ' + Number(order.total_tagihan).toLocaleString('id-ID')
+          : 'Menunggu Kesepakatan Admin';
+
+        if (box) {
+          box.style.borderColor = '#86efac';
+          box.style.background = '#f0fdf4';
+          box.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+              <strong style="color:#15803d;">✓ Pesanan Ditemukan: ${escapeHtml(order.id)}</strong>
+              <span style="font-size:12px; font-weight:700; color:#0f5132; background:#dcfce7; padding:2px 8px; border-radius:99px;">Tagihan: ${escapeHtml(totalFormatted)}</span>
+            </div>
+            <div style="font-size:12px; color:#334155;"><strong>Pemesan:</strong> ${escapeHtml(order.nama_pembeli)} &bull; <strong>Item:</strong> ${itemsSummary}</div>
+          `;
+        }
+
+        setStepActive(2);
+      } catch (err) {
+        console.error('Order lookup error:', err);
+        if (box) box.style.display = 'none';
+      }
+    }
 
     function handleFile(input) {
       const filePlaceholder = document.getElementById('file-placeholder');
@@ -391,16 +488,10 @@
         fileName.textContent = input.files[0].name;
         filePlaceholder.style.display = 'none';
         fileSelected.style.display = 'block';
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          uploadedImageBase64 = e.target.result;
-        }
-        reader.readAsDataURL(input.files[0]);
+        setStepActive(2);
       } else {
         filePlaceholder.style.display = 'block';
         fileSelected.style.display = 'none';
-        uploadedImageBase64 = null;
       }
     }
 
@@ -426,13 +517,20 @@
 
     async function handleFormSubmit(e) {
       e.preventDefault();
-      const nama = document.getElementById('input-nama').value;
-      const noOrder = document.getElementById('input-no-order').value;
-      const bankSelect = document.querySelector('#konfirmasi-form select');
-      const bankPengirim = bankSelect ? bankSelect.value : '';
-      const nominalInput = document.querySelector('#konfirmasi-form input[inputmode="numeric"]');
-      const nominal = nominalInput ? nominalInput.value : '0';
-      const fileInput = document.querySelector('#file-drop-zone input[type="file"]');
+      const nama = document.getElementById('input-nama').value.trim();
+      const noOrder = document.getElementById('input-no-order').value.trim().replace(/^#/, '');
+      const bankPengirim = document.getElementById('input-bank').value.trim();
+      const tanggalTransfer = document.getElementById('input-tanggal').value;
+      const rawNominal = document.getElementById('input-nominal').value.replace(/\D/g, '');
+      const noRekening = document.getElementById('input-norek').value.trim();
+      const alamatLengkap = document.getElementById('input-alamat').value.trim();
+      const catatan = document.getElementById('input-catatan').value.trim();
+      const fileInput = document.getElementById('input-bukti');
+
+      if (!alamatLengkap) {
+        alert('Harap lengkapi Alamat Lengkap Pengiriman terlebih dahulu.');
+        return;
+      }
 
       if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
         alert('Harap upload bukti transfer terlebih dahulu.');
@@ -442,8 +540,13 @@
       // Build FormData for multipart upload
       const formData = new FormData();
       formData.append('order_id', noOrder);
+      formData.append('nama_pengirim', nama);
       formData.append('bank_pengirim', bankPengirim);
-      formData.append('nominal', nominal);
+      formData.append('no_rekening', noRekening);
+      formData.append('tanggal_transfer', tanggalTransfer);
+      formData.append('nominal', rawNominal || '0');
+      formData.append('alamat_lengkap', alamatLengkap);
+      formData.append('catatan', catatan);
       formData.append('bukti', fileInput.files[0]);
 
       // Disable submit button
@@ -485,7 +588,12 @@
       document.getElementById('konfirmasi-form').reset();
       document.getElementById('file-placeholder').style.display = 'block';
       document.getElementById('file-selected').style.display = 'none';
-      uploadedImageBase64 = null;
+      const box = document.getElementById('order-lookup-box');
+      if (box) box.style.display = 'none';
+      lastCheckedOrderId = '';
+
+      const dateInput = document.getElementById('input-tanggal');
+      if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
 
       setStepActive(1);
       document.getElementById('konfirmasi-form').style.display = 'block';

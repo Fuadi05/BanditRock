@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profil - Syarif Art Stone Admin</title>
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin.css?v=2">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -123,7 +123,7 @@
     </div>
   </main>
 
-  <script src="js/admin.js"></script>
+  <script src="js/admin.js?v=3"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       await loadProfileData();
@@ -184,7 +184,7 @@
 
           if (document.getElementById('topbar-avatar')) {
             if (json.data.avatar_url) {
-              document.getElementById('topbar-avatar').innerHTML = `<img src="${json.data.avatar_url}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+              document.getElementById('topbar-avatar').innerHTML = `<img src="${escapeHtml(json.data.avatar_url)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
               document.getElementById('topbar-avatar').style.background = 'transparent';
             } else {
               document.getElementById('topbar-avatar').textContent = (json.data.username || 'A').charAt(0).toUpperCase();
@@ -250,7 +250,7 @@
 
           if (document.getElementById('topbar-avatar')) {
             if (avatar_url) {
-              document.getElementById('topbar-avatar').innerHTML = `<img src="${avatar_url}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+              document.getElementById('topbar-avatar').innerHTML = `<img src="${escapeHtml(avatar_url)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
               document.getElementById('topbar-avatar').style.background = 'transparent';
             } else {
               document.getElementById('topbar-avatar').textContent = username.charAt(0).toUpperCase();

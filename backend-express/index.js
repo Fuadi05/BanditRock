@@ -15,39 +15,78 @@ const userRoutes = require('./routes/user-routes')
 const adminRoutes = require('./routes/admin-routes')
 
 // Import rate limiters
-const { checkoutLimiter, paymentLimiter } = require('./middleware/rateLimiter')
+const {
+  checkoutLimiter,
+  paymentLimiter,
+  loginLimiter,
+  trackSearchLimiter
+} = require('./middleware/rateLimiter')
 
 // Inisialisasi Express
 const app = express()
 const PORT = process.env.PORT || 3000
 
-// Trust reverse proxy (cPanel / Nginx / Apache) for rate limiter IP detection
-app.set('trust proxy', true)
-
+// Trust tepat 1 hop reverse proxy (cPanel Apache/LiteSpeed Passenger)
+// agar deteksi IP pada express-rate-limit akurat dan tidak bisa di-spoof via X-Forwarded-For
+app.set('trust proxy', 1)
+app.disable('x-powered-by')
 
 // ═══════════════════════════════════════
-// MIDDLEWARE GLOBAL
+// MIDDLEWARE GLOBAL & SECURITY HEADERS
 // ═══════════════════════════════════════
 
-// Aktifkan CORS agar frontend bisa mengakses API dari domain berbeda
-app.use(cors())
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  next()
+})
 
-// Parse body request format JSON
-app.use(express.json())
+// Konfigurasi CORS hanya untuk domain resmi Batu Merapi & localhost (development)
+const allowedOrigins = [
+  'https://batumerapi.biz.id',
+  'https://www.batumerapi.biz.id',
+  'https://admin.batumerapi.biz.id',
+  'http://localhost:3000',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500'
+]
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Izinkan request tanpa origin (misal same-origin, server-to-server, curl) atau origin yang terdaftar
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true)
+    }
+    return callback(new Error('Origin tidak diizinkan oleh kebijakan CORS.'))
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
+
+// Parse body request format JSON (batas ukuran payload 1 MB)
+app.use(express.json({ limit: '1mb' }))
 
 // Parse body request format URL-encoded (untuk form biasa)
-app.use(express.urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: true, limit: '1mb' }))
 
 
 // ═══════════════════════════════════════
 // RATE LIMITER (diterapkan per-route sensitif)
 // ═══════════════════════════════════════
 
-// Batasi khusus PEMBUATAN pesanan baru (POST): maks 5 request per 15 menit per IP
+// Batasi khusus PEMBUATAN pesanan baru (POST)
 app.post('/api/order', checkoutLimiter)
 
-// Batasi endpoint upload bukti bayar: maks 5 request per 15 menit per IP
+// Batasi endpoint upload bukti bayar
 app.post('/api/pembayaran', paymentLimiter)
+
+// Batasi percobaan login admin (anti brute-force)
+app.post('/api/admin/login', loginLimiter)
+
+// Batasi pencarian & pelacakan pesanan (anti enumerasi)
+app.get('/api/order/search', trackSearchLimiter)
+app.use('/api/order/track', trackSearchLimiter)
 
 
 // ═══════════════════════════════════════
@@ -69,19 +108,7 @@ app.get('/', (req, res) => {
   res.json({
     success: true,
     message: '🪨 Batu Merapi API — Server berjalan!',
-    version: '1.0.0',
-    endpoints: {
-      produk: 'GET /api/produk',
-      detail_produk: 'GET /api/produk/:id',
-      buat_order: 'POST /api/order',
-      cari_order: 'GET /api/order/search?telepon=08xxx',
-      konfirmasi_bayar: 'POST /api/pembayaran',
-      admin_login: 'POST /api/admin/login',
-      admin_order_manual: 'POST /api/admin/order',
-      admin_verifikasi: 'GET /api/admin/verifikasi',
-      admin_checklist: 'PUT /api/admin/verifikasi/:id',
-      admin_laporan: 'GET /api/admin/laporan'
-    }
+    version: '1.1.0'
   })
 })
 
@@ -112,11 +139,17 @@ app.use((err, req, res, next) => {
     })
   }
 
-  // Error tidak terduga lainnya
+  if (err.message && err.message.includes('CORS')) {
+    return res.status(403).json({
+      success: false,
+      message: err.message
+    })
+  }
+
+  // Error tidak terduga lainnya (jangan bocorkan detail internal di production)
   res.status(500).json({
     success: false,
-    message: 'Terjadi kesalahan internal pada server.',
-    error: process.env.NODE_ENV === 'production' ? undefined : err.message
+    message: 'Terjadi kesalahan internal pada server.'
   })
 })
 
@@ -130,7 +163,6 @@ app.listen(PORT, () => {
   console.log('🪨 ════════════════════════════════════════')
   console.log('   BATU MERAPI API SERVER')
   console.log(`   🟢 Berjalan di: http://localhost:${PORT}`)
-  console.log(`   📋 Daftar endpoint: http://localhost:${PORT}/`)
   console.log('🪨 ════════════════════════════════════════')
   console.log('')
 })

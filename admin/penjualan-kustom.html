@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Penjualan - Syarif Art Stone Admin</title>
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin.css?v=2">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -63,6 +63,7 @@
       <div class="card" style="padding: 0;">
         <div class="tabs" style="margin-bottom: 0; padding: 8px 16px 0;">
           <div class="tab-item active" onclick="setFilter('all', this)">Semua</div>
+          <div class="tab-item" onclick="setFilter('pending_payment', this)">Menunggu Bayar</div>
           <div class="tab-item" onclick="setFilter('waiting_verification', this)">Konfirmasi</div>
           <div class="tab-item" onclick="setFilter('paid', this)">Disetujui</div>
           <div class="tab-item" onclick="setFilter('processing', this)">Diproses</div>
@@ -168,13 +169,14 @@
     </div>
   </main>
 
-  <script src="js/admin.js"></script>
+  <script src="js/admin.js?v=3"></script>
   <script>
     window.allOrders = [];
     window.currentFilter = 'all';
     window.activeOrderId = null;
 
     const statusBadgeMap = {
+      'pending': { label: 'Menunggu Bayar', style: 'background: #FEF3C7; color: #D97706; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
       'pending_payment': { label: 'Menunggu Bayar', style: 'background: #FEF3C7; color: #D97706; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
       'waiting_verification': { label: 'Konfirmasi (Verifikasi)', style: 'background: #DBEAFE; color: #1D4ED8; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
       'paid': { label: 'Disetujui (Lunas)', style: 'background: #D1FAE5; color: #059669; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px;' },
@@ -197,7 +199,7 @@
 
     async function renderSales() {
       const tbody = document.getElementById('sales-table-body');
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px;">Memuat data...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px;">Memuat data...</td></tr>';
 
       try {
         const res = await fetch(`${API_BASE}/admin/custom-orders`, {
@@ -207,18 +209,20 @@
         if (handleApiAuthError(res, json)) return;
 
         if (!json.success || !json.data) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px;">Gagal memuat data</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px;">Gagal memuat data</td></tr>';
           return;
         }
 
         window.allOrders = json.data;
         document.getElementById('total-rows').textContent = window.allOrders.length;
-        document.getElementById('order-count-badge').textContent = window.allOrders.filter(o => o.status === 'waiting_verification').length;
+        if (typeof window.updateNotificationBadges === 'function') {
+          window.updateNotificationBadges();
+        }
 
         renderFilteredOrders();
       } catch (err) {
         console.error('Gagal memuat pesanan:', err);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--danger);">Gagal terhubung ke server</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:var(--danger);">Gagal terhubung ke server</td></tr>';
       }
     }
 
@@ -227,33 +231,40 @@
       let orders = window.allOrders;
 
       if (window.currentFilter !== 'all') {
-        orders = orders.filter(o => o.status === window.currentFilter);
+        if (window.currentFilter === 'pending_payment') {
+          orders = orders.filter(o => o.status === 'pending_payment' || o.status === 'pending');
+        } else {
+          orders = orders.filter(o => o.status === window.currentFilter);
+        }
       }
 
       document.getElementById('showing-rows').textContent = orders.length;
 
       if (orders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color: var(--text-muted);">Tidak ada pesanan kustom dalam kategori ini.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color: var(--text-muted);">Tidak ada pesanan kustom dalam kategori ini.</td></tr>';
         return;
       }
 
       let html = '';
       orders.forEach(o => {
         const tgl = new Date(o.created_at).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'});
-        const badgeInfo = statusBadgeMap[o.status] || { label: o.status, style: 'background: #E2E8F0; color: #475569; padding: 4px 10px; border-radius: 9999px;' };
-        const shortId = o.id.split('-')[0]; // using UUID short
+        const badgeInfo = statusBadgeMap[o.status] || { label: escapeHtml(o.status), style: 'background: #E2E8F0; color: #475569; padding: 4px 10px; border-radius: 9999px;' };
+        const safeId = escapeHtml(o.id);
 
         html += `
           <tr>
-            <td title="${o.id}"><strong>...${o.id.substring(o.id.length - 6)}</strong></td>
-            <td>${o.nama_pembeli}</td>
-            <td>${o.nama_produk}</td>
-            <td>${tgl}</td>
+            <td title="${safeId}">
+              <strong>${safeId}</strong>
+              <button type="button" onclick="navigator.clipboard.writeText('${safeId}'); this.textContent='✓';" title="Salin ID Order" style="margin-left:4px; border:1px solid #CBD5E1; background:#F8FAFC; border-radius:4px; font-size:10px; padding:2px 5px; cursor:pointer;">Salin</button>
+            </td>
+            <td>${escapeHtml(o.nama_pembeli)}</td>
+            <td>${escapeHtml(o.nama_produk)}</td>
+            <td>${escapeHtml(tgl)}</td>
             <td><strong>${o.total_tagihan > 0 ? formatRpAdmin(o.total_tagihan) : '<span style="color:#F59E0B">Belum Set Harga</span>'}</strong></td>
-            <td>${o.telepon}</td>
+            <td>${escapeHtml(o.telepon)}</td>
             <td><span style="${badgeInfo.style}">${badgeInfo.label}</span></td>
             <td>
-              <button onclick="viewDetails('${o.id}')" style="border:none; background:none; cursor:pointer; color:var(--primary); font-weight:700;">Lihat Detail</button>
+              <button onclick="viewDetails('${safeId}')" style="border:none; background:none; cursor:pointer; color:var(--primary); font-weight:700;">Lihat Detail</button>
             </td>
           </tr>
         `;
@@ -274,37 +285,62 @@
       document.getElementById('modal-buyer-phone').textContent = order.telepon;
       document.getElementById('modal-price-input').value = order.total_tagihan || '';
 
+      const addrParts = [order.alamat_lengkap, order.desa, order.kecamatan, order.kabupaten, order.provinsi].filter(Boolean);
+      const fullAddr = addrParts.length > 0 ? escapeHtml(addrParts.join(', ')) : '<em>Belum dilengkapi</em>';
+      const hasCoords = order.lat && order.lng && (Number(order.lat) !== 0 || Number(order.lng) !== 0);
+
       const itemsContainer = document.getElementById('modal-items-list');
       itemsContainer.innerHTML = `
         <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
-          <strong>Nama Produk:</strong> ${order.nama_produk}
+          <strong>Nama Produk:</strong> ${escapeHtml(order.nama_produk)}
         </div>
         <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
-          <strong>Deskripsi:</strong> ${order.deskripsi || '-'}
+          <strong>Deskripsi:</strong> ${escapeHtml(order.deskripsi || '-')}
         </div>
         <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
-          <strong>Alamat:</strong> ${order.alamat_lengkap}<br>
-          ${order.desa}, ${order.kecamatan}, ${order.kabupaten}, ${order.provinsi}
+          <strong>Alamat Pengiriman:</strong><br>${fullAddr}
         </div>
+        ${hasCoords ? `
         <div style="padding: 10px 16px; font-size: 13px;">
           <strong>Lokasi Peta:</strong><br>
-          <a href="https://www.google.com/maps/search/?api=1&query=${order.lat},${order.lng}" target="_blank" style="color:var(--primary); font-weight:bold;">📍 Buka di Google Maps</a>
-        </div>
+          <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.lat)},${encodeURIComponent(order.lng)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary); font-weight:bold;">📍 Buka di Google Maps</a>
+        </div>` : ''}
       `;
 
       const payBox = document.getElementById('payment-info-box');
       if (order.payments && order.payments.length > 0) {
         const pay = order.payments[0];
+        const safeBuktiUrl = escapeHtml(pay.bukti_url || '');
+        const isPdf = /\.pdf(\?|$)/i.test(pay.bukti_url || '');
+        const tglTransfer = pay.tanggal_transfer
+          ? new Date(pay.tanggal_transfer).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+          : '-';
+        const verifBadge = pay.status_verifikasi
+          ? '<span style="color:#15803D; font-weight:700;">✓ Terverifikasi</span>'
+          : '<span style="color:#D97706; font-weight:700;">Menunggu Verifikasi</span>';
+
+        const previewHtml = isPdf
+          ? `<div style="padding: 16px;">
+               <div style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px;">📄 Dokumen Bukti Transfer (PDF)</div>
+               <a href="${safeBuktiUrl}" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; font-size:12px; text-decoration:none; border-radius:6px;">🔍 Buka File PDF Bukti Transfer</a>
+             </div>`
+          : `<img src="${safeBuktiUrl}" alt="Bukti Transfer" style="max-width: 100%; max-height: 250px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 12px;" onerror="this.style.display='none';">
+             <div>
+               <a href="${safeBuktiUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">🔍 Lihat Gambar Ukuran Penuh</a>
+             </div>`;
+
         payBox.innerHTML = `
-          <div style="font-size: 13px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div>Bank Pengirim: <strong>${pay.bank_pengirim}</strong></div>
+          <div style="font-size: 13px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; background: #F8FAFC; padding: 12px; border-radius: 8px; border: 1px solid #E2E8F0;">
+            <div>Nama Pengirim: <strong>${escapeHtml(pay.nama_pengirim || order.nama_pembeli || '-')}</strong></div>
+            <div>Bank Pengirim: <strong>${escapeHtml(pay.bank_pengirim || '-')}</strong></div>
+            <div>No. Rek / HP: <strong>${escapeHtml(pay.no_rekening || '-')}</strong></div>
+            <div>Tgl Transfer: <strong>${escapeHtml(tglTransfer)}</strong></div>
             <div>Nominal Transfer: <strong>${formatRpAdmin(pay.nominal)}</strong></div>
+            <div>Status Bukti: ${verifBadge}</div>
+            ${pay.catatan ? `<div style="grid-column: 1 / -1; border-top: 1px dashed #CBD5E1; padding-top: 6px; margin-top: 2px;">Catatan Pembeli: <em>${escapeHtml(pay.catatan)}</em></div>` : ''}
           </div>
           <div style="text-align: center; background: #F8FAFC; padding: 16px; border-radius: 8px; border: 1px solid #E2E8F0;">
-            <img src="${pay.bukti_url}" alt="Bukti Transfer" style="max-width: 100%; max-height: 250px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 12px;">
-            <div>
-              <a href="${pay.bukti_url}" target="_blank" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">🔍 Lihat Gambar Ukuran Penuh</a>
-            </div>
+            ${previewHtml}
           </div>
         `;
       } else {
@@ -313,11 +349,6 @@
 
       document.getElementById('receipt-modal').style.display = 'flex';
       if (window.lucide) lucide.createIcons();
-    }
-
-    function closeReceipt() {
-      document.getElementById('receipt-modal').style.display = 'none';
-      window.activeOrderId = null;
     }
 
     async function updateOrderStatus(newStatus) {

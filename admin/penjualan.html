@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Penjualan - Syarif Art Stone Admin</title>
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin.css?v=2">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -63,6 +63,7 @@
       <div class="card" style="padding: 0;">
         <div class="tabs" style="margin-bottom: 0; padding: 8px 16px 0;">
           <div class="tab-item active" onclick="setFilter('all', this)">Semua</div>
+          <div class="tab-item" onclick="setFilter('pending_payment', this)">Menunggu Bayar</div>
           <div class="tab-item" onclick="setFilter('waiting_verification', this)">Konfirmasi</div>
           <div class="tab-item" onclick="setFilter('paid', this)">Disetujui</div>
           <div class="tab-item" onclick="setFilter('processing', this)">Diproses</div>
@@ -126,6 +127,10 @@
               <div style="color: var(--text-muted); font-weight: 600;">NO. TELEPON</div>
               <div id="modal-buyer-phone" style="font-weight: 700; color: var(--text-color); margin-top: 2px;">-</div>
             </div>
+            <div style="grid-column: span 2; border-top: 1px solid #E2E8F0; padding-top: 8px; margin-top: 4px;">
+              <div style="color: var(--text-muted); font-weight: 600;">ALAMAT PENGIRIMAN</div>
+              <div id="modal-buyer-address" style="font-weight: 600; color: var(--text-color); margin-top: 2px;">-</div>
+            </div>
           </div>
 
           <!-- Items Purchased -->
@@ -164,7 +169,7 @@
     </div>
   </main>
 
-  <script src="js/admin.js"></script>
+  <script src="js/admin.js?v=3"></script>
   <script>
     window.allOrders = [];
     window.currentFilter = 'all';
@@ -209,7 +214,9 @@
 
         window.allOrders = json.data;
         document.getElementById('total-rows').textContent = window.allOrders.length;
-        document.getElementById('order-count-badge').textContent = window.allOrders.filter(o => o.status === 'waiting_verification').length;
+        if (typeof window.updateNotificationBadges === 'function') {
+          window.updateNotificationBadges();
+        }
 
         renderFilteredOrders();
       } catch (err) {
@@ -236,18 +243,19 @@
       let html = '';
       orders.forEach(o => {
         const tgl = new Date(o.created_at).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'});
-        const badgeInfo = statusBadgeMap[o.status] || { label: o.status, style: 'background: #E2E8F0; color: #475569; padding: 4px 10px; border-radius: 9999px;' };
+        const badgeInfo = statusBadgeMap[o.status] || { label: escapeHtml(o.status), style: 'background: #E2E8F0; color: #475569; padding: 4px 10px; border-radius: 9999px;' };
+        const safeId = escapeHtml(o.id);
 
         html += `
           <tr>
-            <td><strong>${o.id}</strong></td>
-            <td>${o.nama_pembeli}</td>
-            <td>${tgl}</td>
+            <td><strong>${safeId}</strong></td>
+            <td>${escapeHtml(o.nama_pembeli)}</td>
+            <td>${escapeHtml(tgl)}</td>
             <td><strong>${formatRpAdmin(o.total_tagihan)}</strong></td>
-            <td>${o.telepon}</td>
+            <td>${escapeHtml(o.telepon)}</td>
             <td><span style="${badgeInfo.style}">${badgeInfo.label}</span></td>
             <td>
-              <button onclick="viewDetails('${o.id}')" style="border:none; background:none; cursor:pointer; color:var(--primary); font-weight:700;">Lihat Detail</button>
+              <button onclick="viewDetails('${safeId}')" style="border:none; background:none; cursor:pointer; color:var(--primary); font-weight:700;">Lihat Detail</button>
             </td>
           </tr>
         `;
@@ -266,6 +274,9 @@
       document.getElementById('modal-order-date').textContent = new Date(order.created_at).toLocaleString('id-ID');
       document.getElementById('modal-buyer-name').textContent = order.nama_pembeli;
       document.getElementById('modal-buyer-phone').textContent = order.telepon;
+      const addrParts = [order.alamat_lengkap, order.desa, order.kecamatan, order.kabupaten, order.provinsi].filter(Boolean);
+      const addrEl = document.getElementById('modal-buyer-address');
+      if (addrEl) addrEl.textContent = addrParts.length > 0 ? addrParts.join(', ') : 'Belum dilengkapi (Menunggu Konfirmasi Pembayaran)';
       document.getElementById('modal-total-amount').textContent = formatRpAdmin(order.total_tagihan);
 
       // Render Items
@@ -273,7 +284,7 @@
       if (order.order_items && order.order_items.length > 0) {
         itemsContainer.innerHTML = order.order_items.map(i => `
           <div style="display: flex; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
-            <span>${i.products ? i.products.nama : 'Produk'} <strong>x${i.qty}</strong></span>
+            <span>${escapeHtml(i.products ? i.products.nama : 'Produk')}${i.ukuran ? ` <em style="color:var(--text-muted);">(${escapeHtml(i.ukuran)})</em>` : ''} <strong>x${Number(i.qty) || 1}</strong></span>
             <span style="font-weight: 600;">${formatRpAdmin((i.harga_disepakati || 0) * i.qty)}</span>
           </div>
         `).join('');
@@ -285,16 +296,37 @@
       const payBox = document.getElementById('payment-info-box');
       if (order.payments && order.payments.length > 0) {
         const pay = order.payments[0];
+        const safeBuktiUrl = escapeHtml(pay.bukti_url || '');
+        const isPdf = /\.pdf(\?|$)/i.test(pay.bukti_url || '');
+        const tglTransfer = pay.tanggal_transfer
+          ? new Date(pay.tanggal_transfer).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+          : '-';
+        const verifBadge = pay.status_verifikasi
+          ? '<span style="color:#15803D; font-weight:700;">✓ Terverifikasi</span>'
+          : '<span style="color:#D97706; font-weight:700;">Menunggu Verifikasi</span>';
+
+        const previewHtml = isPdf
+          ? `<div style="padding: 16px;">
+               <div style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px;">📄 Dokumen Bukti Transfer (PDF)</div>
+               <a href="${safeBuktiUrl}" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; font-size:12px; text-decoration:none; border-radius:6px;">🔍 Buka File PDF Bukti Transfer</a>
+             </div>`
+          : `<img src="${safeBuktiUrl}" alt="Bukti Transfer" style="max-width: 100%; max-height: 250px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 12px;" onerror="this.style.display='none';">
+             <div>
+               <a href="${safeBuktiUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">🔍 Lihat Gambar Ukuran Penuh</a>
+             </div>`;
+
         payBox.innerHTML = `
-          <div style="font-size: 13px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div>Bank Pengirim: <strong>${pay.bank_pengirim}</strong></div>
+          <div style="font-size: 13px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; background: #F8FAFC; padding: 12px; border-radius: 8px; border: 1px solid #E2E8F0;">
+            <div>Nama Pengirim: <strong>${escapeHtml(pay.nama_pengirim || order.nama_pembeli || '-')}</strong></div>
+            <div>Bank Pengirim: <strong>${escapeHtml(pay.bank_pengirim || '-')}</strong></div>
+            <div>No. Rek / HP: <strong>${escapeHtml(pay.no_rekening || '-')}</strong></div>
+            <div>Tgl Transfer: <strong>${escapeHtml(tglTransfer)}</strong></div>
             <div>Nominal Transfer: <strong>${formatRpAdmin(pay.nominal)}</strong></div>
+            <div>Status Bukti: ${verifBadge}</div>
+            ${pay.catatan ? `<div style="grid-column: 1 / -1; border-top: 1px dashed #CBD5E1; padding-top: 6px; margin-top: 2px;">Catatan Pembeli: <em>${escapeHtml(pay.catatan)}</em></div>` : ''}
           </div>
           <div style="text-align: center; background: #F8FAFC; padding: 16px; border-radius: 8px; border: 1px solid #E2E8F0;">
-            <img src="${pay.bukti_url}" alt="Bukti Transfer" style="max-width: 100%; max-height: 250px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 12px;" onerror="this.onerror=null; this.src='../images/media__1780324962198.jpg';">
-            <div>
-              <a href="${pay.bukti_url}" target="_blank" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">🔍 Lihat Gambar Ukuran Penuh</a>
-            </div>
+            ${previewHtml}
           </div>
         `;
       } else {

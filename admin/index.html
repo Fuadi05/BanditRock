@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Syarif Art Stone Admin</title>
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin.css?v=2">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -127,7 +127,7 @@
     </div>
   </main>
 
-  <script src="js/admin.js"></script>
+  <script src="js/admin.js?v=3"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       try {
@@ -151,7 +151,8 @@
           };
 
           orders.forEach(o => {
-            if (stat[o.status] !== undefined) stat[o.status]++;
+            const st = o.status === 'pending' ? 'pending_payment' : o.status;
+            if (stat[st] !== undefined) stat[st]++;
           });
 
           document.getElementById('c-konf').textContent = stat['pending_payment'] + stat['waiting_verification'];
@@ -202,6 +203,7 @@
 
           // Tabel pesanan terbaru di dasbor
           const statusLabels = {
+            'pending': 'Menunggu Bayar',
             'pending_payment': 'Menunggu Bayar',
             'waiting_verification': 'Verifikasi',
             'paid': 'Disetujui',
@@ -216,8 +218,8 @@
             : orders.slice(0, 5).map((o, idx) => `
                 <tr>
                   <td>${idx + 1}</td>
-                  <td style="font-weight:700;">${o.nama_pembeli}</td>
-                  <td><span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:#F1F5F9; color:#475569;">${statusLabels[o.status] || o.status}</span></td>
+                  <td style="font-weight:700;">${escapeHtml(o.nama_pembeli)}</td>
+                  <td><span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:#F1F5F9; color:#475569;">${escapeHtml(statusLabels[o.status] || o.status)}</span></td>
                   <td style="font-weight:800; color:#0F5132;">${formatRpAdmin(o.total_tagihan)}</td>
                 </tr>
               `).join('');

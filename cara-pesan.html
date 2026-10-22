@@ -99,40 +99,6 @@
     <a href="tentang.html">Tentang Kami</a>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const hamburgerBtn = document.getElementById('hamburger-btn');
-      const mobileMenu = document.getElementById('mobile-menu');
-      const mobileCloseBtn = document.getElementById('mobile-menu-close');
-
-      if (hamburgerBtn && mobileMenu && mobileCloseBtn) {
-        hamburgerBtn.addEventListener('click', () => {
-          mobileMenu.classList.add('open');
-        });
-        mobileCloseBtn.addEventListener('click', () => {
-          mobileMenu.classList.remove('open');
-        });
-        
-        const mobileDropdownBtn = document.querySelector('.mobile-dropdown-btn');
-        const mobileDropdownContent = document.querySelector('.mobile-dropdown-content');
-        if (mobileDropdownBtn && mobileDropdownContent) {
-          // Prevent multiple bindings if script runs multiple times
-          if (!mobileDropdownBtn.dataset.bound) {
-            mobileDropdownBtn.dataset.bound = 'true';
-            mobileDropdownBtn.addEventListener('click', () => {
-              const isVisible = mobileDropdownContent.style.display === 'flex';
-              mobileDropdownContent.style.display = isVisible ? 'none' : 'flex';
-            });
-          }
-        }
-        // re-initialize lucide icons for new elements
-        if (typeof lucide !== 'undefined') {
-          lucide.createIcons();
-        }
-      }
-    });
-  </script>
-
   <!-- CARA KERJA SECTION -->
   <section class="cp-cara-kerja-section">
     <div class="container">
@@ -242,10 +208,10 @@
             <span class="cp-pay-name">BCA</span>
           </div>
           <div class="cp-pay-detail">
-            No. Rek <strong>1234567890</strong>
+            Sesuai Invoice <strong>Admin WhatsApp</strong>
           </div>
           <div class="cp-pay-bottom">
-            <span>a/n BATU MERAPI</span>
+            <span>a/n SYARIF ART STONE / BATU MERAPI</span>
             <span class="cp-pay-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="rgba(255,255,255,0.25)"/><path d="M7 12h10M12 7v10" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
             </span>
@@ -259,10 +225,10 @@
             <span class="cp-pay-name cp-pay-name-dark">BRI</span>
           </div>
           <div class="cp-pay-detail cp-pay-detail-dark">
-            No. Rek <strong>0987654321</strong>
+            Sesuai Invoice <strong>Admin WhatsApp</strong>
           </div>
           <div class="cp-pay-bottom cp-pay-bottom-dark">
-            <span>a/n BATU MERAPI</span>
+            <span>a/n SYARIF ART STONE / BATU MERAPI</span>
             <span class="cp-pay-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="rgba(0,0,0,0.1)"/><path d="M7 12h10M12 7v10" stroke="#333" stroke-width="2" stroke-linecap="round"/></svg>
             </span>
@@ -276,10 +242,10 @@
             <span class="cp-pay-name">Mandiri</span>
           </div>
           <div class="cp-pay-detail">
-            No. Rek <strong>1122334455</strong>
+            Sesuai Invoice <strong>Admin WhatsApp</strong>
           </div>
           <div class="cp-pay-bottom">
-            <span>a/n BATU MERAPI</span>
+            <span>a/n SYARIF ART STONE / BATU MERAPI</span>
             <span class="cp-pay-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="rgba(255,255,255,0.25)"/><path d="M7 12h10M12 7v10" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
             </span>
@@ -293,7 +259,7 @@
             <span class="cp-pay-name cp-pay-name-dark">GoPay / OVO</span>
           </div>
           <div class="cp-pay-detail cp-pay-detail-dark">
-            No. HP <strong>082112345678</strong>
+            No. HP <strong>0878-4672-5184</strong>
           </div>
           <div class="cp-pay-bottom cp-pay-bottom-dark">
             <span>a/n BATU MERAPI</span>
@@ -353,8 +319,8 @@
   <section class="cp-cta-hubungi">
     <div class="container" style="text-align: center;">
       <h2 class="cp-cta-title">Masih Ada Pertanyaan?</h2>
-      <p class="cp-cta-desc">Tim kami siap membantu Anda melalui WhatsApp setiap hari pukul 08.00â€“21.00 WIB</p>
-      <a href="https://wa.me/6281234567890" target="_blank" rel="noreferrer" class="cp-cta-wa-btn">
+      <p class="cp-cta-desc">Tim kami siap membantu Anda melalui WhatsApp setiap hari pukul 08.00–21.00 WIB</p>
+      <a href="https://wa.me/6287846725184" target="_blank" rel="noreferrer" class="cp-cta-wa-btn">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M10 1.667c-4.595 0-8.333 3.738-8.333 8.333 0 1.47.384 2.847 1.054 4.047L1.667 18.333l4.39-1.023A8.28 8.28 0 0010 18.333c4.595 0 8.333-3.738 8.333-8.333S14.595 1.667 10 1.667z" fill="white"/>
           <path d="M13.867 12.4c-.208-.104-1.23-.607-1.42-.676-.19-.07-.327-.104-.465.104-.138.208-.534.676-.655.815-.12.138-.242.156-.45.052-.208-.104-.88-.324-1.677-1.034-.62-.552-1.04-1.234-1.162-1.442-.12-.208-.013-.32.091-.424.094-.094.208-.242.312-.363.104-.12.138-.208.208-.347.07-.138.035-.26-.017-.363-.053-.104-.465-1.12-.638-1.534-.168-.403-.34-.348-.465-.355h-.403c-.138 0-.363.052-.553.26-.19.208-.723.707-.723 1.726s.74 2.003.844 2.143c.104.138 1.457 2.224 3.53 3.118.494.213.88.34 1.18.436.496.16.947.138 1.304.084.397-.062 1.23-.503 1.404-.988.173-.486.173-.903.12-.988-.052-.087-.19-.138-.398-.242z" fill="#43A047"/>
@@ -388,8 +354,8 @@
     </div>
   </footer>
 
-  <script src="js/products.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/products.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // FAQ

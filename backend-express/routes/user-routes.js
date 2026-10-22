@@ -3,11 +3,22 @@
 // Endpoint publik untuk pembeli / customer
 // ============================================
 
+const crypto = require('crypto')
 const express = require('express')
 const multer = require('multer')
 const supabase = require('../config/supabase')
 
 const router = express.Router()
+
+// Kolom produk yang aman diekspos ke publik (TIDAK menyertakan harga_max / Harga Modal HPP)
+const PUBLIC_PRODUCT_COLUMNS = 'id, nama, kategori, harga_min, tipe_harga, deskripsi, deskripsi_singkat, ukuran, image_url, image_url_2, image_url_3, image_url_4, status_stok, is_active, created_at'
+
+// Helper: samarkan nomor telepon untuk endpoint pelacakan publik
+function maskPhone(phone) {
+  const str = String(phone || '').trim()
+  if (str.length <= 6) return str
+  return str.slice(0, 4) + '****' + str.slice(-3)
+}
 
 // Konfigurasi multer: simpan file sementara di memori (buffer)
 // sebelum di-upload ke Supabase Storage
@@ -15,12 +26,12 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // Maks 5 MB
   fileFilter: (req, file, cb) => {
-    // Hanya terima gambar (JPG, PNG) dan PDF
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
+    // Hanya terima gambar (JPG, PNG, WEBP) dan PDF
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'application/pdf']
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true)
     } else {
-      cb(new Error('Format file tidak didukung. Gunakan JPG, PNG, atau PDF.'))
+      cb(new Error('Format file tidak didukung. Gunakan JPG, PNG, WEBP, atau PDF.'))
     }
   }
 })
@@ -30,38 +41,39 @@ const upload = multer({
 // Ambil nomor WhatsApp admin aktif untuk checkout
 router.get('/settings/whatsapp', async (req, res) => {
   try {
-    const { data: admin } = await supabase
+    const { data: admins } = await supabase
       .from('admins')
-      .select('whatsapp')
+      .select('username, whatsapp, avatar_url')
+      .not('username', 'like', 'admin_disabled_%')
+      .order('avatar_url', { ascending: false, nullsFirst: false })
       .limit(1)
-      .single();
 
-    const wa = (admin && admin.whatsapp) ? admin.whatsapp : '6287846725184';
-    res.json({ success: true, whatsapp: wa });
+    const admin = admins && admins.length > 0 ? admins[0] : null
+    const wa = (admin && admin.whatsapp) ? admin.whatsapp : '6287846725184'
+    res.json({ success: true, whatsapp: wa })
   } catch (err) {
-    res.json({ success: true, whatsapp: '6287846725184' });
+    res.json({ success: true, whatsapp: '6287846725184' })
   }
-});
+})
+
 
 // ─────────────────────────────────────────────
 // GET /api/produk
-// Menarik katalog produk (opsional: filter kategori)
+// Menarik katalog produk aktif (opsional: filter kategori)
 // Query params: ?kategori=Eksterior
 // ─────────────────────────────────────────────
 router.get('/produk', async (req, res) => {
   try {
     const { kategori } = req.query
 
-    // Bangun query ke Supabase
     let query = supabase
       .from('products')
-      .select('*')
+      .select(PUBLIC_PRODUCT_COLUMNS)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
 
-    // Terapkan filter kategori jika diberikan
     if (kategori) {
-      query = query.eq('kategori', kategori)
+      query = query.eq('kategori', String(kategori).trim())
     }
 
     const { data, error } = await query
@@ -74,10 +86,10 @@ router.get('/produk', async (req, res) => {
       data
     })
   } catch (err) {
+    console.error('Error GET /api/produk:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengambil data produk.',
-      error: err.message
+      message: 'Gagal mengambil data produk.'
     })
   }
 })
@@ -85,7 +97,7 @@ router.get('/produk', async (req, res) => {
 
 // ─────────────────────────────────────────────
 // GET /api/produk/:id
-// Menarik detail spesifik satu produk
+// Menarik detail spesifik satu produk publik
 // ─────────────────────────────────────────────
 router.get('/produk/:id', async (req, res) => {
   try {
@@ -93,13 +105,12 @@ router.get('/produk/:id', async (req, res) => {
 
     const { data, error } = await supabase
       .from('products')
-      .select('*')
+      .select(PUBLIC_PRODUCT_COLUMNS)
       .eq('id', id)
+      .eq('is_active', true)
       .single()
 
-    if (error) throw error
-
-    if (!data) {
+    if (error || !data) {
       return res.status(404).json({
         success: false,
         message: 'Produk tidak ditemukan.'
@@ -108,10 +119,10 @@ router.get('/produk/:id', async (req, res) => {
 
     res.json({ success: true, data })
   } catch (err) {
+    console.error('Error GET /api/produk/:id:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengambil detail produk.',
-      error: err.message
+      message: 'Gagal mengambil detail produk.'
     })
   }
 })
@@ -121,63 +132,88 @@ router.get('/produk/:id', async (req, res) => {
 // POST /api/order
 // Membuat pesanan baru (Sesi 1 — Produk Pasti / Keranjang)
 // ─────────────────────────────────────────────
-// Body JSON yang diharapkan:
-// {
-//   "nama_pembeli": "Budi Santoso",
-//   "telepon": "081234567890",
-//   "items": [
-//     { "product_id": "uuid-produk-1", "qty": 2 },
-//     { "product_id": "uuid-produk-2", "qty": 1 }
-//   ]
-// }
 router.post('/order', async (req, res) => {
   try {
-    const { nama_pembeli, telepon, items } = req.body
+    const {
+      nama_pembeli,
+      telepon,
+      provinsi,
+      kabupaten,
+      kecamatan,
+      desa,
+      alamat_lengkap,
+      items
+    } = req.body
+
+    const cleanNama = String(nama_pembeli || '').trim()
+    const cleanTelepon = String(telepon || '').trim()
 
     // --- Validasi input ---
-    if (!nama_pembeli || !telepon || !items || !Array.isArray(items) || items.length === 0) {
+    if (!cleanNama || !cleanTelepon || !items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'Data tidak lengkap. Diperlukan: nama_pembeli, telepon, dan items (array).'
       })
     }
 
-    // --- Generate Order ID unik: BMA-YYYYMMDD-XXX ---
+    if (cleanNama.length > 150 || cleanTelepon.length > 25) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nama pembeli atau nomor telepon melebihi batas karakter.'
+      })
+    }
+
+    // Validasi setiap item
+    for (const item of items) {
+      const qtyNum = Number(item.qty)
+      if (!item.product_id || !Number.isInteger(qtyNum) || qtyNum < 1 || qtyNum > 1000) {
+        return res.status(400).json({
+          success: false,
+          message: 'Data item produk atau jumlah (qty) tidak valid.'
+        })
+      }
+    }
+
+    // --- Generate Order ID unik: BMA-YYYYMMDD-XXXX ---
     const now = new Date()
-    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '') // "20250710"
-    const randomDigits = String(Math.floor(100 + Math.random() * 900))  // "482"
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
+    const randomDigits = String(crypto.randomInt(1000, 10000))
     const orderId = `BMA-${dateStr}-${randomDigits}`
 
     // --- Ambil harga katalog untuk setiap item ---
-    // Kumpulkan semua product_id yang dibutuhkan
-    const productIds = items.map(item => item.product_id)
+    const productIds = [...new Set(items.map(item => item.product_id))]
 
     const { data: products, error: prodErr } = await supabase
       .from('products')
-      .select('id, harga_min, tipe_harga')
+      .select('id, harga_min, tipe_harga, is_active')
       .in('id', productIds)
 
     if (prodErr) throw prodErr
 
-    // Buat map harga untuk lookup cepat
     const priceMap = {}
-    products.forEach(p => { priceMap[p.id] = p.harga_min })
+    products.forEach(p => {
+      if (p.is_active !== false) {
+        priceMap[p.id] = Number(p.harga_min) || 0
+      }
+    })
 
     // Hitung total tagihan dan siapkan data order_items
     let totalTagihan = 0
     const orderItemsData = items.map(item => {
       const hargaSatuan = priceMap[item.product_id]
       if (hargaSatuan === undefined) {
-        throw new Error(`Produk dengan ID "${item.product_id}" tidak ditemukan di katalog.`)
+        throw new Error(`PRODUCT_NOT_FOUND:${item.product_id}`)
       }
-      const subtotal = hargaSatuan * item.qty
+      const qty = Number(item.qty)
+      const subtotal = hargaSatuan * qty
       totalTagihan += subtotal
 
       return {
         order_id: orderId,
         product_id: item.product_id,
-        qty: item.qty,
-        harga_disepakati: hargaSatuan // Sesi 1: harga diambil langsung dari katalog
+        qty,
+        ukuran: String(item.ukuran || item.size || '').trim().slice(0, 100),
+        harga_disepakati: hargaSatuan
       }
     })
 
@@ -186,8 +222,13 @@ router.post('/order', async (req, res) => {
       .from('orders')
       .insert({
         id: orderId,
-        nama_pembeli,
-        telepon,
+        nama_pembeli: cleanNama,
+        telepon: cleanTelepon,
+        provinsi: provinsi ? String(provinsi).trim().slice(0, 100) : null,
+        kabupaten: kabupaten ? String(kabupaten).trim().slice(0, 100) : null,
+        kecamatan: kecamatan ? String(kecamatan).trim().slice(0, 100) : null,
+        desa: desa ? String(desa).trim().slice(0, 100) : null,
+        alamat_lengkap: alamat_lengkap ? String(alamat_lengkap).trim().slice(0, 500) : null,
         total_tagihan: totalTagihan,
         status: 'pending_payment'
       })
@@ -201,24 +242,29 @@ router.post('/order', async (req, res) => {
 
     if (itemsErr) throw itemsErr
 
-    // --- Response sukses ---
     res.status(201).json({
       success: true,
-      message: `✅ Pesanan berhasil dibuat!`,
+      message: '✅ Pesanan berhasil dibuat!',
       data: {
         order_id: orderId,
-        nama_pembeli,
-        telepon,
+        nama_pembeli: cleanNama,
+        telepon: cleanTelepon,
         total_tagihan: totalTagihan,
         jumlah_item: items.length,
         status: 'pending_payment'
       }
     })
   } catch (err) {
+    if (err.message && err.message.startsWith('PRODUCT_NOT_FOUND:')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Salah satu produk di keranjang sudah tidak tersedia di katalog.'
+      })
+    }
+    console.error('Error POST /api/order:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal membuat pesanan.',
-      error: err.message
+      message: 'Gagal membuat pesanan.'
     })
   }
 })
@@ -227,24 +273,23 @@ router.post('/order', async (req, res) => {
 // ─────────────────────────────────────────────
 // GET /api/order/search
 // Mencari pesanan berdasarkan nomor telepon
-// (Fitur: "Lupa nomor order? Cari pakai nomor WA")
 // Query params: ?telepon=081234567890
 // ─────────────────────────────────────────────
 router.get('/order/search', async (req, res) => {
   try {
-    const { telepon } = req.query
+    const cleanTelepon = String(req.query.telepon || '').trim()
 
-    if (!telepon) {
+    if (!cleanTelepon || cleanTelepon.length < 8) {
       return res.status(400).json({
         success: false,
-        message: 'Parameter "telepon" wajib diisi.'
+        message: 'Parameter "telepon" wajib diisi dengan nomor yang valid.'
       })
     }
 
     const { data: dataNormal, error: err1 } = await supabase
       .from('orders')
       .select('id, nama_pembeli, telepon, total_tagihan, status, created_at')
-      .eq('telepon', telepon)
+      .eq('telepon', cleanTelepon)
       .order('created_at', { ascending: false })
 
     if (err1) throw err1
@@ -252,12 +297,17 @@ router.get('/order/search', async (req, res) => {
     const { data: dataKustom, error: err2 } = await supabase
       .from('custom_orders')
       .select('id, nama_pembeli, telepon, total_tagihan, status, created_at')
-      .eq('telepon', telepon)
+      .eq('telepon', cleanTelepon)
       .order('created_at', { ascending: false })
-      
+
     if (err2) throw err2
 
-    const combinedData = [...dataNormal, ...dataKustom].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    const combinedData = [...(dataNormal || []), ...(dataKustom || [])]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .map(o => ({
+        ...o,
+        telepon: maskPhone(o.telepon)
+      }))
 
     res.json({
       success: true,
@@ -265,10 +315,10 @@ router.get('/order/search', async (req, res) => {
       data: combinedData
     })
   } catch (err) {
+    console.error('Error GET /api/order/search:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mencari pesanan.',
-      error: err.message
+      message: 'Gagal mencari pesanan.'
     })
   }
 })
@@ -280,25 +330,35 @@ router.get('/order/search', async (req, res) => {
 // ─────────────────────────────────────────────
 router.get('/order/track/:id', async (req, res) => {
   try {
-    const cleanId = String(req.params.id).trim().replace(/^#/, '')
-    
-    let order = null;
-    let error = null;
+    const cleanId = String(req.params.id || '').trim().replace(/^#/, '')
+
+    if (!cleanId) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID Pesanan tidak valid.'
+      })
+    }
+
+    let order = null
+    let error = null
 
     if (cleanId.startsWith('BMA-K-')) {
       const result = await supabase
         .from('custom_orders')
-        .select('id, nama_pembeli, telepon, total_tagihan, status, created_at, nama_produk, deskripsi')
+        .select('id, nama_pembeli, telepon, total_tagihan, status, created_at, nama_produk, deskripsi, provinsi, kabupaten, kecamatan, desa, alamat_lengkap')
         .eq('id', cleanId)
         .single()
-      
-      error = result.error;
+
+      error = result.error
       if (result.data) {
         order = {
           ...result.data,
+          telepon: maskPhone(result.data.telepon),
+          status: result.data.status === 'pending' ? 'pending_payment' : result.data.status,
           order_items: [
             {
               qty: 1,
+              ukuran: '',
               harga_disepakati: result.data.total_tagihan,
               products: {
                 nama: `KUSTOM: ${result.data.nama_produk}`,
@@ -315,20 +375,31 @@ router.get('/order/track/:id', async (req, res) => {
           id,
           nama_pembeli,
           telepon,
+          provinsi,
+          kabupaten,
+          kecamatan,
+          desa,
+          alamat_lengkap,
           total_tagihan,
           status,
           created_at,
           order_items (
             qty,
+            ukuran,
             harga_disepakati,
             products ( nama, image_url )
           )
         `)
         .eq('id', cleanId)
         .single()
-        
-      error = result.error;
-      order = result.data;
+
+      error = result.error
+      if (result.data) {
+        order = {
+          ...result.data,
+          telepon: maskPhone(result.data.telepon)
+        }
+      }
     }
 
     if (error || !order) {
@@ -343,11 +414,10 @@ router.get('/order/track/:id', async (req, res) => {
       data: order
     })
   } catch (err) {
-    console.error('Track order error:', err)
+    console.error('Track order error:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal melacak pesanan.',
-      error: err.message
+      message: 'Gagal melacak pesanan.'
     })
   }
 })
@@ -357,17 +427,25 @@ router.get('/order/track/:id', async (req, res) => {
 // POST /api/pembayaran
 // Upload bukti transfer dan catat konfirmasi pembayaran
 // ─────────────────────────────────────────────
-// Form data (multipart):
-//   - order_id      : "BMA-20250710-482"
-//   - bank_pengirim : "BCA"
-//   - nominal       : 999321
-//   - bukti         : (file gambar)
 router.post('/pembayaran', upload.single('bukti'), async (req, res) => {
   try {
-    const { order_id, bank_pengirim, nominal } = req.body
+    const {
+      order_id,
+      nama_pengirim,
+      bank_pengirim,
+      no_rekening,
+      tanggal_transfer,
+      nominal,
+      catatan,
+      provinsi,
+      kabupaten,
+      kecamatan,
+      desa,
+      alamat_lengkap
+    } = req.body
     const file = req.file
 
-    // --- Validasi input ---
+    // --- Validasi input dasar ---
     if (!order_id || !bank_pengirim || !nominal || !file) {
       return res.status(400).json({
         success: false,
@@ -376,28 +454,32 @@ router.post('/pembayaran', upload.single('bukti'), async (req, res) => {
     }
 
     const cleanOrderId = String(order_id).trim().replace(/^#/, '')
+    const cleanNamaPengirim = nama_pengirim ? String(nama_pengirim).trim().slice(0, 150) : null
+    const cleanBank = String(bank_pengirim).trim().slice(0, 100)
+    const cleanNoRek = no_rekening ? String(no_rekening).trim().slice(0, 100) : null
+    const cleanTanggal = (tanggal_transfer && /^\d{4}-\d{2}-\d{2}$/.test(String(tanggal_transfer).trim()))
+      ? String(tanggal_transfer).trim()
+      : null
+    const cleanCatatan = catatan ? String(catatan).trim().slice(0, 1000) : null
+    const parsedNominal = Number(String(nominal).replace(/[^0-9]/g, ''))
 
-    // --- Cek apakah order tersebut ada ---
-    let order = null;
-    let orderErr = null;
-
-    if (cleanOrderId.startsWith('BMA-K-')) {
-      const res = await supabase
-        .from('custom_orders')
-        .select('id, status')
-        .eq('id', cleanOrderId)
-        .single();
-      order = res.data;
-      orderErr = res.error;
-    } else {
-      const res = await supabase
-        .from('orders')
-        .select('id, status')
-        .eq('id', cleanOrderId)
-        .single();
-      order = res.data;
-      orderErr = res.error;
+    // Validasi nominal SEBELUM upload file ke storage (mencegah error 22003 & orphan file)
+    if (!Number.isSafeInteger(parsedNominal) || parsedNominal <= 0 || parsedNominal > 100000000000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nominal transfer tidak valid. Pastikan Anda memasukkan angka nominal Rupiah yang benar (bukan nomor rekening).'
+      })
     }
+
+    // --- Cek apakah order tersebut ada & statusnya masih bisa dibayar ---
+    const isCustomOrder = cleanOrderId.startsWith('BMA-K-')
+    const tableToCheck = isCustomOrder ? 'custom_orders' : 'orders'
+
+    const { data: order, error: orderErr } = await supabase
+      .from(tableToCheck)
+      .select('id, status, provinsi, kabupaten, kecamatan, desa, alamat_lengkap')
+      .eq('id', cleanOrderId)
+      .single()
 
     if (orderErr || !order) {
       return res.status(404).json({
@@ -406,10 +488,35 @@ router.post('/pembayaran', upload.single('bukti'), async (req, res) => {
       })
     }
 
-    // --- Upload file bukti ke Supabase Storage bucket "bukti-transfer" ---
-    const ext = file.originalname.split('.').pop()
-    const fileName = `${cleanOrderId}_${Date.now()}.${ext}`
+    // Cegah manipulasi status jika order sudah lunas/diproses/dikirim/selesai/dibatalkan
+    const allowedPaymentStatuses = ['pending', 'pending_payment', 'waiting_verification']
+    if (!allowedPaymentStatuses.includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Pesanan "${cleanOrderId}" sudah berstatus "${order.status}" dan tidak memerlukan konfirmasi pembayaran baru.`
+      })
+    }
 
+    const cleanAlamatInput = alamat_lengkap ? String(alamat_lengkap).trim().slice(0, 500) : ''
+    if (!order.alamat_lengkap && !cleanAlamatInput) {
+      return res.status(400).json({
+        success: false,
+        message: 'Alamat pengiriman untuk pesanan ini belum tercatat. Mohon isi kolom Alamat Pengiriman.'
+      })
+    }
+
+    // Tentukan ekstensi file yang aman dari mimetype
+    const mimeToExt = {
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'application/pdf': 'pdf'
+    }
+    const safeExt = mimeToExt[file.mimetype] || 'jpg'
+    const fileName = `${cleanOrderId}_${Date.now()}.${safeExt}`
+
+    // --- Upload file bukti ke Supabase Storage bucket "bukti-transfer" ---
     const { error: uploadErr } = await supabase.storage
       .from('bukti-transfer')
       .upload(fileName, file.buffer, {
@@ -418,63 +525,72 @@ router.post('/pembayaran', upload.single('bukti'), async (req, res) => {
       })
 
     if (uploadErr) {
-      console.error('Supabase storage upload error:', uploadErr)
+      console.error('Supabase storage upload error:', uploadErr.message)
       throw uploadErr
     }
 
-    // Ambil URL publik dari file yang baru di-upload
     const { data: urlData } = supabase.storage
       .from('bukti-transfer')
       .getPublicUrl(fileName)
 
     const buktiUrl = urlData.publicUrl
 
-    // --- Simpan data pembayaran ke tabel payments ---
+    // --- Simpan data pembayaran lengkap ke tabel payments ---
     const { error: payErr } = await supabase
       .from('payments')
       .insert({
         order_id: cleanOrderId,
-        bank_pengirim,
-        nominal: parseInt(nominal, 10),
+        nama_pengirim: cleanNamaPengirim,
+        bank_pengirim: cleanBank,
+        no_rekening: cleanNoRek,
+        tanggal_transfer: cleanTanggal,
+        nominal: parsedNominal,
+        catatan: cleanCatatan,
         bukti_url: buktiUrl,
         status_verifikasi: false
       })
 
     if (payErr) {
-      console.error('Supabase payments insert error:', payErr)
+      console.error('Supabase payments insert error:', payErr.message)
+      // Hapus file dari storage jika insert database gagal agar tidak menjadi orphan file
+      await supabase.storage.from('bukti-transfer').remove([fileName])
       throw payErr
     }
 
-    // --- Ubah status order menjadi "waiting_verification" ---
-    const tableToUpdate = cleanOrderId.startsWith('BMA-K-') ? 'custom_orders' : 'orders';
+    // --- Ubah status order menjadi "waiting_verification" & perbarui alamat pengiriman jika diisi ---
+    const orderUpdates = { status: 'waiting_verification' }
+    if (cleanAlamatInput) orderUpdates.alamat_lengkap = cleanAlamatInput
+    if (provinsi && String(provinsi).trim()) orderUpdates.provinsi = String(provinsi).trim().slice(0, 100)
+    if (kabupaten && String(kabupaten).trim()) orderUpdates.kabupaten = String(kabupaten).trim().slice(0, 100)
+    if (kecamatan && String(kecamatan).trim()) orderUpdates.kecamatan = String(kecamatan).trim().slice(0, 100)
+    if (desa && String(desa).trim()) orderUpdates.desa = String(desa).trim().slice(0, 100)
+
     const { error: updateErr } = await supabase
-      .from(tableToUpdate)
-      .update({ status: 'waiting_verification' })
+      .from(tableToCheck)
+      .update(orderUpdates)
       .eq('id', cleanOrderId)
 
     if (updateErr) {
-      console.error(`Supabase ${tableToUpdate} update error:`, updateErr)
+      console.error(`Supabase ${tableToCheck} update error:`, updateErr.message)
       throw updateErr
     }
 
-    // --- Response sukses ---
     res.status(201).json({
       success: true,
       message: '✅ Bukti pembayaran berhasil diupload! Silakan tunggu verifikasi admin (maks 1x24 jam).',
       data: {
         order_id: cleanOrderId,
-        bank_pengirim,
-        nominal: parseInt(nominal, 10),
+        bank_pengirim: cleanBank,
+        nominal: parsedNominal,
         bukti_url: buktiUrl,
         status: 'waiting_verification'
       }
     })
   } catch (err) {
-    console.error('Gagal /api/pembayaran:', err)
+    console.error('Gagal /api/pembayaran:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengupload bukti pembayaran.',
-      error: err.message
+      message: 'Gagal mengupload bukti pembayaran.'
     })
   }
 })

@@ -3,6 +3,17 @@
 
 const API_BASE = 'https://batumerapi.biz.id/api';
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+window.escapeHtml = escapeHtml;
+
 function getToken() {
   return localStorage.getItem('banditrock_token');
 }
@@ -94,7 +105,7 @@ async function loadTopbarAvatar() {
     const json = await res.json();
     if (json.success && json.data) {
       if (json.data.avatar_url) {
-        topbarAvatar.innerHTML = `<img src="${json.data.avatar_url}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        topbarAvatar.innerHTML = `<img src="${escapeHtml(json.data.avatar_url)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
         topbarAvatar.style.background = 'transparent';
       } else {
         topbarAvatar.textContent = (json.data.username || 'A').charAt(0).toUpperCase();
@@ -133,14 +144,14 @@ async function setupAdminNotifications() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/admin/orders`, {
+    const res = await fetch(`${API_BASE}/admin/dashboard`, {
       headers: authHeaders()
     });
     const json = await res.json();
     if (handleApiAuthError(res, json)) return;
     if (!json.success || !json.data) return;
 
-    const newOrders = json.data.filter(o => o.status === 'waiting_verification' || o.status === 'pending_payment');
+    const newOrders = json.data.filter(o => o.status === 'waiting_verification' || o.status === 'pending_payment' || o.status === 'pending');
     const badgeCount = newOrders.length;
 
     const badges = document.querySelectorAll('.notif-badge');
@@ -169,17 +180,19 @@ async function setupAdminNotifications() {
       let itemsHtml = newOrders.slice(0, 5).map(o => {
         const dateStr = new Date(o.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
         const label = o.status === 'waiting_verification' ? '💡 Perlu Verifikasi Transfer' : '🕒 Pesanan Menunggu Pembayaran';
+        const isCustom = String(o.id || '').startsWith('BMA-K-');
+        const targetHref = isCustom ? 'penjualan-kustom.html' : 'penjualan.html';
         return `
-          <a href="penjualan.html" style="display:flex; gap:10px; align-items:flex-start; padding:10px; border-radius:8px; background:#F8FAFC; margin-bottom:8px; text-decoration:none; transition:background 0.2s; border:1px solid #E2E8F0;">
+          <a href="${targetHref}" style="display:flex; gap:10px; align-items:flex-start; padding:10px; border-radius:8px; background:#F8FAFC; margin-bottom:8px; text-decoration:none; transition:background 0.2s; border:1px solid #E2E8F0;">
             <div style="width:32px; height:32px; border-radius:50%; background:#FEF3C7; color:#D97706; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
               <i data-lucide="shopping-bag" style="width:16px; height:16px;"></i>
             </div>
             <div style="flex:1;">
               <div style="font-size:12px; font-weight:700; color:#1E293B; display:flex; justify-content:space-between;">
-                <span>${o.id}</span>
-                <span style="font-size:10px; color:#94A3B8;">${dateStr}</span>
+                <span>${escapeHtml(o.id)}</span>
+                <span style="font-size:10px; color:#94A3B8;">${escapeHtml(dateStr)}</span>
               </div>
-              <div style="font-size:11px; color:#475569; margin-top:2px;">${o.nama_pembeli}</div>
+              <div style="font-size:11px; color:#475569; margin-top:2px;">${escapeHtml(o.nama_pembeli)}</div>
               <div style="font-size:10px; font-weight:700; color:#D97706; margin-top:2px;">${label}</div>
             </div>
           </a>
@@ -200,6 +213,7 @@ async function setupAdminNotifications() {
     console.error('Error fetching admin notifications:', err);
   }
 }
+window.updateNotificationBadges = setupAdminNotifications;
 
 // Helper for formatting currency
 function formatRpAdmin(number) {

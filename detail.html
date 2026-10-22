@@ -86,40 +86,6 @@
     <a href="tentang.html">Tentang Kami</a>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const hamburgerBtn = document.getElementById('hamburger-btn');
-      const mobileMenu = document.getElementById('mobile-menu');
-      const mobileCloseBtn = document.getElementById('mobile-menu-close');
-
-      if (hamburgerBtn && mobileMenu && mobileCloseBtn) {
-        hamburgerBtn.addEventListener('click', () => {
-          mobileMenu.classList.add('open');
-        });
-        mobileCloseBtn.addEventListener('click', () => {
-          mobileMenu.classList.remove('open');
-        });
-        
-        const mobileDropdownBtn = document.querySelector('.mobile-dropdown-btn');
-        const mobileDropdownContent = document.querySelector('.mobile-dropdown-content');
-        if (mobileDropdownBtn && mobileDropdownContent) {
-          // Prevent multiple bindings if script runs multiple times
-          if (!mobileDropdownBtn.dataset.bound) {
-            mobileDropdownBtn.dataset.bound = 'true';
-            mobileDropdownBtn.addEventListener('click', () => {
-              const isVisible = mobileDropdownContent.style.display === 'flex';
-              mobileDropdownContent.style.display = isVisible ? 'none' : 'flex';
-            });
-          }
-        }
-        // re-initialize lucide icons for new elements
-        if (typeof lucide !== 'undefined') {
-          lucide.createIcons();
-        }
-      }
-    });
-  </script>
-
   <!-- Global Toast will be injected here by main.js -->
 
 
@@ -223,13 +189,12 @@
     </div>
   </footer>
 
-  <script src="js/products.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/products.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
   <script>
     let currentProduct = null;
     let activeSize = 'Besar';
     let qty = 1;
-    // Toast state is now handled globally
     let sizes = ['Kecil', 'Sedang', 'Besar', 'Ekstra Besar'];
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -239,10 +204,10 @@
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get('id');
       
-      currentProduct = (window.products || []).find(p => p.id === id);
-
-      if (!currentProduct && window.products && window.products.length > 0) {
-         currentProduct = window.products[6] || window.products[0];
+      if (id) {
+        currentProduct = (window.products || []).find(p => p.id === id);
+      } else if (window.products && window.products.length > 0) {
+        currentProduct = window.products[0];
       }
 
       if (currentProduct) {
@@ -270,7 +235,7 @@
       const shortDesc = document.getElementById('prod-desc-short') || document.getElementById('prod-desc');
       if (shortDesc) shortDesc.textContent = currentProduct.desc_short || (currentProduct.desc ? currentProduct.desc.substring(0, 100) + '...' : '');
       
-      const formattedDesc = (currentProduct.desc || '').replace(/\n/g, '<br>');
+      const formattedDesc = escapeHtml(currentProduct.desc || '').replace(/\n/g, '<br>');
 
       const fullDescText = document.getElementById('prod-desc-full-text');
       if (fullDescText) fullDescText.innerHTML = formattedDesc;
@@ -323,46 +288,23 @@
       
       let thumbHtml = '';
       images.forEach((imgUrl, i) => {
+        const safeUrl = escapeHtml(imgUrl);
         thumbHtml += `
-          <div class="gallery-thumb ${i===0 ? 'active' : ''}" onclick="changeThumb(this, '${imgUrl}')" style="border: 2px solid ${i===0 ? 'var(--green-primary)' : 'transparent'}; cursor: pointer;">
-            <img src="${imgUrl}" alt="Thumb ${i+1}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover;">
+          <div class="gallery-thumb ${i===0 ? 'active' : ''}" onclick="changeThumb(this, '${safeUrl}')" style="border: 2px solid ${i===0 ? 'var(--green-primary)' : 'transparent'}; cursor: pointer;">
+            <img src="${safeUrl}" alt="Thumb ${i+1}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover;">
           </div>
         `;
       });
       document.getElementById('gallery-thumbs').innerHTML = thumbHtml;
       
       document.getElementById('gallery-main').innerHTML = `
-        <img id="main-img-display" src="${images[0]}" alt="${currentProduct.name}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" onerror="this.style.display='none'">
+        <img id="main-img-display" src="${escapeHtml(images[0])}" alt="${escapeHtml(currentProduct.name)}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" onerror="this.style.display='none'">
       `;
 
       // Related
       const related = window.products.filter(p => p.category === currentProduct.category && p.id !== currentProduct.id).slice(0, 4);
-      if (related.length > 0) {
-        const createProductCard = (p) => {
-          let uArr = p.ukuran ? p.ukuran.split(',').map(s=>s.trim()).filter(Boolean) : [];
-          const sizeLabels = uArr.length > 0 ? uArr.map(u => u === 'Kecil' ? 'S' : u === 'Sedang' ? 'M' : u === 'Besar' ? 'L' : u === 'Ekstra Besar' ? 'XL' : u) : ['S', 'M', 'L', 'XL'];
-          const sizesHtml = sizeLabels.map(s =>
-            `<span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--gray-light); color:var(--gray-dark); border:1px solid var(--gray-mid);">${s}</span>`
-          ).join('');
-          return `
-            <a href="detail.html?id=${p.id}" class="product-card">
-              <div class="product-card-img" style="position:relative; aspect-ratio:1/1; overflow:hidden; background:var(--gray-light);">
-                <img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;transition:transform .35s;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                <div class="product-img-ph" style="display:none;"><i data-lucide="image" style="width:32px;height:32px;color:var(--gray-mid);"></i></div>
-              </div>
-              <div class="product-card-body">
-                <div class="product-category">${p.category}</div>
-                <h3 class="product-card-name" style="font-size:clamp(12px,1.2vw,15px);">${p.name}</h3>
-                <div class="price-row">
-                  <span class="product-price" style="color:var(--green-primary);">${p.price}</span>
-                </div>
-                <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;">${sizesHtml}</div>
-              </div>
-            </a>
-          `;
-        };
-        document.getElementById('related-grid').innerHTML = related.map(createProductCard).join('');
-
+      if (related.length > 0 && typeof window.createProductCard === 'function') {
+        document.getElementById('related-grid').innerHTML = related.map(window.createProductCard).join('');
       } else {
         document.getElementById('related-section').style.display = 'none';
       }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Laporan - Syarif Art Stone Admin</title>
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin.css?v=2">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -64,9 +64,13 @@
         
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px;">
           <div>
-            <h2 style="font-size: 18px; margin-bottom: 4px;">Laporan</h2>
+            <h2 style="font-size: 18px; margin-bottom: 4px;">Laporan Penjualan</h2>
             <p style="font-size: 13px; color: var(--text-muted);">Pembaruan Terakhir: <span id="current-date"></span></p>
-            <p style="font-size: 14px; font-weight: 600; margin-top: 12px;">Rata-rata Penjualan: <span id="rata-rata" style="color: var(--primary);">Loading...</span></p>
+            <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 12px;">
+              <p style="font-size: 13.5px; font-weight: 600; margin: 0;">Total Transaksi: <span id="total-transaksi" style="color: var(--text-main); font-weight: 800;">0</span></p>
+              <p style="font-size: 13.5px; font-weight: 600; margin: 0;">Total Pendapatan: <span id="total-pendapatan" style="color: #15803D; font-weight: 800;">Rp 0</span></p>
+              <p style="font-size: 13.5px; font-weight: 600; margin: 0;">Rata-rata Penjualan: <span id="rata-rata" style="color: var(--primary); font-weight: 800;">Loading...</span></p>
+            </div>
           </div>
           
           <div style="display: flex; gap: 16px; align-items: center;">
@@ -106,7 +110,7 @@
     </div>
   </main>
 
-  <script src="js/admin.js"></script>
+  <script src="js/admin.js?v=3"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
@@ -118,8 +122,18 @@
       // Ambil data pertama kali
       fetchLaporanData();
 
-      // Event listener ketika filter bulan diubah
+      // Event listener ketika filter bulan atau rentang tanggal diubah
       document.getElementById('filter-bulan').addEventListener('change', function() {
+        document.getElementById('date-from').value = '';
+        document.getElementById('date-to').value = '';
+        document.getElementById('rata-rata').textContent = 'Loading...';
+        fetchLaporanData();
+      });
+      document.getElementById('date-from').addEventListener('change', function() {
+        document.getElementById('rata-rata').textContent = 'Loading...';
+        fetchLaporanData();
+      });
+      document.getElementById('date-to').addEventListener('change', function() {
         document.getElementById('rata-rata').textContent = 'Loading...';
         fetchLaporanData();
       });
@@ -129,9 +143,15 @@
       const bulan = document.getElementById('filter-bulan').value;
       const year = new Date().getFullYear();
       const bulanStr = `${year}-${String(bulan).padStart(2, '0')}`;
+      const dateFrom = document.getElementById('date-from').value;
+      const dateTo = document.getElementById('date-to').value;
+
+      let queryParams = `bulan=${encodeURIComponent(bulanStr)}`;
+      if (dateFrom) queryParams += `&from=${encodeURIComponent(dateFrom)}`;
+      if (dateTo) queryParams += `&to=${encodeURIComponent(dateTo)}`;
 
       try {
-        const res = await fetch(`${API_BASE}/admin/laporan?bulan=${bulanStr}`, {
+        const res = await fetch(`${API_BASE}/admin/laporan?${queryParams}`, {
           headers: authHeaders()
         });
         const json = await res.json();
@@ -139,8 +159,13 @@
 
         if (json.success && json.ringkasan) {
           const { total_transaksi, total_pendapatan } = json.ringkasan;
+          const elTransaksi = document.getElementById('total-transaksi');
+          const elPendapatan = document.getElementById('total-pendapatan');
+          if (elTransaksi) elTransaksi.textContent = Number(total_transaksi || 0).toLocaleString('id-ID');
+          if (elPendapatan) elPendapatan.textContent = formatRpAdmin(total_pendapatan || 0);
           
           if (total_transaksi === 0) {
+            window.reportData = [];
             document.getElementById('rata-rata').textContent = 'Rp 0';
             document.getElementById('chart-container').innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">Belum ada transaksi di bulan ini.</p>';
             document.getElementById('chart-labels').innerHTML = '';
@@ -194,20 +219,21 @@
         return alert("Tidak ada data untuk diekspor!");
       }
       
-      let csv = "ID Pesanan,Tanggal,Pelanggan,Telepon,Total Tagihan,Status\n";
+      const csvEscape = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
+      let csv = "\uFEFFID Pesanan,Tanggal,Pelanggan,Telepon,Total Tagihan,Status\n";
       
       window.reportData.forEach(o => {
         const tgl = new Date(o.created_at).toLocaleDateString('id-ID');
         const id = o.id || "";
-        const nama = (o.nama_pembeli || "").replace(/,/g, " ");
-        const telp = (o.telepon || "").replace(/,/g, " ");
+        const nama = o.nama_pembeli || "";
+        const telp = o.telepon || "";
         const total = o.total_tagihan || 0;
         const status = o.status || "";
         
-        csv += `${id},${tgl},${nama},${telp},${total},${status}\n`;
+        csv += `${csvEscape(id)},${csvEscape(tgl)},${csvEscape(nama)},${csvEscape(telp)},${total},${csvEscape(status)}\n`;
       });
       
-      const blob = new Blob([csv], { type: 'text/csv' });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.setAttribute('href', url);
@@ -215,6 +241,7 @@
       document.body.appendChild(a);
       a.click();
       a.remove();
+      window.URL.revokeObjectURL(url);
     }
   </script>
 </body>

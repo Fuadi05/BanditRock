@@ -1,4 +1,16 @@
 // Initialize Lucide icons and common elements
+window.PUBLIC_API_BASE = 'https://batumerapi.biz.id/api';
+
+window.escapeHtml = function(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) {
     lucide.createIcons();
@@ -93,7 +105,7 @@ function updateNavbarCartCount() {
   }
 }
 
-// NAVBAR LOGIC
+// NAVBAR LOGIC (Desktop & Mobile)
 function setupNavbar() {
   const katalogBtn = document.getElementById('nav-katalog-btn');
   const katalogDropdown = document.getElementById('nav-katalog-dropdown');
@@ -119,6 +131,53 @@ function setupNavbar() {
       }
     });
   }
+
+  // Mobile Menu Logic (Centralized for all pages)
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const closeMenuBtn = document.getElementById('mobile-menu-close');
+  const dropdownBtns = document.querySelectorAll('.mobile-dropdown-btn');
+
+  if (hamburgerBtn && mobileMenu) {
+    hamburgerBtn.addEventListener('click', () => {
+      mobileMenu.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+  }
+
+  if (closeMenuBtn && mobileMenu) {
+    closeMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  }
+
+  if (mobileMenu) {
+    mobileMenu.addEventListener('click', (e) => {
+      if (e.target === mobileMenu) {
+        mobileMenu.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+  }
+
+  dropdownBtns.forEach(btn => {
+    if (btn.dataset.bound) return;
+    btn.dataset.bound = 'true';
+    btn.addEventListener('click', function() {
+      this.classList.toggle('active');
+      const content = this.nextElementSibling;
+      if (content) {
+        if (content.style.display === 'none' || content.style.display === 'flex') {
+          content.style.display = content.style.display === 'flex' ? 'none' : 'flex';
+        } else if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+        }
+      }
+    });
+  });
 }
 
 // TRACKING MODAL LOGIC (Lacak Pesanan)
@@ -141,28 +200,6 @@ function closeTrackModal() {
   }
 }
 
-const mockOrders = {
-  'BM-2025-001': {
-    id: 'BM-2025-001',
-    status: 'Dalam Pengiriman',
-    statusColor: '#0f5132',
-    pemesan: 'Aditya Nugraha',
-    tanggal: '18 Maret 2025',
-    total: 625000,
-    products: [
-      { name: 'Vas Bunga Batu Andesit Minimalis', qty: 2, price: 450000, img: '../images/media__1780324641278.jpg' },
-      { name: 'Asbak Batu Ukir Signature', qty: 1, price: 125000, img: '../images/stone_product2_1780322918796.png' }
-    ],
-    timeline: [
-      { title: 'Konfirmasi', time: '18 Mar 2025 - 10:24', desc: 'Pesanan Anda telah diterima oleh sistem kami.', completed: true },
-      { title: 'Disetujui', time: '18 Mar 2025 - 11:05', desc: 'Pesanan telah disetujui dan siap untuk diproses.', completed: true },
-      { title: 'Diproses', time: '19 Mar 2025 - 09:15', desc: 'Tim pengrajin sedang menyiapkan pesanan Anda.', completed: true },
-      { title: 'Dibatalkan', time: '20 Mar 2025 - 10:00', desc: 'Pesanan ini telah dibatalkan.', completed: false, isCanceled: true },
-      { title: 'Dikirim', time: '20 Mar 2025 - 14:30', desc: 'Pesanan sedang dalam perjalanan ke alamat tujuan.', completed: false, active: true }
-    ]
-  }
-};
-
 async function searchTrack(query) {
   const resultsContainer = document.getElementById('track-results');
   if (!resultsContainer) return;
@@ -176,11 +213,11 @@ async function searchTrack(query) {
   resultsContainer.innerHTML = '<div style="text-align:center; padding:30px; color:#64748b">🔍 Mencari data pesanan...</div>';
 
   try {
-    const res = await fetch(`https://batumerapi.biz.id/api/order/track/${encodeURIComponent(cleanId)}`);
+    const res = await fetch(`${window.PUBLIC_API_BASE}/order/track/${encodeURIComponent(cleanId)}`);
     const json = await res.json();
 
     if (!json.success || !json.data) {
-      resultsContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444">${json.message || 'Pesanan tidak ditemukan. Periksa kembali nomor resi/order Anda.'}</div>`;
+      resultsContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444">${escapeHtml(json.message || 'Pesanan tidak ditemukan. Periksa kembali nomor resi/order Anda.')}</div>`;
       return;
     }
 
@@ -241,6 +278,7 @@ async function searchTrack(query) {
     ];
 
     const statusLabels = {
+      'pending': 'Menunggu Pembayaran',
       'pending_payment': 'Menunggu Pembayaran',
       'waiting_verification': 'Verifikasi Pembayaran',
       'paid': 'Pesanan Disetujui (Lunas)',
@@ -275,32 +313,46 @@ async function searchTrack(query) {
       </div>
     `;
 
-    let productsHtml = (order.order_items && order.order_items.length > 0) ? order.order_items.map(item => `
+    let productsHtml = (order.order_items && order.order_items.length > 0) ? order.order_items.map(item => {
+      const prodName = escapeHtml(item.products ? item.products.nama : 'Produk');
+      const prodImg = escapeHtml(item.products && item.products.image_url ? item.products.image_url : 'images/media__1780324962198.jpg');
+      const ukuranBadge = item.ukuran ? ` • Ukuran: ${escapeHtml(item.ukuran)}` : '';
+      return `
       <div style="display:flex; gap:12px; margin-bottom:12px; align-items:center;">
-        <img src="${item.products && item.products.image_url ? item.products.image_url : '../images/media__1780324962198.jpg'}" alt="${item.products ? item.products.nama : 'Produk'}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; background:#f1f5f9; border:1px solid #e2e8f0;">
+        <img src="${prodImg}" alt="${prodName}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; background:#f1f5f9; border:1px solid #e2e8f0;">
         <div style="flex:1;">
-          <div style="font-size:13px; font-weight:700; color:#1e293b;">${item.products ? item.products.nama : 'Produk'}</div>
-          <div style="font-size:12px; color:#64748b;">x${item.qty} Unit</div>
+          <div style="font-size:13px; font-weight:700; color:#1e293b;">${prodName}</div>
+          <div style="font-size:12px; color:#64748b;">x${Number(item.qty) || 1} Unit${ukuranBadge}</div>
         </div>
-        <div style="font-size:13px; font-weight:800; color:#0f5132;">${formatRp((item.harga_disepakati || 0) * item.qty)}</div>
+        <div style="font-size:13px; font-weight:800; color:#0f5132;">${formatRp((item.harga_disepakati || 0) * (Number(item.qty) || 1))}</div>
       </div>
-    `).join('') : '<div style="font-size:13px; color:#64748b;">Tidak ada rincian produk</div>';
+    `;
+    }).join('') : '<div style="font-size:13px; color:#64748b;">Tidak ada rincian produk</div>';
+
+    const addressParts = [order.alamat_lengkap, order.desa, order.kecamatan, order.kabupaten, order.provinsi].filter(Boolean);
+    const fullAddressHtml = addressParts.length > 0
+      ? escapeHtml(addressParts.join(', '))
+      : '<span style="color:#d97706; font-style:italic;">Belum dilengkapi (akan dilengkapi saat konfirmasi pembayaran)</span>';
+
+    const confirmBtnHtml = (currentStatus === 'pending_payment' || currentStatus === 'pending')
+      ? `<a href="konfirmasi.html?order_id=${encodeURIComponent(order.id)}" class="btn-primary" style="display:block; text-align:center; padding:12px; border-radius:10px; font-size:13px; text-decoration:none; margin-top:14px;">Konfirmasi Pembayaran Sekarang →</a>`
+      : '';
 
     resultsContainer.innerHTML = `
-      <div style="display:grid; grid-template-columns: 1fr 340px; gap:24px; text-align:left; background:#e2e8f0; padding:24px; border-radius:16px; margin-top:20px;">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:24px; text-align:left; background:#e2e8f0; padding:24px; border-radius:16px; margin-top:20px;">
         <div style="background:#fff; border-radius:12px; padding:24px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:16px; border-bottom:1px solid #e2e8f0;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:16px; border-bottom:1px solid #e2e8f0; flex-wrap:wrap; gap:8px;">
             <div style="display:flex; gap:14px; align-items:center;">
               <div style="width:46px; height:46px; border-radius:10px; background:#f0fdf4; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 <i data-lucide="truck" style="width:24px; height:24px; color:#0f5132;"></i>
               </div>
               <div>
                 <div style="font-size:11px; color:#64748b; font-weight:600; margin-bottom:2px;">Status Saat Ini</div>
-                <div style="font-size:18px; font-weight:800; color:${isCanceled ? '#ef4444' : '#0f5132'};">${statusLabels[order.status] || order.status}</div>
+                <div style="font-size:18px; font-weight:800; color:${isCanceled ? '#ef4444' : '#0f5132'};">${escapeHtml(statusLabels[order.status] || order.status)}</div>
               </div>
             </div>
             <div style="text-align:right;">
-              <div style="font-size:13px; font-weight:800; color:#1e293b;">Order ID: ${order.id}</div>
+              <div style="font-size:13px; font-weight:800; color:#1e293b;">Order ID: ${escapeHtml(order.id)}</div>
             </div>
           </div>
           ${timelineHtml}
@@ -313,9 +365,11 @@ async function searchTrack(query) {
               <div style="font-size:14px; font-weight:800; color:#0f5132;">Detail Pemesan</div>
             </div>
             <div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px;">Nama Lengkap</div>
-            <div style="font-size:13px; color:#1e293b; margin-bottom:12px; font-weight:500;">${order.nama_pembeli}</div>
+            <div style="font-size:13px; color:#1e293b; margin-bottom:12px; font-weight:500;">${escapeHtml(order.nama_pembeli)}</div>
             <div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px;">Tanggal Pesanan</div>
-            <div style="font-size:13px; color:#1e293b; font-weight:500;">${dateFormatted}</div>
+            <div style="font-size:13px; color:#1e293b; margin-bottom:12px; font-weight:500;">${dateFormatted}</div>
+            <div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px;">Alamat Pengiriman</div>
+            <div style="font-size:12.5px; color:#334155; line-height:1.5; font-weight:500;">${fullAddressHtml}</div>
           </div>
 
           <div style="background:#fff; border-radius:12px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
@@ -329,6 +383,7 @@ async function searchTrack(query) {
               <div style="font-size:13px; font-weight:600; color:#475569;">Total Pembayaran</div>
               <div style="font-size:16px; font-weight:800; color:#0f5132;">${formatRp(order.total_tagihan)}</div>
             </div>
+            ${confirmBtnHtml}
           </div>
         </div>
       </div>
@@ -351,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div style="padding:24px;">
           <form onsubmit="event.preventDefault(); searchTrack(document.getElementById('track-input').value)" style="display:flex; gap:8px; background:#f8fafc; padding:6px; border-radius:10px; border:1px solid #cbd5e1; margin-bottom:24px;">
-            <input id="track-input" type="text" placeholder="Masukkan ID Pesanan... (Contoh: BM-2025-001)" style="flex:1; border:none; background:transparent; outline:none; padding-left:12px; font-size:13px;">
+            <input id="track-input" type="text" placeholder="Masukkan ID Pesanan... (Contoh: BMA-20261022-1234)" style="flex:1; border:none; background:transparent; outline:none; padding-left:12px; font-size:13px;">
             <button type="submit" class="btn-primary" style="padding:8px 20px; font-size:12px;">Cari</button>
           </form>
           <div id="track-results"></div>
@@ -364,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Format Rupiah
 function formatRp(n) {
-  return 'Rp ' + (n || 0).toLocaleString('id-ID');
+  return 'Rp ' + (Number(n) || 0).toLocaleString('id-ID');
 }
 
 // GLOBAL TOAST SYSTEM

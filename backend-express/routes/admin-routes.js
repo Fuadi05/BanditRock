@@ -3,34 +3,43 @@
 // Endpoint khusus admin (dilindungi JWT)
 // ============================================
 
+const crypto = require('crypto')
 const express = require('express')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const multer = require('multer')
 const supabase = require('../config/supabase')
+const verifyToken = require('../middleware/auth')
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-    if (allowedTypes.includes(file.mimetype)) cb(null, true);
-    else cb(new Error('Hanya format JPG dan PNG yang diperbolehkan.'));
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
+    if (allowedTypes.includes(file.mimetype)) cb(null, true)
+    else cb(new Error('Format file tidak didukung. Hanya JPG, PNG, dan WEBP yang diperbolehkan.'))
   }
-});
-const verifyToken = require('../middleware/auth')
+})
 
 const router = express.Router()
+
+const ALLOWED_ORDER_STATUSES = [
+  'pending',
+  'pending_payment',
+  'waiting_verification',
+  'paid',
+  'processing',
+  'shipped',
+  'completed',
+  'cancelled'
+]
 
 
 // ─────────────────────────────────────────────
 // POST /api/admin/login
 // Verifikasi kredensial admin → return token JWT
+// ⚠️  Endpoint ini dilindungi oleh loginLimiter di index.js
 // ─────────────────────────────────────────────
-// Body JSON:
-// { "username": "admin", "password": "admin123" }
-//
-// ⚠️  Endpoint ini TIDAK memerlukan token (publik).
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body
@@ -42,11 +51,19 @@ router.post('/login', async (req, res) => {
       })
     }
 
+    const cleanUsername = String(username).trim()
+    if (cleanUsername.startsWith('admin_disabled_')) {
+      return res.status(401).json({
+        success: false,
+        message: '⛔ Username atau password salah.'
+      })
+    }
+
     // Cari admin di database berdasarkan username
     const { data: admin, error } = await supabase
       .from('admins')
       .select('*')
-      .eq('username', username)
+      .eq('username', cleanUsername)
       .single()
 
     if (error || !admin) {
@@ -57,7 +74,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Bandingkan password dengan hash di database
-    const isMatch = await bcrypt.compare(password, admin.password_hash)
+    const isMatch = await bcrypt.compare(String(password), admin.password_hash)
 
     if (!isMatch) {
       return res.status(401).json({
@@ -66,7 +83,7 @@ router.post('/login', async (req, res) => {
       })
     }
 
-    // Generate token JWT (berlaku 24 jam)
+    // Generate token JWT (berlaku 7 hari)
     const token = jwt.sign(
       { id: admin.id, username: admin.username },
       process.env.JWT_SECRET,
@@ -85,10 +102,10 @@ router.post('/login', async (req, res) => {
       }
     })
   } catch (err) {
+    console.error('Admin login error:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal login.',
-      error: err.message
+      message: 'Gagal memproses login.'
     })
   }
 })
@@ -102,19 +119,25 @@ router.use(verifyToken)
 
 // ─────────────────────────────────────────────
 // POST /api/admin/upload
-// Endpoint untuk mengunggah gambar produk
+// Endpoint untuk mengunggah gambar produk / avatar
 // ─────────────────────────────────────────────
 router.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ success: false, message: 'Tidak ada file yang diunggah.' });
+    return res.status(400).json({ success: false, message: 'Tidak ada file yang diunggah.' })
   }
-  
+
   try {
-    const fileExt = req.file.originalname.split('.').pop()
-    const fileName = `product_${Date.now()}.${fileExt}`
+    const mimeToExt = {
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp'
+    }
+    const fileExt = mimeToExt[req.file.mimetype] || 'jpg'
+    const fileName = `product_${Date.now()}_${crypto.randomInt(100, 999)}.${fileExt}`
     const filePath = `products/${fileName}`
 
-    const { data: uploadData, error: uploadError } = await supabase
+    const { error: uploadError } = await supabase
       .storage
       .from('bukti-transfer')
       .upload(filePath, req.file.buffer, {
@@ -129,16 +152,17 @@ router.post('/upload', upload.single('image'), async (req, res) => {
       .from('bukti-transfer')
       .getPublicUrl(filePath)
 
-    res.json({ success: true, url: publicUrlData.publicUrl });
+    res.json({ success: true, url: publicUrlData.publicUrl })
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Gagal upload', error: err.message });
+    console.error('Upload error:', err.message)
+    res.status(500).json({ success: false, message: 'Gagal mengunggah gambar.' })
   }
 })
 
 
 // ─────────────────────────────────────────────
 // GET /api/admin/produk
-// Mengambil semua produk untuk admin (termasuk nonaktif)
+// Mengambil semua produk untuk admin (termasuk nonaktif & harga_max/HPP)
 // ─────────────────────────────────────────────
 router.get('/produk', async (req, res) => {
   try {
@@ -154,13 +178,48 @@ router.get('/produk', async (req, res) => {
       data
     })
   } catch (err) {
+    console.error('Error GET /api/admin/produk:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal memuat produk',
-      error: err.message
+      message: 'Gagal memuat produk.'
     })
   }
 })
+
+
+// ─────────────────────────────────────────────
+// GET /api/admin/produk/:id
+// Mengambil detail lengkap 1 produk untuk form edit admin (termasuk harga_max / HPP)
+// ─────────────────────────────────────────────
+router.get('/produk/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error || !data) {
+      return res.status(404).json({
+        success: false,
+        message: 'Produk tidak ditemukan.'
+      })
+    }
+
+    res.json({
+      success: true,
+      data
+    })
+  } catch (err) {
+    console.error('Error GET /api/admin/produk/:id:', err.message)
+    res.status(500).json({
+      success: false,
+      message: 'Gagal memuat detail produk.'
+    })
+  }
+})
+
 
 // ─────────────────────────────────────────────
 // POST /api/admin/produk
@@ -168,7 +227,21 @@ router.get('/produk', async (req, res) => {
 // ─────────────────────────────────────────────
 router.post('/produk', async (req, res) => {
   try {
-    const { nama, kategori, harga_min, harga_max, tipe_harga, deskripsi, deskripsi_singkat, ukuran, image_url, image_url_2, image_url_3, image_url_4, status_stok } = req.body
+    const {
+      nama,
+      kategori,
+      harga_min,
+      harga_max,
+      tipe_harga,
+      deskripsi,
+      deskripsi_singkat,
+      ukuran,
+      image_url,
+      image_url_2,
+      image_url_3,
+      image_url_4,
+      status_stok
+    } = req.body
 
     if (!nama || !kategori || harga_min === undefined) {
       return res.status(400).json({
@@ -177,14 +250,17 @@ router.post('/produk', async (req, res) => {
       })
     }
 
+    const allowedStok = ['ready', 'preorder', 'custom']
+    const cleanStok = allowedStok.includes(status_stok) ? status_stok : 'ready'
+
     const { data, error } = await supabase
       .from('products')
       .insert({
-        nama,
-        kategori,
-        harga_min: harga_min || 0,
-        harga_max: harga_max || harga_min || 0,
-        tipe_harga: tipe_harga || 'fixed',
+        nama: String(nama).trim(),
+        kategori: String(kategori).trim(),
+        harga_min: Number(harga_min) || 0,
+        harga_max: Number(harga_max !== undefined ? harga_max : harga_min) || 0,
+        tipe_harga: ['fixed', 'range', 'preorder'].includes(tipe_harga) ? tipe_harga : 'fixed',
         deskripsi: deskripsi || '',
         deskripsi_singkat: deskripsi_singkat || '',
         ukuran: ukuran || '',
@@ -192,7 +268,8 @@ router.post('/produk', async (req, res) => {
         image_url_2: image_url_2 || '',
         image_url_3: image_url_3 || '',
         image_url_4: image_url_4 || '',
-        status_stok: status_stok || 'ready'
+        status_stok: cleanStok,
+        is_active: true
       })
       .select()
 
@@ -204,11 +281,10 @@ router.post('/produk', async (req, res) => {
       data: data[0]
     })
   } catch (err) {
-    console.error('Supabase Insert Error:', err);
+    console.error('Supabase Insert Product Error:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal menambahkan produk.',
-      error: err.message
+      message: 'Gagal menambahkan produk.'
     })
   }
 })
@@ -221,7 +297,7 @@ router.post('/produk', async (req, res) => {
 router.put('/produk/:id/status', async (req, res) => {
   try {
     const { id } = req.params
-    const { is_active } = req.body
+    const is_active = Boolean(req.body.is_active)
 
     const { data, error } = await supabase
       .from('products')
@@ -237,22 +313,51 @@ router.put('/produk/:id/status', async (req, res) => {
       data: data[0]
     })
   } catch (err) {
+    console.error('Error PUT /api/admin/produk/:id/status:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengubah status',
-      error: err.message
+      message: 'Gagal mengubah status produk.'
     })
   }
 })
 
+
 // ─────────────────────────────────────────────
 // PUT /api/admin/produk/:id
-// Update data produk
+// Update data produk (dengan whitelist kolom untuk mencegah Mass Assignment)
 // ─────────────────────────────────────────────
 router.put('/produk/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const updates = req.body
+    const body = req.body || {}
+
+    const allowedFields = [
+      'nama',
+      'kategori',
+      'harga_min',
+      'harga_max',
+      'tipe_harga',
+      'deskripsi',
+      'deskripsi_singkat',
+      'ukuran',
+      'image_url',
+      'image_url_2',
+      'image_url_3',
+      'image_url_4',
+      'status_stok',
+      'is_active'
+    ]
+
+    const updates = {}
+    for (const key of allowedFields) {
+      if (body[key] !== undefined) {
+        updates[key] = body[key]
+      }
+    }
+
+    if (updates.status_stok && !['ready', 'preorder', 'custom'].includes(updates.status_stok)) {
+      updates.status_stok = 'ready'
+    }
 
     const { data, error } = await supabase
       .from('products')
@@ -268,13 +373,14 @@ router.put('/produk/:id', async (req, res) => {
       data: data[0]
     })
   } catch (err) {
+    console.error('Error PUT /api/admin/produk/:id:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal memperbarui produk.',
-      error: err.message
+      message: 'Gagal memperbarui produk.'
     })
   }
 })
+
 
 // ─────────────────────────────────────────────
 // DELETE /api/admin/produk/:id
@@ -296,10 +402,13 @@ router.delete('/produk/:id', async (req, res) => {
       message: '🗑️ Produk berhasil dihapus!'
     })
   } catch (err) {
-    res.status(500).json({
+    const isFkError = err.code === '23503' || (err.message && err.message.includes('foreign key constraint'))
+    res.status(isFkError ? 400 : 500).json({
       success: false,
-      message: 'Gagal menghapus produk.',
-      error: err.message
+      message: isFkError
+        ? 'Produk ini sudah pernah dipesan pelanggan sehingga tidak bisa dihapus. Silakan nonaktifkan statusnya saja.'
+        : 'Gagal menghapus produk.',
+      error: isFkError ? 'foreign key constraint' : undefined
     })
   }
 })
@@ -307,18 +416,18 @@ router.delete('/produk/:id', async (req, res) => {
 
 // ─────────────────────────────────────────────
 // GET /api/admin/dashboard
-// Mengambil rekapan semua pesanan (biasa & kustom) untuk dasbor
+// Mengambil rekapan semua pesanan (biasa & kustom) untuk dasbor & notifikasi
 // ─────────────────────────────────────────────
 router.get('/dashboard', async (req, res) => {
   try {
-    let query1 = supabase
+    const query1 = supabase
       .from('orders')
-      .select('id, nama_pembeli, total_tagihan, status, created_at')
+      .select('id, nama_pembeli, telepon, total_tagihan, status, created_at')
       .order('created_at', { ascending: false })
 
-    let query2 = supabase
+    const query2 = supabase
       .from('custom_orders')
-      .select('id, nama_pembeli, total_tagihan, status, created_at')
+      .select('id, nama_pembeli, telepon, total_tagihan, status, created_at')
       .order('created_at', { ascending: false })
 
     const [res1, res2] = await Promise.all([query1, query2])
@@ -326,7 +435,14 @@ router.get('/dashboard', async (req, res) => {
     if (res1.error) throw res1.error
     if (res2.error) throw res2.error
 
-    const combinedData = [...res1.data, ...res2.data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    const normalizedCustom = (res2.data || []).map(o => ({
+      ...o,
+      status: o.status === 'pending' ? 'pending_payment' : o.status,
+      is_custom: true
+    }))
+
+    const combinedData = [...(res1.data || []), ...normalizedCustom]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
     res.json({
       success: true,
@@ -334,17 +450,18 @@ router.get('/dashboard', async (req, res) => {
       data: combinedData
     })
   } catch (err) {
+    console.error('Error GET /api/admin/dashboard:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengambil data dashboard.',
-      error: err.message
+      message: 'Gagal mengambil data dashboard.'
     })
   }
 })
 
+
 // ─────────────────────────────────────────────
 // GET /api/admin/orders
-// Mengambil seluruh pesanan (semua status)
+// Mengambil seluruh pesanan reguler beserta alamat, ukuran item, dan pembayaran
 // ─────────────────────────────────────────────
 router.get('/orders', async (req, res) => {
   try {
@@ -354,11 +471,17 @@ router.get('/orders', async (req, res) => {
         id,
         nama_pembeli,
         telepon,
+        provinsi,
+        kabupaten,
+        kecamatan,
+        desa,
+        alamat_lengkap,
         total_tagihan,
         status,
         created_at,
         order_items (
           qty,
+          ukuran,
           harga_disepakati,
           products ( nama )
         )
@@ -367,27 +490,28 @@ router.get('/orders', async (req, res) => {
 
     if (error) throw error
 
-    // Manual join untuk payments karena foreign key constraint dihapus
-    const orderIds = orders.map(o => o.id);
-    let paymentsMap = {};
+    // Manual join untuk payments
+    const orderIds = orders.map(o => o.id)
+    const paymentsMap = {}
     if (orderIds.length > 0) {
       const { data: paymentsData } = await supabase
         .from('payments')
-        .select('id, order_id, bank_pengirim, nominal, bukti_url, status_verifikasi, created_at')
-        .in('order_id', orderIds);
-        
+        .select('id, order_id, nama_pengirim, bank_pengirim, no_rekening, tanggal_transfer, nominal, catatan, bukti_url, status_verifikasi, created_at')
+        .in('order_id', orderIds)
+        .order('created_at', { ascending: false })
+
       if (paymentsData) {
         paymentsData.forEach(p => {
-          if (!paymentsMap[p.order_id]) paymentsMap[p.order_id] = [];
-          paymentsMap[p.order_id].push(p);
-        });
+          if (!paymentsMap[p.order_id]) paymentsMap[p.order_id] = []
+          paymentsMap[p.order_id].push(p)
+        })
       }
     }
-    
+
     const data = orders.map(o => ({
       ...o,
       payments: paymentsMap[o.id] || []
-    }));
+    }))
 
     res.json({
       success: true,
@@ -395,17 +519,18 @@ router.get('/orders', async (req, res) => {
       data
     })
   } catch (err) {
+    console.error('Error GET /api/admin/orders:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengambil data pesanan.',
-      error: err.message
+      message: 'Gagal mengambil data pesanan.'
     })
   }
 })
 
+
 // ─────────────────────────────────────────────
 // PUT /api/admin/orders/:id/status
-// Update status pesanan (pending_payment, waiting_verification, paid, processing, shipped, cancelled)
+// Update status pesanan reguler
 // ─────────────────────────────────────────────
 router.put('/orders/:id/status', async (req, res) => {
   try {
@@ -425,14 +550,14 @@ router.put('/orders/:id/status', async (req, res) => {
       .update({ status })
       .eq('id', id)
 
-    if (error) {
-      if (error.code === '23514') {
-        return res.status(400).json({
-          success: false,
-          message: `Aturan database (orders_status_check) membatasi status ini. Jalankan SQL update di Supabase SQL Editor.`
-        })
-      }
-      throw error
+    if (error) throw error
+
+    // Jika disetujui atau lanjut diproses/dikirim/selesai, tandai pembayaran terkait sebagai terverifikasi
+    if (['paid', 'processing', 'shipped', 'completed'].includes(status)) {
+      await supabase
+        .from('payments')
+        .update({ status_verifikasi: true })
+        .eq('order_id', id)
     }
 
     res.json({
@@ -440,11 +565,10 @@ router.put('/orders/:id/status', async (req, res) => {
       message: `Status order "${id}" berhasil diubah menjadi "${status}".`
     })
   } catch (err) {
-    console.error('Update order status error:', err)
+    console.error('Update order status error:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengubah status pesanan.',
-      error: err.message
+      message: 'Gagal mengubah status pesanan.'
     })
   }
 })
@@ -454,23 +578,10 @@ router.put('/orders/:id/status', async (req, res) => {
 // POST /api/admin/order
 // Input pesanan manual dari admin (Sesi 2 & 3)
 // ─────────────────────────────────────────────
-// Digunakan untuk merekam pesanan hasil kesepakatan
-// nego WhatsApp (Produk Range & Pre-order).
-// Admin menentukan harga final per item (harga_disepakati).
-//
-// Body JSON:
-// {
-//   "nama_pembeli": "Siti Nurhaliza",
-//   "telepon": "085678901234",
-//   "items": [
-//     { "product_id": "uuid-produk", "qty": 1, "harga_disepakati": 750000 }
-//   ]
-// }
 router.post('/order', async (req, res) => {
   try {
-    const { nama_pembeli, telepon, items } = req.body
+    const { nama_pembeli, telepon, provinsi, kabupaten, kecamatan, desa, alamat_lengkap, items } = req.body
 
-    // --- Validasi input ---
     if (!nama_pembeli || !telepon || !items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
         success: false,
@@ -478,7 +589,6 @@ router.post('/order', async (req, res) => {
       })
     }
 
-    // Pastikan setiap item memiliki harga_disepakati
     for (const item of items) {
       if (!item.product_id || !item.qty || !item.harga_disepakati) {
         return res.status(400).json({
@@ -488,48 +598,51 @@ router.post('/order', async (req, res) => {
       }
     }
 
-    // --- Generate Order ID unik: BMA-YYYYMMDD-XXX ---
     const now = new Date()
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
-    const randomDigits = String(Math.floor(100 + Math.random() * 900))
+    const randomDigits = String(crypto.randomInt(1000, 10000))
     const orderId = `BMA-${dateStr}-${randomDigits}`
 
-    // --- Hitung total tagihan dari harga yang disepakati ---
     let totalTagihan = 0
     const orderItemsData = items.map(item => {
-      totalTagihan += item.harga_disepakati * item.qty
+      const harga = Number(item.harga_disepakati) || 0
+      const qty = Number(item.qty) || 1
+      totalTagihan += harga * qty
       return {
         order_id: orderId,
         product_id: item.product_id,
-        qty: item.qty,
-        harga_disepakati: item.harga_disepakati
+        qty,
+        ukuran: item.ukuran || item.size || '',
+        harga_disepakati: harga
       }
     })
 
-    // --- Simpan order ke tabel orders ---
     const { error: orderErr } = await supabase
       .from('orders')
       .insert({
         id: orderId,
-        nama_pembeli,
-        telepon,
+        nama_pembeli: String(nama_pembeli).trim(),
+        telepon: String(telepon).trim(),
+        provinsi: provinsi || null,
+        kabupaten: kabupaten || null,
+        kecamatan: kecamatan || null,
+        desa: desa || null,
+        alamat_lengkap: alamat_lengkap || null,
         total_tagihan: totalTagihan,
-        status: 'pending_payment' // Menunggu pembayaran dari pelanggan
+        status: 'pending_payment'
       })
 
     if (orderErr) throw orderErr
 
-    // --- Simpan detail item ke tabel order_items ---
     const { error: itemsErr } = await supabase
       .from('order_items')
       .insert(orderItemsData)
 
     if (itemsErr) throw itemsErr
 
-    // --- Response sukses ---
     res.status(201).json({
       success: true,
-      message: `✅ Pesanan manual berhasil dicatat oleh admin!`,
+      message: '✅ Pesanan manual berhasil dicatat oleh admin!',
       data: {
         order_id: orderId,
         nama_pembeli,
@@ -537,14 +650,14 @@ router.post('/order', async (req, res) => {
         total_tagihan: totalTagihan,
         jumlah_item: items.length,
         status: 'pending_payment',
-        dicatat_oleh: req.admin.username // Dari token JWT
+        dicatat_oleh: req.admin.username
       }
     })
   } catch (err) {
+    console.error('Error POST /api/admin/order:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mencatat pesanan manual.',
-      error: err.message
+      message: 'Gagal mencatat pesanan manual.'
     })
   }
 })
@@ -556,29 +669,30 @@ router.post('/order', async (req, res) => {
 // ─────────────────────────────────────────────
 router.get('/verifikasi', async (req, res) => {
   try {
-    // Ambil semua payment yang belum diverifikasi,
-    // beserta data order terkait (nama pembeli, telepon, total)
-    const { data, error } = await supabase
+    const { data: payments, error } = await supabase
       .from('payments')
-      .select(`
-        id,
-        order_id,
-        bank_pengirim,
-        nominal,
-        bukti_url,
-        status_verifikasi,
-        created_at,
-        orders (
-          nama_pembeli,
-          telepon,
-          total_tagihan,
-          status
-        )
-      `)
+      .select('id, order_id, bank_pengirim, nominal, bukti_url, status_verifikasi, created_at')
       .eq('status_verifikasi', false)
-      .order('created_at', { ascending: true }) // FIFO: yang paling lama di atas
+      .order('created_at', { ascending: true })
 
     if (error) throw error
+
+    const orderIds = (payments || []).map(p => p.order_id)
+    const ordersMap = {}
+
+    if (orderIds.length > 0) {
+      const [normalRes, customRes] = await Promise.all([
+        supabase.from('orders').select('id, nama_pembeli, telepon, total_tagihan, status').in('id', orderIds),
+        supabase.from('custom_orders').select('id, nama_pembeli, telepon, total_tagihan, status').in('id', orderIds)
+      ])
+      ;(normalRes.data || []).forEach(o => { ordersMap[o.id] = o })
+      ;(customRes.data || []).forEach(o => { ordersMap[o.id] = o })
+    }
+
+    const data = (payments || []).map(p => ({
+      ...p,
+      orders: ordersMap[p.order_id] || null
+    }))
 
     res.json({
       success: true,
@@ -589,10 +703,10 @@ router.get('/verifikasi', async (req, res) => {
       data
     })
   } catch (err) {
+    console.error('Error GET /api/admin/verifikasi:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengambil antrean verifikasi.',
-      error: err.message
+      message: 'Gagal mengambil antrean verifikasi.'
     })
   }
 })
@@ -602,13 +716,10 @@ router.get('/verifikasi', async (req, res) => {
 // PUT /api/admin/verifikasi/:id
 // Checklist persetujuan/penolakan pembayaran
 // ─────────────────────────────────────────────
-// Body JSON:
-// { "aksi": "approve" }   → Setujui → status order = paid
-// { "aksi": "reject" }    → Tolak   → status order = cancelled
 router.put('/verifikasi/:id', async (req, res) => {
   try {
-    const { id } = req.params       // ID payment (bukan order)
-    const { aksi } = req.body       // "approve" atau "reject"
+    const { id } = req.params
+    const { aksi } = req.body
 
     if (!aksi || !['approve', 'reject'].includes(aksi)) {
       return res.status(400).json({
@@ -617,7 +728,6 @@ router.put('/verifikasi/:id', async (req, res) => {
       })
     }
 
-    // --- Ambil data payment untuk mendapatkan order_id ---
     const { data: payment, error: payErr } = await supabase
       .from('payments')
       .select('id, order_id')
@@ -631,8 +741,9 @@ router.put('/verifikasi/:id', async (req, res) => {
       })
     }
 
+    const targetTable = String(payment.order_id).startsWith('BMA-K-') ? 'custom_orders' : 'orders'
+
     if (aksi === 'approve') {
-      // ✅ APPROVE: Tandai pembayaran sebagai terverifikasi
       const { error: updatePayErr } = await supabase
         .from('payments')
         .update({ status_verifikasi: true })
@@ -640,9 +751,8 @@ router.put('/verifikasi/:id', async (req, res) => {
 
       if (updatePayErr) throw updatePayErr
 
-      // Ubah status order menjadi "paid" (lunas)
       const { error: updateOrderErr } = await supabase
-        .from('orders')
+        .from(targetTable)
         .update({ status: 'paid' })
         .eq('id', payment.order_id)
 
@@ -659,10 +769,8 @@ router.put('/verifikasi/:id', async (req, res) => {
         }
       })
     } else {
-      // ❌ REJECT: Tolak pembayaran
-      // Status verifikasi tetap false, status order diubah ke "cancelled"
       const { error: updateOrderErr } = await supabase
-        .from('orders')
+        .from(targetTable)
         .update({ status: 'cancelled' })
         .eq('id', payment.order_id)
 
@@ -680,10 +788,10 @@ router.put('/verifikasi/:id', async (req, res) => {
       })
     }
   } catch (err) {
+    console.error('Error PUT /api/admin/verifikasi/:id:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal memproses verifikasi.',
-      error: err.message
+      message: 'Gagal memproses verifikasi.'
     })
   }
 })
@@ -692,17 +800,15 @@ router.put('/verifikasi/:id', async (req, res) => {
 // ─────────────────────────────────────────────
 // GET /api/admin/laporan
 // Rekapan penjualan untuk grafik dashboard admin
+// Opsional filter: ?bulan=2026-10 atau ?from=2026-10-01&to=2026-10-31
 // ─────────────────────────────────────────────
-// Menarik semua transaksi berstatus "paid" (lunas).
-// Opsional filter per bulan: ?bulan=2025-07
 router.get('/laporan', async (req, res) => {
   try {
-    const { bulan } = req.query // Format: "2025-07"
+    const { bulan, from, to } = req.query
 
-    // Query dasar: ambil order yang sudah lunas beserta detail item & produk
     let query1 = supabase
       .from('orders')
-      .select('id, nama_pembeli, telepon, total_tagihan, status, created_at, order_items (qty, harga_disepakati, products (nama, kategori))')
+      .select('id, nama_pembeli, telepon, total_tagihan, status, created_at, order_items (qty, ukuran, harga_disepakati, products (nama, kategori))')
       .in('status', ['paid', 'processing', 'shipped', 'completed'])
 
     let query2 = supabase
@@ -710,15 +816,29 @@ router.get('/laporan', async (req, res) => {
       .select('id, nama_pembeli, telepon, total_tagihan, status, created_at, nama_produk, deskripsi')
       .in('status', ['paid', 'processing', 'shipped', 'completed'])
 
-    // Filter berdasarkan bulan jika diberikan
-    if (bulan) {
-      // bulan format "2025-07" → start: "2025-07-01", end: "2025-08-01"
-      const [year, month] = bulan.split('-').map(Number)
-      const startDate = new Date(year, month - 1, 1).toISOString()
-      const endDate = new Date(year, month, 1).toISOString()
+    let periodeLabel = 'Seluruh waktu'
 
-      query1 = query1.gte('created_at', startDate).lt('created_at', endDate)
-      query2 = query2.gte('created_at', startDate).lt('created_at', endDate)
+    if (from || to) {
+      if (from) {
+        const fromIso = new Date(`${from}T00:00:00.000Z`).toISOString()
+        query1 = query1.gte('created_at', fromIso)
+        query2 = query2.gte('created_at', fromIso)
+      }
+      if (to) {
+        const toIso = new Date(`${to}T23:59:59.999Z`).toISOString()
+        query1 = query1.lte('created_at', toIso)
+        query2 = query2.lte('created_at', toIso)
+      }
+      periodeLabel = `${from || 'Awal'} s/d ${to || 'Sekarang'}`
+    } else if (bulan) {
+      const [year, month] = String(bulan).split('-').map(Number)
+      if (year && month) {
+        const startDate = new Date(year, month - 1, 1).toISOString()
+        const endDate = new Date(year, month, 1).toISOString()
+        query1 = query1.gte('created_at', startDate).lt('created_at', endDate)
+        query2 = query2.gte('created_at', startDate).lt('created_at', endDate)
+        periodeLabel = bulan
+      }
     }
 
     const [res1, res2] = await Promise.all([query1, query2])
@@ -726,27 +846,27 @@ router.get('/laporan', async (req, res) => {
     if (res1.error) throw res1.error
     if (res2.error) throw res2.error
 
-    const combinedData = [...res1.data, ...res2.data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    const combinedData = [...(res1.data || []), ...(res2.data || [])]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
-    // --- Hitung ringkasan statistik ---
-    const totalPendapatan = combinedData.reduce((sum, order) => sum + (order.total_tagihan || 0), 0)
+    const totalPendapatan = combinedData.reduce((sum, order) => sum + (Number(order.total_tagihan) || 0), 0)
     const totalTransaksi = combinedData.length
 
     res.json({
       success: true,
-      message: `📊 Laporan penjualan${bulan ? ` bulan ${bulan}` : ''}: ${totalTransaksi} transaksi lunas.`,
+      message: `📊 Laporan penjualan (${periodeLabel}): ${totalTransaksi} transaksi lunas.`,
       ringkasan: {
         total_transaksi: totalTransaksi,
         total_pendapatan: totalPendapatan,
-        periode: bulan || 'Seluruh waktu'
+        periode: periodeLabel
       },
       data: combinedData
     })
   } catch (err) {
+    console.error('Error GET /api/admin/laporan:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengambil laporan penjualan.',
-      error: err.message
+      message: 'Gagal mengambil laporan penjualan.'
     })
   }
 })
@@ -758,25 +878,16 @@ router.get('/laporan', async (req, res) => {
 // ─────────────────────────────────────────────
 router.get('/profile', async (req, res) => {
   try {
-    const adminId = req.admin.id;
+    const adminId = req.admin.id
 
-    let { data: admin, error } = await supabase
+    const { data: admin, error } = await supabase
       .from('admins')
       .select('id, username, whatsapp, avatar_url')
       .eq('id', adminId)
-      .single();
+      .single()
 
-    if (error && error.code === 'PGRST204') {
-      const { data: fallback } = await supabase
-        .from('admins')
-        .select('id, username')
-        .eq('id', adminId)
-        .single();
-      admin = { ...fallback, whatsapp: '6287846725184', avatar_url: null };
-    }
-
-    if (!admin) {
-      return res.status(404).json({ success: false, message: 'Admin tidak ditemukan.' });
+    if (error || !admin) {
+      return res.status(404).json({ success: false, message: 'Admin tidak ditemukan.' })
     }
 
     res.json({
@@ -787,61 +898,52 @@ router.get('/profile', async (req, res) => {
         whatsapp: admin.whatsapp || '6287846725184',
         avatar_url: admin.avatar_url || null
       }
-    });
+    })
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Gagal mengambil profil admin.' });
+    console.error('Error GET /api/admin/profile:', err.message)
+    res.status(500).json({ success: false, message: 'Gagal mengambil profil admin.' })
   }
-});
+})
+
 
 // ─────────────────────────────────────────────
 // PUT /api/admin/profile
-// Update akun admin yang sedang login (hanya 1 akun aktif yang diubah)
+// Update akun admin yang sedang login
 // ─────────────────────────────────────────────
 router.put('/profile', async (req, res) => {
   try {
-    const adminId = req.admin.id;
-    const { username, whatsapp, password, avatar_url } = req.body;
+    const adminId = req.admin.id
+    const { username, whatsapp, password, avatar_url } = req.body
 
-    const updates = {};
-    if (username) updates.username = username.trim();
+    const updates = {}
+    if (username) updates.username = String(username).trim()
     if (password) {
-      updates.password_hash = await bcrypt.hash(password, 10);
+      if (String(password).length < 6) {
+        return res.status(400).json({ success: false, message: 'Password baru minimal 6 karakter.' })
+      }
+      updates.password_hash = await bcrypt.hash(String(password), 10)
     }
     if (whatsapp) {
-      updates.whatsapp = whatsapp.trim();
+      updates.whatsapp = String(whatsapp).trim()
     }
     if (avatar_url !== undefined) {
-      updates.avatar_url = avatar_url;
+      updates.avatar_url = avatar_url
     }
 
-    let { data: updatedAdmin, error } = await supabase
+    const { data: updatedAdmin, error } = await supabase
       .from('admins')
       .update(updates)
       .eq('id', adminId)
-      .select('id, username')
-      .single();
+      .select('id, username, whatsapp, avatar_url')
+      .single()
 
-    if (error && error.code === 'PGRST204') {
-      delete updates.whatsapp;
-      delete updates.avatar_url;
-      const { data: retryData, error: retryErr } = await supabase
-        .from('admins')
-        .update(updates)
-        .eq('id', adminId)
-        .select('id, username')
-        .single();
-
-      if (retryErr) throw retryErr;
-      updatedAdmin = retryData;
-    } else if (error) {
-      throw error;
-    }
+    if (error) throw error
 
     const newToken = jwt.sign(
       { id: updatedAdmin.id, username: updatedAdmin.username },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
-    );
+    )
 
     res.json({
       success: true,
@@ -851,65 +953,68 @@ router.put('/profile', async (req, res) => {
         admin: {
           id: updatedAdmin.id,
           username: updatedAdmin.username,
-          whatsapp: whatsapp || '6287846725184',
-          avatar_url: avatar_url || null
+          whatsapp: updatedAdmin.whatsapp || '6287846725184',
+          avatar_url: updatedAdmin.avatar_url || null
         }
       }
-    });
+    })
   } catch (err) {
-    console.error('Error updating admin profile:', err);
-    res.status(500).json({ success: false, message: 'Gagal mengupdate profil admin.', error: err.message });
+    console.error('Error updating admin profile:', err.message)
+    res.status(500).json({ success: false, message: 'Gagal mengupdate profil admin.' })
   }
-});
+})
+
 
 // ─────────────────────────────────────────────
 // GET /api/admin/custom-orders
-// Mengambil daftar order kustom
+// Mengambil daftar order kustom beserta bukti pembayarannya
 // ─────────────────────────────────────────────
 router.get('/custom-orders', async (req, res) => {
   try {
     const { data: customOrders, error } = await supabase
       .from('custom_orders')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
 
-    if (error) throw error;
+    if (error) throw error
 
-    // Manual join untuk payments karena foreign key constraint dihapus
-    const orderIds = customOrders.map(o => o.id);
-    let paymentsMap = {};
+    const orderIds = customOrders.map(o => o.id)
+    const paymentsMap = {}
     if (orderIds.length > 0) {
       const { data: paymentsData } = await supabase
         .from('payments')
-        .select('id, order_id, bank_pengirim, nominal, bukti_url, status_verifikasi, created_at')
-        .in('order_id', orderIds);
-        
+        .select('id, order_id, nama_pengirim, bank_pengirim, no_rekening, tanggal_transfer, nominal, catatan, bukti_url, status_verifikasi, created_at')
+        .in('order_id', orderIds)
+        .order('created_at', { ascending: false })
+
       if (paymentsData) {
         paymentsData.forEach(p => {
-          if (!paymentsMap[p.order_id]) paymentsMap[p.order_id] = [];
-          paymentsMap[p.order_id].push(p);
-        });
+          if (!paymentsMap[p.order_id]) paymentsMap[p.order_id] = []
+          paymentsMap[p.order_id].push(p)
+        })
       }
     }
-    
+
     const data = customOrders.map(o => ({
       ...o,
+      status: o.status === 'pending' ? 'pending_payment' : o.status,
       payments: paymentsMap[o.id] || []
-    }));
+    }))
 
     res.json({
       success: true,
       count: data.length,
       data
-    });
+    })
   } catch (err) {
+    console.error('Error GET /api/admin/custom-orders:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengambil data order kustom.',
-      error: err.message
-    });
+      message: 'Gagal mengambil data order kustom.'
+    })
   }
-});
+})
+
 
 // ─────────────────────────────────────────────
 // POST /api/admin/custom-order
@@ -917,52 +1022,60 @@ router.get('/custom-orders', async (req, res) => {
 // ─────────────────────────────────────────────
 router.post('/custom-order', async (req, res) => {
   try {
-    const { 
-      nama_pembeli, telepon, nama_produk, deskripsi, 
-      provinsi, kabupaten, kecamatan, desa, 
-      alamat_lengkap, lat, lng 
-    } = req.body;
+    const {
+      nama_pembeli, telepon, nama_produk, deskripsi,
+      provinsi, kabupaten, kecamatan, desa,
+      alamat_lengkap, lat, lng
+    } = req.body
 
     if (!nama_pembeli || !telepon || !nama_produk || !provinsi || !kabupaten || !kecamatan || !desa || !alamat_lengkap || lat === undefined || lng === undefined) {
       return res.status(400).json({
         success: false,
         message: 'Mohon lengkapi semua field wajib.'
-      });
+      })
     }
 
-    // --- Generate Order ID unik: BMA-K-YYYYMMDD-XXX ---
     const now = new Date()
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
-    const randomDigits = String(Math.floor(100 + Math.random() * 900))
+    const randomDigits = String(crypto.randomInt(1000, 10000))
     const orderId = `BMA-K-${dateStr}-${randomDigits}`
 
     const { data, error } = await supabase
       .from('custom_orders')
       .insert({
         id: orderId,
-        nama_pembeli, telepon, nama_produk, deskripsi,
-        provinsi, kabupaten, kecamatan, desa,
-        alamat_lengkap, lat, lng,
+        nama_pembeli: String(nama_pembeli).trim(),
+        telepon: String(telepon).trim(),
+        nama_produk: String(nama_produk).trim(),
+        deskripsi: deskripsi ? String(deskripsi).trim() : '',
+        provinsi: String(provinsi).trim(),
+        kabupaten: String(kabupaten).trim(),
+        kecamatan: String(kecamatan).trim(),
+        desa: String(desa).trim(),
+        alamat_lengkap: String(alamat_lengkap).trim(),
+        lat: Number(lat),
+        lng: Number(lng),
         total_tagihan: 0,
-        status: 'pending'
+        status: 'pending_payment'
       })
-      .select();
+      .select()
 
-    if (error) throw error;
+    if (error) throw error
 
     res.status(201).json({
       success: true,
       message: '✅ Order kustom berhasil disimpan!',
       data: data[0]
-    });
+    })
   } catch (err) {
+    console.error('Error POST /api/admin/custom-order:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal menyimpan order kustom: ' + err.message,
-      error: err.message
-    });
+      message: 'Gagal menyimpan order kustom.'
+    })
   }
-});
+})
+
 
 // ─────────────────────────────────────────────
 // PUT /api/admin/custom-orders/:id/status
@@ -970,28 +1083,43 @@ router.post('/custom-order', async (req, res) => {
 // ─────────────────────────────────────────────
 router.put('/custom-orders/:id/status', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
+    const { id } = req.params
+    const { status } = req.body
+
+    if (!status || !ALLOWED_ORDER_STATUSES.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Status tidak valid. Gunakan salah satu dari: ${ALLOWED_ORDER_STATUSES.join(', ')}`
+      })
+    }
 
     const { error } = await supabase
       .from('custom_orders')
       .update({ status })
-      .eq('id', id);
+      .eq('id', id)
 
-    if (error) throw error;
+    if (error) throw error
+
+    if (['paid', 'processing', 'shipped', 'completed'].includes(status)) {
+      await supabase
+        .from('payments')
+        .update({ status_verifikasi: true })
+        .eq('order_id', id)
+    }
 
     res.json({
       success: true,
       message: `Status order kustom berhasil diubah menjadi "${status}".`
-    });
+    })
   } catch (err) {
+    console.error('Error PUT /api/admin/custom-orders/:id/status:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengubah status.',
-      error: err.message
-    });
+      message: 'Gagal mengubah status.'
+    })
   }
-});
+})
+
 
 // ─────────────────────────────────────────────
 // PUT /api/admin/custom-orders/:id/price
@@ -999,27 +1127,34 @@ router.put('/custom-orders/:id/status', async (req, res) => {
 // ─────────────────────────────────────────────
 router.put('/custom-orders/:id/price', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { total_tagihan } = req.body;
+    const { id } = req.params
+    const parsedPrice = Number(String(req.body.total_tagihan || '').replace(/[^0-9]/g, ''))
+
+    if (!Number.isSafeInteger(parsedPrice) || parsedPrice < 0 || parsedPrice > 100000000000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nominal harga tidak valid.'
+      })
+    }
 
     const { error } = await supabase
       .from('custom_orders')
-      .update({ total_tagihan: parseInt(total_tagihan, 10) })
-      .eq('id', id);
+      .update({ total_tagihan: parsedPrice })
+      .eq('id', id)
 
-    if (error) throw error;
+    if (error) throw error
 
     res.json({
       success: true,
       message: 'Harga berhasil diperbarui.'
-    });
+    })
   } catch (err) {
+    console.error('Error PUT /api/admin/custom-orders/:id/price:', err.message)
     res.status(500).json({
       success: false,
-      message: 'Gagal mengubah harga.',
-      error: err.message
-    });
+      message: 'Gagal mengubah harga.'
+    })
   }
-});
+})
 
-module.exports = router;
+module.exports = router

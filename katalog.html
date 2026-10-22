@@ -98,41 +98,6 @@
     <a href="tentang.html">Tentang Kami</a>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const hamburgerBtn = document.getElementById('hamburger-btn');
-      const mobileMenu = document.getElementById('mobile-menu');
-      const mobileCloseBtn = document.getElementById('mobile-menu-close');
-
-      if (hamburgerBtn && mobileMenu && mobileCloseBtn) {
-        hamburgerBtn.addEventListener('click', () => {
-          mobileMenu.classList.add('open');
-        });
-        mobileCloseBtn.addEventListener('click', () => {
-          mobileMenu.classList.remove('open');
-        });
-
-        const mobileDropdownBtn = document.querySelector('.mobile-dropdown-btn');
-        const mobileDropdownContent = document.querySelector('.mobile-dropdown-content');
-        if (mobileDropdownBtn && mobileDropdownContent) {
-          // Prevent multiple bindings
-          if (!mobileDropdownBtn.dataset.bound) {
-            mobileDropdownBtn.dataset.bound = 'true';
-            mobileDropdownBtn.addEventListener('click', () => {
-              const isVisible = mobileDropdownContent.style.display === 'flex';
-              mobileDropdownContent.style.display = isVisible ? 'none' : 'flex';
-            });
-          }
-        }
-
-        // re-initialize lucide icons for new elements
-        if (typeof lucide !== 'undefined') {
-          lucide.createIcons();
-        }
-      }
-    });
-  </script>
-
   <!-- Breadcrumb -->
   <div class="breadcrumb">
     <a href="index.html">Beranda</a>
@@ -257,12 +222,13 @@
     </div>
   </footer>
 
-  <script src="js/products.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/products.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
   <script>
     const PER_PAGE = 9;
     const MIN_PRICE = 1000;
     const MAX_PRICE = 1000000000;
+    const VALID_SORTS = ['Terpopuler', 'Harga Terendah', 'Harga Tertinggi', 'Terbaru'];
 
     let allProds = window.products || [];
     let state = {
@@ -285,7 +251,8 @@
       if (pMin) state.priceMin = parseInt(pMin);
       if (pMax) state.priceMax = parseInt(pMax);
 
-      state.sortBy = urlParams.get('sort') || 'Terpopuler';
+      const rawSort = urlParams.get('sort') || 'Terpopuler';
+      state.sortBy = VALID_SORTS.includes(rawSort) ? rawSort : 'Terpopuler';
     }
 
     function updateURL() {
@@ -297,7 +264,7 @@
       if (state.sortBy !== 'Terpopuler') params.set('sort', state.sortBy);
       if (state.page > 1) params.set('page', state.page);
 
-      const newUrl = window.location.pathname + '?' + params.toString();
+      const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
       window.history.pushState({}, '', newUrl);
       renderAll();
     }
@@ -308,83 +275,31 @@
       return `Rp ${(n / 1000).toFixed(0)}.000`;
     }
 
-    function createProductCard(p) {
-      let uArr = p.ukuran ? p.ukuran.split(',').map(s=>s.trim()).filter(Boolean) : [];
-      const sizeLabels = uArr.length > 0 ? uArr.map(u => u === 'Kecil' ? 'S' : u === 'Sedang' ? 'M' : u === 'Besar' ? 'L' : u === 'Ekstra Besar' ? 'XL' : u) : ['S', 'M', 'L', 'XL'];
-      const sizesHtml = sizeLabels.map(s => 
-        `<span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--gray-light); color:var(--gray-dark); border:1px solid var(--gray-mid);">${s}</span>`
-      ).join('');
-      return `
-        <a href="detail.html?id=${p.id}" class="product-card">
-          <div class="product-card-img" style="position:relative; aspect-ratio:1/1; overflow:hidden; background:var(--gray-light);">
-            <img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;transition:transform .35s;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-            <div class="product-img-ph" style="display:none;"><i data-lucide="image" style="width:32px;height:32px;color:var(--gray-mid);"></i></div>
-          </div>
-          <div class="product-card-body">
-            <div class="product-category">${p.category}</div>
-            <h3 class="product-card-name" style="font-size:clamp(12px,1.2vw,15px);">${p.name}</h3>
-            <div class="price-row">
-              <span class="product-price" style="color:var(--green-primary);">${p.price}</span>
-            </div>
-            <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;">${sizesHtml}</div>
-          </div>
-        </a>
-      `;
-    }
-
-
-
-    function renderAll() {
-      // Inputs binding
-      // document.getElementById('sidebar-search').value = state.q;
-      // document.getElementById('sidebar-search-clear').style.display = state.q ? 'flex' : 'none';
-      document.getElementById('sort-select').value = state.sortBy;
-      // Bind Range Sliders (visual updates & sync)
+    function updateRangeVisuals() {
       const rMin = document.getElementById('range-price-min');
       const rMax = document.getElementById('range-price-max');
       const iMin = document.getElementById('input-price-min');
       const iMax = document.getElementById('input-price-max');
       const lMin = document.getElementById('price-min-display');
       const lMax = document.getElementById('price-max-display');
+      if (!rMin || !rMax) return;
 
-      function updateRangeVisuals() {
-        // Simple coloring based on percentage
-        const minPct = ((rMin.value - rMin.min) / (rMin.max - rMin.min)) * 100;
-        const maxPct = ((rMax.value - rMax.min) / (rMax.max - rMax.min)) * 100;
-        rMin.style.background = `linear-gradient(to right, var(--green-primary) ${minPct}%, var(--gray-mid) ${minPct}%)`;
-        rMax.style.background = `linear-gradient(to right, var(--green-primary) ${maxPct}%, var(--gray-mid) ${maxPct}%)`;
-        iMin.value = rMin.value;
-        iMax.value = rMax.value;
-        lMin.textContent = formatRpShort(rMin.value);
-        lMax.textContent = formatRpShort(rMax.value);
-      }
+      const minPct = ((rMin.value - rMin.min) / (rMin.max - rMin.min)) * 100;
+      const maxPct = ((rMax.value - rMax.min) / (rMax.max - rMax.min)) * 100;
+      rMin.style.background = `linear-gradient(to right, var(--green-primary) ${minPct}%, var(--gray-mid) ${minPct}%)`;
+      rMax.style.background = `linear-gradient(to right, var(--green-primary) ${maxPct}%, var(--gray-mid) ${maxPct}%)`;
+      iMin.value = rMin.value;
+      iMax.value = rMax.value;
+      lMin.textContent = formatRpShort(rMin.value);
+      lMax.textContent = formatRpShort(rMax.value);
+    }
 
-      rMin.addEventListener('input', (e) => {
-        if (Number(rMin.value) > Number(rMax.value) - 1000) rMin.value = Number(rMax.value) - 1000;
-        updateRangeVisuals();
-      });
-      rMax.addEventListener('input', (e) => {
-        if (Number(rMax.value) < Number(rMin.value) + 1000) rMax.value = Number(rMin.value) + 1000;
-        updateRangeVisuals();
-      });
+    function renderAll() {
+      document.getElementById('sort-select').value = state.sortBy;
+      const rMin = document.getElementById('range-price-min');
+      const rMax = document.getElementById('range-price-max');
 
-      // Bind text inputs back to range sliders
-      iMin.addEventListener('change', (e) => {
-        let v = Number(e.target.value);
-        if (v < 1000) v = 1000;
-        if (v > Number(rMax.value) - 1000) v = Number(rMax.value) - 1000;
-        rMin.value = v;
-        updateRangeVisuals();
-      });
-      iMax.addEventListener('change', (e) => {
-        let v = Number(e.target.value);
-        if (v > 1000000000) v = 1000000000;
-        if (v < Number(rMin.value) + 1000) v = Number(rMin.value) + 1000;
-        rMax.value = v;
-        updateRangeVisuals();
-      });
-
-      // Set initial values from state
+      // Set current values from state
       rMin.value = state.priceMin;
       rMax.value = state.priceMax;
       updateRangeVisuals();
@@ -416,15 +331,23 @@
       if (state.q) {
         const terms = state.q.toLowerCase().split(/\s+/).filter(t => t.trim() !== '');
         filtered = filtered.filter(p => {
-          const text = p.name.toLowerCase();
+          const text = (p.name + ' ' + (p.category || '')).toLowerCase();
           return terms.every(t => text.includes(t));
         });
       }
 
       // Sorting
-      if (state.sortBy === 'Harga Terendah') filtered.sort((a, b) => a.priceNum - b.priceNum);
-      else if (state.sortBy === 'Harga Tertinggi') filtered.sort((a, b) => b.priceNum - a.priceNum);
-      else if (state.sortBy === 'Terbaru') filtered.reverse();
+      if (state.sortBy === 'Harga Terendah') {
+        filtered.sort((a, b) => a.priceNum - b.priceNum);
+      } else if (state.sortBy === 'Harga Tertinggi') {
+        filtered.sort((a, b) => b.priceNum - a.priceNum);
+      } else if (state.sortBy === 'Terbaru') {
+        filtered.sort((a, b) => {
+          const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return tB - tA;
+        });
+      }
 
       // Pagination setup
       const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
@@ -441,7 +364,7 @@
       if (paginated.length > 0) {
         grid.style.display = 'grid';
         noProd.style.display = 'none';
-        grid.innerHTML = paginated.map(createProductCard).join('');
+        grid.innerHTML = paginated.map(window.createProductCard).join('');
       } else {
         grid.style.display = 'none';
         noProd.style.display = 'block';
@@ -452,10 +375,10 @@
       document.getElementById('btn-reset-filter').style.display = hasActive ? 'block' : 'none';
       let tagsHtml = '';
       if (state.kategori) {
-        tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background:var(--green-primary); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;">${state.kategori} <button onclick="setCategory('')" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
+        tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background:var(--green-primary); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;">${escapeHtml(state.kategori)} <button onclick="setCategory('')" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
       }
       if (state.q) {
-        tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background: var(--grad-primary); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;"><i data-lucide="search" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i> ${state.q} <button onclick="setSearch('')" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
+        tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background: var(--grad-primary); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;"><i data-lucide="search" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i> ${escapeHtml(state.q)} <button onclick="setSearch('')" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
       }
       if (state.priceMin > MIN_PRICE || state.priceMax < MAX_PRICE) {
         tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background:var(--gray-dark); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;">${formatRpShort(state.priceMin)} – ${formatRpShort(state.priceMax)} <button onclick="resetPrice()" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
@@ -489,17 +412,42 @@
       updateURL();
     };
 
-    // Event listeners
+    // Event listeners (bound once on DOMContentLoaded)
     document.addEventListener('DOMContentLoaded', async () => {
+      const rMin = document.getElementById('range-price-min');
+      const rMax = document.getElementById('range-price-max');
+      const iMin = document.getElementById('input-price-min');
+      const iMax = document.getElementById('input-price-max');
+
+      rMin.addEventListener('input', () => {
+        if (Number(rMin.value) > Number(rMax.value) - 1000) rMin.value = Number(rMax.value) - 1000;
+        updateRangeVisuals();
+      });
+      rMax.addEventListener('input', () => {
+        if (Number(rMax.value) < Number(rMin.value) + 1000) rMax.value = Number(rMin.value) + 1000;
+        updateRangeVisuals();
+      });
+      iMin.addEventListener('change', (e) => {
+        let v = Number(e.target.value);
+        if (v < 1000) v = 1000;
+        if (v > Number(rMax.value) - 1000) v = Number(rMax.value) - 1000;
+        rMin.value = v;
+        updateRangeVisuals();
+      });
+      iMax.addEventListener('change', (e) => {
+        let v = Number(e.target.value);
+        if (v > 1000000000) v = 1000000000;
+        if (v < Number(rMin.value) + 1000) v = Number(rMin.value) + 1000;
+        rMax.value = v;
+        updateRangeVisuals();
+      });
+
       if (typeof window.fetchProducts === 'function') {
         await window.fetchProducts();
-        allProds = window.products || []; // Sync allProds
+        allProds = window.products || [];
       }
       parseURL();
       renderAll();
-
-      // document.getElementById('sidebar-search').addEventListener('change', e => setSearch(e.target.value));
-      // document.getElementById('sidebar-search-clear').addEventListener('click', () => setSearch(''));
 
       document.getElementById('sort-select').addEventListener('change', e => {
         state.sortBy = e.target.value;

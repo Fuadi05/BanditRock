@@ -97,40 +97,6 @@
     <a href="tentang.html">Tentang Kami</a>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const hamburgerBtn = document.getElementById('hamburger-btn');
-      const mobileMenu = document.getElementById('mobile-menu');
-      const mobileCloseBtn = document.getElementById('mobile-menu-close');
-
-      if (hamburgerBtn && mobileMenu && mobileCloseBtn) {
-        hamburgerBtn.addEventListener('click', () => {
-          mobileMenu.classList.add('open');
-        });
-        mobileCloseBtn.addEventListener('click', () => {
-          mobileMenu.classList.remove('open');
-        });
-        
-        const mobileDropdownBtn = document.querySelector('.mobile-dropdown-btn');
-        const mobileDropdownContent = document.querySelector('.mobile-dropdown-content');
-        if (mobileDropdownBtn && mobileDropdownContent) {
-          // Prevent multiple bindings if script runs multiple times
-          if (!mobileDropdownBtn.dataset.bound) {
-            mobileDropdownBtn.dataset.bound = 'true';
-            mobileDropdownBtn.addEventListener('click', () => {
-              const isVisible = mobileDropdownContent.style.display === 'flex';
-              mobileDropdownContent.style.display = isVisible ? 'none' : 'flex';
-            });
-          }
-        }
-        // re-initialize lucide icons for new elements
-        if (typeof lucide !== 'undefined') {
-          lucide.createIcons();
-        }
-      }
-    });
-  </script>
-
   <!-- Breadcrumb -->
   <div class="breadcrumb">
     <a href="index.html">Beranda</a>
@@ -225,7 +191,7 @@
                 <label
                   style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Kabupaten/Kota
                   *</label>
-                <input type="text" required placeholder="Contoh: Magelang"
+                <input id="form-kab" type="text" required placeholder="Contoh: Magelang"
                   style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none; ">
               </div>
             </div>
@@ -251,7 +217,7 @@
               <label
                 style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Alamat
                 Lengkap Pengiriman *</label>
-              <textarea required rows="2" placeholder="Nama Jalan, Blok, No. Rumah, RT/RW"
+              <textarea id="form-alamat" required rows="2" placeholder="Nama Jalan, Blok, No. Rumah, RT/RW"
                 style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-mid); border-radius: 8px; font-size: 13px; outline: none; resize: vertical;"></textarea>
             </div>
 
@@ -280,9 +246,40 @@
           Klik tombol di bawah ini untuk menyimpan pesanan dan langsung membuka chat WhatsApp dengan Admin kami.
         </p>
         <div style="display: flex; justify-content: center; max-width: 320px; margin: 0 auto;">
-          <button onclick="finishCheckout()"
+          <button id="btn-finish-checkout" onclick="finishCheckout()"
             style="width: 100%; background: var(--grad-primary); color: var(--white); border: none; padding: 12px 32px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer;">
             Buka WhatsApp & Selesai
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Order Created Confirmation (Fallback & Order ID Display) -->
+      <div id="checkout-step-3" style="display:none; padding: 32px 24px; text-align: center;">
+        <div style="width: 68px; height: 68px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          <i data-lucide="check-circle" style="width: 36px; height: 36px; color: #15803d;"></i>
+        </div>
+        <h2 style="font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 900; color: var(--text-primary); margin-bottom: 8px; text-transform: none;">
+          Pesanan Berhasil Dibuat!
+        </h2>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+          Simpan Nomor Order Anda untuk pelacakan & konfirmasi pembayaran:
+        </p>
+        <div style="background: #f0fdf4; border: 1.5px dashed #15803d; border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+          <div style="font-size: 11px; color: #166534; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Nomor Order Anda</div>
+          <div id="created-order-id" style="font-size: 20px; font-weight: 900; color: #0f5132; margin: 4px 0 8px; font-family: monospace;">-</div>
+          <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('created-order-id').textContent); this.textContent='✓ Tersalin!';" style="background: #fff; border: 1px solid #86efac; color: #15803d; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
+            Salin Nomor Order
+          </button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 340px; margin: 0 auto;">
+          <a id="created-wa-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px; border-radius: 8px; font-size: 13.5px; text-decoration: none;">
+            Chat Admin via WhatsApp
+          </a>
+          <a id="created-konfirmasi-link" href="konfirmasi.html" class="btn-outline" style="width: 100%; justify-content: center; padding: 11px; border-radius: 8px; font-size: 13px; text-decoration: none; font-weight: 700;">
+            Ke Halaman Konfirmasi Pembayaran
+          </a>
+          <button type="button" onclick="closeCheckout()" style="background: none; border: none; color: var(--gray-text); font-size: 12.5px; font-weight: 600; cursor: pointer; margin-top: 4px;">
+            Tutup Jendela Ini
           </button>
         </div>
       </div>
@@ -355,8 +352,8 @@
     </div>
   </div>
 
-  <script src="js/products.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/products.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       renderCart();
@@ -364,7 +361,7 @@
       document.getElementById('shipping-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const phone = document.getElementById('form-phone').value;
-        document.getElementById('confirm-wa-msg').innerHTML = `Pastikan nomor WhatsApp <strong>${phone}</strong> benar, karena rincian tagihan (invoice) akan dikirimkan ke nomor tersebut.`;
+        document.getElementById('confirm-wa-msg').innerHTML = `Pastikan nomor WhatsApp <strong>${escapeHtml(phone)}</strong> benar, karena rincian tagihan (invoice) akan dikirimkan ke nomor tersebut.`;
         document.getElementById('confirm-wa-modal').style.display = 'flex';
         if (window.lucide) lucide.createIcons();
       });
@@ -412,23 +409,23 @@
         itemsHtml += `
           <div class="cart-item" style="border-bottom: 1px solid var(--gray-mid);">
             <div class="cart-item-img">
-              <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
+              <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" onerror="this.style.display='none'">
             </div>
             <div class="cart-item-info">
-              <div class="cart-item-name" style="color: var(--text-primary);">${item.name}</div>
-              <div class="cart-item-meta">Ukuran: <strong>${item.size}</strong></div>
-              <div class="cart-item-meta">Warna/Tipe: <strong>${item.color}</strong></div>
+              <div class="cart-item-name" style="color: var(--text-primary);">${escapeHtml(item.name)}</div>
+              <div class="cart-item-meta">Ukuran: <strong>${escapeHtml(item.size)}</strong></div>
+              <div class="cart-item-meta">Warna/Tipe: <strong>${escapeHtml(item.color)}</strong></div>
               <div class="cart-item-price" style="color: var(--green-primary);">${formatRp(item.price)}</div>
             </div>
             <div class="cart-item-right">
-              <button onclick="handleRemove(${item.id})" title="Hapus dari keranjang" style="color: var(--red); cursor: pointer; background:none; border:none; padding:4px;">
+              <button onclick="handleRemove(${Number(item.id)})" title="Hapus dari keranjang" style="color: var(--red); cursor: pointer; background:none; border:none; padding:4px;">
                 <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
               </button>
               
               <div class="cart-qty-ctrl" style="border: 1.5px solid var(--gray-mid); border-radius: 8px; display:flex; align-items:center;">
-                <button onclick="handleUpdateQty(${item.id}, -1)" style="background: none; border: none; cursor: pointer; padding:4px 8px; display: inline-flex; align-items: center;"><i data-lucide="minus" style="width: 1em; height: 1em;"></i></button>
-                <span style="font-weight: 700; width:24px; text-align:center;">${item.qty}</span>
-                <button onclick="handleUpdateQty(${item.id}, 1)" style="background: none; border: none; cursor: pointer; padding:4px 8px;">+</button>
+                <button onclick="handleUpdateQty(${Number(item.id)}, -1)" style="background: none; border: none; cursor: pointer; padding:4px 8px; display: inline-flex; align-items: center;"><i data-lucide="minus" style="width: 1em; height: 1em;"></i></button>
+                <span style="font-weight: 700; width:24px; text-align:center;">${Number(item.qty)}</span>
+                <button onclick="handleUpdateQty(${Number(item.id)}, 1)" style="background: none; border: none; cursor: pointer; padding:4px 8px;">+</button>
               </div>
               
               <div style="font-size: 13px; font-weight: 700; color: var(--green-primary);">
@@ -471,10 +468,14 @@
     }
 
     // Checkout functions
+    let isSubmittingOrder = false;
+
     window.openCheckout = function () {
       document.getElementById('checkout-modal').style.display = 'flex';
       document.getElementById('checkout-step-1').style.display = 'block';
       document.getElementById('checkout-step-2').style.display = 'none';
+      const step3 = document.getElementById('checkout-step-3');
+      if (step3) step3.style.display = 'none';
       document.getElementById('checkout-box').style.maxWidth = '540px';
     }
 
@@ -483,25 +484,46 @@
     }
     
     window.finishCheckout = async function () {
+      if (isSubmittingOrder) return;
       const cart = getCart();
-      const customerName = document.getElementById('form-name') ? document.getElementById('form-name').value : 'Guest';
-      const phone = document.getElementById('form-phone') ? document.getElementById('form-phone').value : '';
-
       if (cart.length === 0) return;
 
-      // Build items array for API
+      const finishBtn = document.getElementById('btn-finish-checkout');
+      const originalBtnText = finishBtn ? finishBtn.textContent : 'Buka WhatsApp & Selesai';
+      isSubmittingOrder = true;
+      if (finishBtn) {
+        finishBtn.disabled = true;
+        finishBtn.textContent = 'Menyimpan Pesanan...';
+      }
+
+      const customerName = document.getElementById('form-name') ? document.getElementById('form-name').value.trim() : 'Guest';
+      const phone = document.getElementById('form-phone') ? document.getElementById('form-phone').value.trim() : '';
+      const provinsi = document.getElementById('form-prov') ? document.getElementById('form-prov').value.trim() : '';
+      const kabupaten = document.getElementById('form-kab') ? document.getElementById('form-kab').value.trim() : '';
+      const kecamatan = document.getElementById('form-kec') ? document.getElementById('form-kec').value.trim() : '';
+      const desa = document.getElementById('form-kel') ? document.getElementById('form-kel').value.trim() : '';
+      const alamatLengkap = document.getElementById('form-alamat') ? document.getElementById('form-alamat').value.trim() : '';
+
+      // Build items array for API (termasuk ukuran produk yang dipilih)
       const items = cart.map(item => ({
         product_id: item.product_id,
-        qty: item.qty
+        qty: item.qty,
+        ukuran: item.size || ''
       }));
 
       try {
-        const res = await fetch('https://batumerapi.biz.id/api/order', {
+        const apiBase = window.PUBLIC_API_BASE || 'https://batumerapi.biz.id/api';
+        const res = await fetch(`${apiBase}/order`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             nama_pembeli: customerName,
             telepon: phone,
+            provinsi: provinsi,
+            kabupaten: kabupaten,
+            kecamatan: kecamatan,
+            desa: desa,
+            alamat_lengkap: alamatLengkap,
             items: items
           })
         });
@@ -512,11 +534,12 @@
           const orderId = json.data.order_id;
           const totalStr = formatRp(json.data.total_tagihan);
           const itemSummary = cart.map(i => `- ${i.name} (${i.size || 'Standar'}) x${i.qty}`).join('\n');
-          const waMessage = `Halo Admin Batu Merapi,\n\nSaya ingin mengonfirmasi pesanan baru:\n*Nomor Order*: ${orderId}\n*Nama*: ${customerName}\n*No. HP*: ${phone}\n\n*Detail Pesanan*:\n${itemSummary}\n\n*Total Tagihan*: ${totalStr}\n\nMohon informasi selanjutnya untuk pembayaran. Terima kasih!`;
+          const fullAddressStr = [alamatLengkap, desa, kecamatan, kabupaten, provinsi].filter(Boolean).join(', ');
+          const waMessage = `Halo Admin Batu Merapi,\n\nSaya ingin mengonfirmasi pesanan baru:\n*Nomor Order*: ${orderId}\n*Nama*: ${customerName}\n*No. HP*: ${phone}\n*Alamat Pengiriman*: ${fullAddressStr}\n\n*Detail Pesanan*:\n${itemSummary}\n\n*Total Tagihan*: ${totalStr}\n\nMohon informasi selanjutnya untuk pembayaran. Terima kasih!`;
           
           let targetWa = '6287846725184';
           try {
-            const waRes = await fetch(`${API_BASE}/settings/whatsapp`);
+            const waRes = await fetch(`${apiBase}/settings/whatsapp`);
             const waJson = await waRes.json();
             if (waJson.success && waJson.whatsapp) {
               targetWa = waJson.whatsapp.replace(/[^0-9]/g, '');
@@ -524,19 +547,30 @@
           } catch (e) {}
 
           const waUrl = `https://wa.me/${targetWa}?text=${encodeURIComponent(waMessage)}`;
-          window.open(waUrl, '_blank');
 
           clearCart();
           renderCart();
-          closeCheckout();
           document.getElementById('shipping-form').reset();
+
+          // Show Step 3 with Order ID & direct links so mobile popup blockers never lose the Order ID
+          document.getElementById('checkout-step-2').style.display = 'none';
+          const step3 = document.getElementById('checkout-step-3');
+          if (step3) {
+            document.getElementById('created-order-id').textContent = orderId;
+            document.getElementById('created-wa-link').href = waUrl;
+            document.getElementById('created-konfirmasi-link').href = `konfirmasi.html?order_id=${encodeURIComponent(orderId)}`;
+            step3.style.display = 'block';
+            if (window.lucide) lucide.createIcons();
+          }
+
+          window.open(waUrl, '_blank');
 
           if (window.showGlobalToast) {
             window.showGlobalToast(
               'PESANAN BERHASIL!',
               `Order ${orderId} telah dibuat. Total: ${totalStr}`,
               'success',
-              true
+              false
             );
           }
         } else {
@@ -545,6 +579,12 @@
       } catch (err) {
         console.error('Checkout error:', err);
         alert('Gagal terhubung ke server. Silakan coba lagi.');
+      } finally {
+        isSubmittingOrder = false;
+        if (finishBtn) {
+          finishBtn.disabled = false;
+          finishBtn.textContent = originalBtnText;
+        }
       }
     }
 
