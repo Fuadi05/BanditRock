@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Penjualan - Syarif Art Stone Admin</title>
-  <link rel="stylesheet" href="css/admin.css?v=2">
+  <link rel="stylesheet" href="css/admin.css?v=4">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -155,11 +155,11 @@
           <div style="background: #F8FAFC; border-radius: 8px; padding: 16px; border: 1px solid var(--border-color);">
             <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">Ubah Status Pesanan</h3>
             <div style="display: flex; flex-wrap: wrap; gap: 8px;" id="action-buttons-group">
-              <button onclick="updateOrderStatus('paid')" style="padding: 8px 14px; background: #10B981; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">✅ Setujui (Lunas)</button>
-              <button onclick="updateOrderStatus('processing')" style="padding: 8px 14px; background: #6366F1; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">⚙️ Diproses</button>
-              <button onclick="updateOrderStatus('shipped')" style="padding: 8px 14px; background: #14B8A6; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">🚚 Dikirim</button>
-              <button onclick="updateOrderStatus('completed')" style="padding: 8px 14px; background: #059669; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">🏁 Selesai</button>
-              <button onclick="updateOrderStatus('cancelled')" style="padding: 8px 14px; background: #EF4444; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">❌ Batalkan</button>
+              <button onclick="updateOrderStatus('paid')" style="padding: 8px 14px; background: #10B981; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">âœ… Setujui (Lunas)</button>
+              <button onclick="updateOrderStatus('processing')" style="padding: 8px 14px; background: #6366F1; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">âš™ï¸ Diproses</button>
+              <button onclick="updateOrderStatus('shipped')" style="padding: 8px 14px; background: #14B8A6; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">ðŸšš Dikirim</button>
+              <button onclick="updateOrderStatus('completed')" style="padding: 8px 14px; background: #059669; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">ðŸ Selesai</button>
+              <button onclick="updateOrderStatus('cancelled')" style="padding: 8px 14px; background: #EF4444; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">âŒ Batalkan</button>
             </div>
           </div>
 
@@ -169,7 +169,7 @@
     </div>
   </main>
 
-  <script src="js/admin.js?v=3"></script>
+  <script src="js/admin.js?v=4"></script>
   <script>
     window.allOrders = [];
     window.currentFilter = 'all';
@@ -255,7 +255,7 @@
           <tr>
             <td title="${safeId}">
               <strong>${safeId}</strong>
-              <button type="button" onclick="navigator.clipboard.writeText('${safeId}'); this.textContent='✓';" title="Salin ID Order" style="margin-left:4px; border:1px solid #CBD5E1; background:#F8FAFC; border-radius:4px; font-size:10px; padding:2px 5px; cursor:pointer;">Salin</button>
+              <button type="button" onclick="navigator.clipboard.writeText('${safeId}'); this.textContent='âœ“';" title="Salin ID Order" style="margin-left:4px; border:1px solid #CBD5E1; background:#F8FAFC; border-radius:4px; font-size:10px; padding:2px 5px; cursor:pointer;">Salin</button>
             </td>
             <td>${escapeHtml(o.nama_pembeli)}</td>
             <td>${escapeHtml(o.nama_produk)}</td>
@@ -303,7 +303,7 @@
         ${hasCoords ? `
         <div style="padding: 10px 16px; font-size: 13px;">
           <strong>Lokasi Peta:</strong><br>
-          <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.lat)},${encodeURIComponent(order.lng)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary); font-weight:bold;">📍 Buka di Google Maps</a>
+          <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.lat)},${encodeURIComponent(order.lng)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary); font-weight:bold;">ðŸ“ Buka di Google Maps</a>
         </div>` : ''}
       `;
 
@@ -316,17 +316,17 @@
           ? new Date(pay.tanggal_transfer).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
           : '-';
         const verifBadge = pay.status_verifikasi
-          ? '<span style="color:#15803D; font-weight:700;">✓ Terverifikasi</span>'
+          ? '<span style="color:#15803D; font-weight:700;">âœ“ Terverifikasi</span>'
           : '<span style="color:#D97706; font-weight:700;">Menunggu Verifikasi</span>';
 
         const previewHtml = isPdf
           ? `<div style="padding: 16px;">
-               <div style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px;">📄 Dokumen Bukti Transfer (PDF)</div>
-               <a href="${safeBuktiUrl}" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; font-size:12px; text-decoration:none; border-radius:6px;">🔍 Buka File PDF Bukti Transfer</a>
+               <div style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px;">ðŸ“„ Dokumen Bukti Transfer (PDF)</div>
+               <a href="${safeBuktiUrl}" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; font-size:12px; text-decoration:none; border-radius:6px;">ðŸ” Buka File PDF Bukti Transfer</a>
              </div>`
           : `<img src="${safeBuktiUrl}" alt="Bukti Transfer" style="max-width: 100%; max-height: 250px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 12px;" onerror="this.style.display='none';">
              <div>
-               <a href="${safeBuktiUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">🔍 Lihat Gambar Ukuran Penuh</a>
+               <a href="${safeBuktiUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">ðŸ” Lihat Gambar Ukuran Penuh</a>
              </div>`;
 
         payBox.innerHTML = `

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profil - Syarif Art Stone Admin</title>
-  <link rel="stylesheet" href="css/admin.css?v=2">
+  <link rel="stylesheet" href="css/admin.css?v=4">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -97,12 +97,12 @@
 
               <div>
                 <label style="font-size: 12px; font-weight: 600; color: #64748B; display: block; margin-bottom: 8px;">Password Baru (Opsional)</label>
-                <input type="password" id="admin-password" class="form-control" placeholder="••••••••" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 14px; color: #1E293B;">
+                <input type="password" id="admin-password" class="form-control" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 14px; color: #1E293B;">
               </div>
 
               <div>
                 <label style="font-size: 12px; font-weight: 600; color: #64748B; display: block; margin-bottom: 8px;">Konfirmasi Password</label>
-                <input type="password" id="admin-confirm-password" class="form-control" placeholder="••••••••" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 14px; color: #1E293B;">
+                <input type="password" id="admin-confirm-password" class="form-control" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 14px; color: #1E293B;">
               </div>
 
             </div>
@@ -123,7 +123,7 @@
     </div>
   </main>
 
-  <script src="js/admin.js?v=3"></script>
+  <script src="js/admin.js?v=4"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       await loadProfileData();
@@ -240,7 +240,7 @@
         if (handleApiAuthError(res, json)) return;
 
         if (json.success) {
-          showAlert('✅ Profil berhasil diperbarui!', 'success');
+          showAlert('âœ… Profil berhasil diperbarui!', 'success');
           document.getElementById('admin-password').value = '';
           document.getElementById('admin-confirm-password').value = '';
 

@@ -488,3 +488,210 @@ tr:last-child td {
   color: var(--primary);
   font-weight: 600;
 }
+
+
+/* ============================================================
+   RESPONSIVE (v4) — Tablet & Mobile untuk Panel Admin
+   ============================================================ */
+.admin-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+  flex-shrink: 0;
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.admin-sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  z-index: 49;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.main-content {
+  min-width: 0;
+}
+
+.topbar .page-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.topbar {
+  gap: 8px;
+}
+
+@media (max-width: 1024px) {
+  .admin-menu-btn {
+    display: inline-flex;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.28s ease, box-shadow 0.28s ease;
+    z-index: 50;
+    width: 270px;
+    max-width: 86vw;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 8px 0 32px rgba(15, 23, 42, 0.18);
+  }
+
+  .admin-sidebar-backdrop {
+    display: block;
+    pointer-events: none;
+  }
+
+  .admin-sidebar-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .content-area {
+    padding: 0 16px 24px;
+  }
+
+  /* Layout 2 kolom inline -> 1 kolom */
+  .content-area [style*="grid-template-columns: 1fr 1.5fr"],
+  .content-area [style*="grid-template-columns: 2fr 1fr"],
+  .content-area [style*="grid-template-columns: 1.2fr 1fr"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 20px !important;
+  }
+
+  /* Tabel dalam kartu tanpa wrapper tetap bisa digeser */
+  .card[style*="overflow:hidden"],
+  .card[style*="overflow: hidden"],
+  .card:has(table) {
+    overflow-x: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .dash-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dash-card {
+    padding: 16px 12px;
+  }
+
+  .dash-card h3 {
+    font-size: 28px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  th,
+  td {
+    padding: 12px;
+    white-space: nowrap;
+  }
+
+  table {
+    min-width: 560px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .tab-item {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 12px 14px;
+  }
+
+  .notif-dropdown,
+  #global-notif-dropdown {
+    width: min(320px, calc(100vw - 32px)) !important;
+    right: -8px !important;
+  }
+
+  /* Form 2 kolom -> 1 kolom (kecuali kotak unggah gambar yang memakai gap 12px) */
+  .content-area [style*="grid-template-columns"]:not([style*="gap: 12px"]):not([style*="gap:12px"]) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .content-area > .card[style*="padding: 32px"] {
+    padding: 18px !important;
+  }
+
+  /* Header halaman berisi judul + tombol aksi */
+  .content-area [style*="justify-content: space-between"][style*="margin-bottom: 24px"],
+  .content-area [style*="justify-content: space-between"][style*="margin-bottom: 40px"] {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .content-area [style*="display: flex; gap: 16px; align-items: center"] {
+    flex-wrap: wrap;
+  }
+
+  .content-area input[type="date"],
+  .content-area select.form-control {
+    max-width: 100%;
+  }
+
+  #search-product {
+    width: 100% !important;
+  }
+
+  #chart-container {
+    overflow-x: auto;
+    justify-content: flex-start !important;
+  }
+
+  #receipt-modal {
+    padding: 10px !important;
+    align-items: flex-start !important;
+  }
+
+  .btn-primary {
+    padding: 10px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar-right {
+    gap: 10px;
+  }
+
+  .page-title {
+    font-size: 17px;
+  }
+
+  .dash-cards {
+    gap: 10px;
+  }
+}

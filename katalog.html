@@ -8,7 +8,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=4">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
@@ -217,13 +217,13 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span class="footer-copy">Batu Merapi © 2015–2026, All Rights Reserved</span>
+      <span class="footer-copy">Batu Merapi Â© 2015â€“2026, All Rights Reserved</span>
 
     </div>
   </footer>
 
-  <script src="js/products.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/products.js?v=4"></script>
+  <script src="js/main.js?v=4"></script>
   <script>
     const PER_PAGE = 9;
     const MIN_PRICE = 1000;
@@ -357,7 +357,7 @@
       // DOM Rendering
       document.getElementById('catalog-meta-info').textContent = filtered.length === 0
         ? 'Tidak ada produk'
-        : `Menampilkan ${(state.page - 1) * PER_PAGE + 1}–${Math.min(state.page * PER_PAGE, filtered.length)} dari ${filtered.length} Produk`;
+        : `Menampilkan ${(state.page - 1) * PER_PAGE + 1}â€“${Math.min(state.page * PER_PAGE, filtered.length)} dari ${filtered.length} Produk`;
 
       const grid = document.getElementById('catalog-grid');
       const noProd = document.getElementById('no-products-msg');
@@ -381,7 +381,7 @@
         tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background: var(--grad-primary); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;"><i data-lucide="search" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i> ${escapeHtml(state.q)} <button onclick="setSearch('')" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
       }
       if (state.priceMin > MIN_PRICE || state.priceMax < MAX_PRICE) {
-        tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background:var(--gray-dark); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;">${formatRpShort(state.priceMin)} – ${formatRpShort(state.priceMax)} <button onclick="resetPrice()" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
+        tagsHtml += `<span style="display:inline-flex; align-items:center; gap:6px; background:var(--gray-dark); color:var(--white); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600;">${formatRpShort(state.priceMin)} â€“ ${formatRpShort(state.priceMax)} <button onclick="resetPrice()" style="color:var(--white); background:none; border:none; cursor:pointer;"><i data-lucide="x" style="width: 1em; height: 1em; display: inline-block; vertical-align: middle;"></i></button></span>`;
       }
       document.getElementById('active-filters-container').innerHTML = tagsHtml;
 
@@ -448,6 +448,21 @@
       }
       parseURL();
       renderAll();
+
+      // Filter bisa dilipat di layar kecil agar daftar produk langsung terlihat
+      const sidebarEl = document.querySelector('.sidebar');
+      const sidebarHead = document.querySelector('.sidebar-head');
+      if (sidebarEl && sidebarHead) {
+        const mq = window.matchMedia('(max-width: 768px)');
+        const hasActiveFilter = !!(state.kategori || state.q || state.priceMin > MIN_PRICE || state.priceMax < MAX_PRICE);
+        if (mq.matches && !hasActiveFilter) sidebarEl.classList.add('collapsed');
+        sidebarHead.setAttribute('role', 'button');
+        sidebarHead.setAttribute('tabindex', '0');
+        const toggleSidebar = () => { if (mq.matches) sidebarEl.classList.toggle('collapsed'); };
+        sidebarHead.addEventListener('click', toggleSidebar);
+        sidebarHead.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSidebar(); } });
+        mq.addEventListener('change', (e) => { if (!e.matches) sidebarEl.classList.remove('collapsed'); });
+      }
 
       document.getElementById('sort-select').addEventListener('change', e => {
         state.sortBy = e.target.value;

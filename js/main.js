@@ -138,26 +138,54 @@ function setupNavbar() {
   const closeMenuBtn = document.getElementById('mobile-menu-close');
   const dropdownBtns = document.querySelectorAll('.mobile-dropdown-btn');
 
+  let menuBackdrop = null;
+  if (mobileMenu) {
+    menuBackdrop = document.createElement('div');
+    menuBackdrop.className = 'mobile-menu-backdrop';
+    document.body.appendChild(menuBackdrop);
+  }
+
+  const openMobileMenu = () => {
+    if (!mobileMenu) return;
+    mobileMenu.classList.add('open');
+    if (menuBackdrop) menuBackdrop.classList.add('open');
+    if (hamburgerBtn) hamburgerBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeMobileMenu = () => {
+    if (!mobileMenu) return;
+    mobileMenu.classList.remove('open');
+    if (menuBackdrop) menuBackdrop.classList.remove('open');
+    if (hamburgerBtn) hamburgerBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  };
+
   if (hamburgerBtn && mobileMenu) {
-    hamburgerBtn.addEventListener('click', () => {
-      mobileMenu.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    });
+    hamburgerBtn.setAttribute('aria-label', 'Buka menu');
+    hamburgerBtn.setAttribute('aria-expanded', 'false');
+    hamburgerBtn.addEventListener('click', openMobileMenu);
   }
 
   if (closeMenuBtn && mobileMenu) {
-    closeMenuBtn.addEventListener('click', () => {
-      mobileMenu.classList.remove('open');
-      document.body.style.overflow = '';
-    });
+    closeMenuBtn.setAttribute('aria-label', 'Tutup menu');
+    closeMenuBtn.addEventListener('click', closeMobileMenu);
   }
 
+  if (menuBackdrop) menuBackdrop.addEventListener('click', closeMobileMenu);
+
   if (mobileMenu) {
+    // Tutup menu saat link tujuan diklik (mis. anchor di halaman yang sama) & saat tombol Escape ditekan
     mobileMenu.addEventListener('click', (e) => {
-      if (e.target === mobileMenu) {
-        mobileMenu.classList.remove('open');
-        document.body.style.overflow = '';
-      }
+      const link = e.target.closest('a');
+      if (link) closeMobileMenu();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMobileMenu();
+    });
+    // Jika layar diperbesar ke desktop saat menu terbuka, pastikan scroll dipulihkan
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 900) closeMobileMenu();
     });
   }
 
@@ -406,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div style="padding:24px;">
           <form onsubmit="event.preventDefault(); searchTrack(document.getElementById('track-input').value)" style="display:flex; gap:8px; background:#f8fafc; padding:6px; border-radius:10px; border:1px solid #cbd5e1; margin-bottom:24px;">
-            <input id="track-input" type="text" placeholder="Masukkan ID Pesanan... (Contoh: BMA-20261022-1234)" style="flex:1; border:none; background:transparent; outline:none; padding-left:12px; font-size:13px;">
+            <input id="track-input" type="text" placeholder="Masukkan ID Pesanan (BMA-...)" style="flex:1; border:none; background:transparent; outline:none; padding-left:12px; font-size:13px;">
             <button type="submit" class="btn-primary" style="padding:8px 20px; font-size:12px;">Cari</button>
           </form>
           <div id="track-results"></div>

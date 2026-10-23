@@ -8,7 +8,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=4">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
@@ -160,7 +160,7 @@
                 <i data-lucide="hash" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Nomor Order *
               </label>
               <div style="display:flex; gap:10px;">
-                <input id="input-no-order" required placeholder="Contoh: BMA-20261022-1234 atau BMA-K-..."
+                <input id="input-no-order" required placeholder="Contoh: BMA-20261022-1234"
                   style="flex:1; padding: 11px 14px; border: 1.5px solid var(--gray-mid); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; transition:border-color .2s;" onfocus="this.style.borderColor='var(--green-primary)'" onblur="this.style.borderColor='var(--gray-mid)'; checkOrderDetails(this.value);">
                 <button type="button" id="btn-cek-order" onclick="checkOrderDetails(document.getElementById('input-no-order').value)" class="btn-outline" style="padding: 0 18px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); white-space: nowrap; cursor: pointer;">
                   Cek Pesanan
@@ -304,7 +304,7 @@
                 <div style="background:var(--off-white); border-radius:var(--radius-sm); padding:16px 12px; text-align:center;">
                   <i data-lucide="clock" style="width:24px;height:24px;color:var(--green-primary);margin:0 auto 8px;display:block;"></i>
                   <div style="font-size:12px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">Proses Verifikasi</div>
-                  <div style="font-size:11px; color:var(--gray-text);">Maks. 1×24 jam</div>
+                  <div style="font-size:11px; color:var(--gray-text);">Maks. 1Ã—24 jam</div>
                 </div>
                 <div style="background:var(--off-white); border-radius:var(--radius-sm); padding:16px 12px; text-align:center;">
                   <i data-lucide="message-circle" style="width:24px;height:24px;color:var(--green-primary);margin:0 auto 8px;display:block;"></i>
@@ -356,12 +356,12 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span class="footer-copy">Batu Merapi © 2015–2026, All Rights Reserved</span>
+      <span class="footer-copy">Batu Merapi Â© 2015â€“2026, All Rights Reserved</span>
     </div>
   </footer>
 
-  <script src="js/products.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/products.js?v=4"></script>
+  <script src="js/main.js?v=4"></script>
   <script>
     if (window.lucide) lucide.createIcons();
 
@@ -402,7 +402,7 @@
         box.style.display = 'block';
         box.style.borderColor = '#cbd5e1';
         box.style.background = '#f8fafc';
-        box.innerHTML = '<span style="color:#64748b;">🔍 Mengecek rincian pesanan...</span>';
+        box.innerHTML = '<span style="color:#64748b;">ðŸ” Mengecek rincian pesanan...</span>';
       }
 
       try {
@@ -413,7 +413,7 @@
           if (box) {
             box.style.borderColor = '#fca5a5';
             box.style.background = '#fef2f2';
-            box.innerHTML = `<span style="color:#dc2626; font-weight:600;">⚠️ ${escapeHtml(json.message || 'Nomor order tidak ditemukan. Pastikan ID pesanan sesuai.')}</span>`;
+            box.innerHTML = `<span style="color:#dc2626; font-weight:600;">âš ï¸ ${escapeHtml(json.message || 'Nomor order tidak ditemukan. Pastikan ID pesanan sesuai.')}</span>`;
           }
           setStepActive(1);
           return;
@@ -441,13 +441,13 @@
           if (existingAddress) {
             if (helper) {
               helper.style.color = '#15803d';
-              helper.textContent = '✓ Alamat pengiriman dari pesanan Anda telah dimuat otomatis. Anda dapat memperbaruinya jika ada perubahan.';
+              helper.textContent = 'âœ“ Alamat pengiriman dari pesanan Anda telah dimuat otomatis. Anda dapat memperbaruinya jika ada perubahan.';
             }
           } else {
             if (helper) {
               helper.style.color = '#d97706';
               helper.style.fontWeight = '600';
-              helper.textContent = '⚠️ Pesanan ini belum memiliki detail alamat pengiriman. Mohon lengkapi alamat pengiriman di atas.';
+              helper.textContent = 'âš ï¸ Pesanan ini belum memiliki detail alamat pengiriman. Mohon lengkapi alamat pengiriman di atas.';
             }
           }
         }
@@ -465,7 +465,7 @@
           box.style.background = '#f0fdf4';
           box.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
-              <strong style="color:#15803d;">✓ Pesanan Ditemukan: ${escapeHtml(order.id)}</strong>
+              <strong style="color:#15803d;">âœ“ Pesanan Ditemukan: ${escapeHtml(order.id)}</strong>
               <span style="font-size:12px; font-weight:700; color:#0f5132; background:#dcfce7; padding:2px 8px; border-radius:99px;">Tagihan: ${escapeHtml(totalFormatted)}</span>
             </div>
             <div style="font-size:12px; color:#334155;"><strong>Pemesan:</strong> ${escapeHtml(order.nama_pembeli)} &bull; <strong>Item:</strong> ${itemsSummary}</div>

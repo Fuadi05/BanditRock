@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daftar Produk - Syarif Art Stone Admin</title>
-  <link rel="stylesheet" href="css/admin.css?v=2">
+  <link rel="stylesheet" href="css/admin.css?v=4">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -80,26 +80,28 @@
             <input type="text" id="search-product" class="form-control" placeholder="Cari..." style="padding-left: 32px; width: 200px;">
           </div>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th style="width:40px;"><input type="checkbox"></th>
-              <th>Nama Produk</th>
-              <th>Kategori</th>
-              <th>Harga</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="product-table-body">
-            <!-- Rendered by JS -->
-          </tbody>
-        </table>
+        <div class="table-wrapper" style="border: none; border-radius: 0;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px;"><input type="checkbox"></th>
+                <th>Nama Produk</th>
+                <th>Kategori</th>
+                <th>Harga</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="product-table-body">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </main>
 
-  <script src="js/admin.js?v=3"></script>
+  <script src="js/admin.js?v=4"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       try {

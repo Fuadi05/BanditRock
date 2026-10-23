@@ -85,7 +85,52 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // Sidebar responsif (off-canvas untuk tablet & mobile)
+  setupAdminSidebarToggle();
 });
+
+function setupAdminSidebarToggle() {
+  const sidebar = document.querySelector('.sidebar');
+  const topbar = document.querySelector('.topbar');
+  if (!sidebar || !topbar || document.getElementById('admin-menu-btn')) return;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'admin-menu-btn';
+  btn.className = 'admin-menu-btn';
+  btn.setAttribute('aria-label', 'Buka menu');
+  btn.setAttribute('aria-expanded', 'false');
+  btn.innerHTML = '<i data-lucide="menu" style="width:20px; height:20px;"></i>';
+  topbar.insertBefore(btn, topbar.firstChild);
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'admin-sidebar-backdrop';
+  document.body.appendChild(backdrop);
+
+  const open = () => {
+    sidebar.classList.add('open');
+    backdrop.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
+  };
+  const close = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+  };
+
+  btn.addEventListener('click', () => (sidebar.classList.contains('open') ? close() : open()));
+  backdrop.addEventListener('click', close);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  window.addEventListener('resize', () => { if (window.innerWidth > 1024) close(); });
+  // Tutup sidebar setelah memilih menu (kecuali tombol dropdown/submenu induk)
+  sidebar.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (link && !link.classList.contains('has-dropdown')) close();
+  });
+
+  if (window.lucide) lucide.createIcons();
+}
 
 async function loadTopbarAvatar() {
   const topbarAvatar = document.querySelector('.avatar');

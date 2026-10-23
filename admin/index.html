@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Syarif Art Stone Admin</title>
-  <link rel="stylesheet" href="css/admin.css?v=2">
+  <link rel="stylesheet" href="css/admin.css?v=4">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -109,25 +109,27 @@
           <div style="padding:16px 20px; border-bottom:1px solid var(--border-color); font-size:14px; font-weight:700; color:var(--text-main);">
             Pesanan Terbaru
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 50px;">NO</th>
-                <th>PELANGGAN</th>
-                <th>STATUS</th>
-                <th>TOTAL</th>
-              </tr>
-            </thead>
-            <tbody id="prov-table">
-              <!-- Rendered by JS -->
-            </tbody>
-          </table>
+          <div class="table-wrapper" style="border: none; border-radius: 0;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 50px;">NO</th>
+                  <th>PELANGGAN</th>
+                  <th>STATUS</th>
+                  <th>TOTAL</th>
+                </tr>
+              </thead>
+              <tbody id="prov-table">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   </main>
 
-  <script src="js/admin.js?v=3"></script>
+  <script src="js/admin.js?v=4"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       try {
